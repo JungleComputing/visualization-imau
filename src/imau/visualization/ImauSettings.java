@@ -13,16 +13,18 @@ public class ImauSettings extends Settings {
         public final static ImauSettings instance = new ImauSettings();
     }
 
-    private static long     WAITTIME_FOR_RETRY    = 10000;
-    private static long     WAITTIME_FOR_MOVIE    = 100;
-    private static float    EPSILON               = 1.0E-7f;
+    private static long WAITTIME_FOR_RETRY = 10000;
+    private static long WAITTIME_FOR_MOVIE = 100;
+    private static float EPSILON = 1.0E-7f;
 
-    private static int      FILE_EXTENSION_LENGTH = 2;
-    private static int      FILE_NUMBER_LENGTH    = 4;
+    private static int FILE_EXTENSION_LENGTH = 2;
+    private static int FILE_NUMBER_LENGTH = 4;
 
-    private static String[] ACCEPTABLE_POSTFIXES  = { ".nc" };
+    private static String[] ACCEPTABLE_POSTFIXES = { ".nc" };
 
-    private static String   CURRENT_POSTFIX       = ".nc";
+    private static String CURRENT_POSTFIX = ".nc";
+
+    private static int PREPROCESSING_AMOUNT = 5;
 
     public static ImauSettings getInstance() {
         return SingletonHolder.instance;
@@ -41,6 +43,8 @@ public class ImauSettings extends Settings {
 
             ImauSettings.FILE_EXTENSION_LENGTH = props.getIntProperty("FILE_EXTENSION_LENGTH");
             ImauSettings.FILE_NUMBER_LENGTH = props.getIntProperty("FILE_NUMBER_LENGTH");
+
+            ImauSettings.PREPROCESSING_AMOUNT = props.getIntProperty("PREPROCESSING_AMOUNT");
         } catch (NumberFormatException e) {
             logger.warn(e.getMessage());
         }
@@ -96,5 +100,13 @@ public class ImauSettings extends Settings {
 
     public String getCurrentExtension() {
         return CURRENT_POSTFIX;
+    }
+
+    public int getPreprocessAmount() {
+        return PREPROCESSING_AMOUNT;
+    }
+
+    public void setPreprocessAmount(int value) {
+        PREPROCESSING_AMOUNT = value;
     }
 }

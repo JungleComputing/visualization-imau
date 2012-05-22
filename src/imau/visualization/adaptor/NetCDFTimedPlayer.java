@@ -5,7 +5,6 @@ import imau.visualization.ImauWindow;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
-import java.io.IOException;
 
 import javax.media.opengl.GL3;
 import javax.swing.JFormattedTextField;
@@ -23,27 +22,28 @@ public class NetCDFTimedPlayer implements Runnable {
         UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
     }
 
-    private final ImauSettings        settings     = ImauSettings.getInstance();
-    private final static Logger       logger       = LoggerFactory.getLogger(NetCDFTimedPlayer.class);
+    private final ImauSettings settings = ImauSettings.getInstance();
+    private final static Logger logger = LoggerFactory.getLogger(NetCDFTimedPlayer.class);
 
-    private states                    currentState = states.UNOPENED;
-    private int                       frameNumber;
+    private states currentState = states.UNOPENED;
+    private int frameNumber;
 
-    private NetCDFFrame               currentFrame;
+    private NetCDFFrame currentFrame;
 
-    private boolean                   running      = true, initialized = false;
+    private boolean running = true, initialized = false;
 
-    private File                      ncfile       = null;
+    private File ncfile = null;
 
-    private long                      startTime, stopTime;
+    private long startTime, stopTime;
 
-    private int                       lowestFrameNumber;
-    private final JSlider             timeBar;
+    private int lowestFrameNumber;
+    private final JSlider timeBar;
     private final JFormattedTextField frameCounter;
 
-    private InputHandler              inputHandler;
+    private InputHandler inputHandler;
 
-    private ImauWindow                imauWindow;
+    private ImauWindow imauWindow;
+    private NetCDFFrameManager frameManager;
 
     public NetCDFTimedPlayer(CustomJSlider timeBar, JFormattedTextField frameCounter) {
         this.timeBar = timeBar;
@@ -78,34 +78,26 @@ public class NetCDFTimedPlayer implements Runnable {
         return currentFrame;
     }
 
-    public states getState() {
+    public synchronized states getState() {
         return currentState;
     }
 
-    public void init() {
+    public void init(File file) {
+        this.ncfile = file;
+        this.frameManager = new NetCDFFrameManager(0, file);
+
         if (ncfile == null) {
-            logger.error("HDFTimer initialized with no open file.");
+            logger.error("NetCDFTimer initialized with null file.");
             System.exit(1);
         }
 
-        frameNumber = NetCDFUtil.getFrameNumber(ncfile);
-
-        try {
-            currentFrame = updateFrame(ncfile, true);
-        } catch (IOException e) {
-            logger.error("Initial simulation frame (settings) not found. Trying again from lowest frame.");
-            frameNumber = NetCDFUtil.getLowestFileNumber(ncfile);
-            try {
-                currentFrame = updateFrame(ncfile, true);
-            } catch (IOException e1) {
-                logger.error("Frame " + frameNumber + " also not found. Exiting.");
-                System.exit(1);
-            }
-        }
-
-        final int initialMaxBar = NetCDFUtil.getNumFiles(ncfile);
-        timeBar.setMaximum(initialMaxBar);
+        final int initialMaxBar = NetCDFUtil.getNumFiles(ncfile) - 1;
         lowestFrameNumber = NetCDFUtil.getLowestFileNumber(ncfile);
+
+        timeBar.setMaximum(initialMaxBar + lowestFrameNumber);
+        timeBar.setMinimum(lowestFrameNumber);
+
+        updateFrame(lowestFrameNumber, true);
 
         initialized = true;
     }
@@ -114,7 +106,7 @@ public class NetCDFTimedPlayer implements Runnable {
         return initialized;
     }
 
-    public boolean isPlaying() {
+    public synchronized boolean isPlaying() {
         if ((currentState == states.PLAYING) || (currentState == states.MOVIEMAKING)) {
             return true;
         }
@@ -122,7 +114,7 @@ public class NetCDFTimedPlayer implements Runnable {
         return false;
     }
 
-    public void movieMode() {
+    public synchronized void movieMode() {
         currentState = states.MOVIEMAKING;
     }
 
@@ -136,12 +128,7 @@ public class NetCDFTimedPlayer implements Runnable {
         setFrame(frameNumber + 1, false);
     }
 
-    public void open(File file) {
-        this.ncfile = file;
-        init();
-    }
-
-    public void redraw() {
+    public synchronized void redraw() {
         if (initialized) {
             setFrame(frameNumber, true);
             currentState = states.REDRAWING;
@@ -149,7 +136,7 @@ public class NetCDFTimedPlayer implements Runnable {
     }
 
     public void rewind() {
-        setFrame(0, false);
+        setFrame(lowestFrameNumber, false);
     }
 
     @Override
@@ -162,29 +149,13 @@ public class NetCDFTimedPlayer implements Runnable {
         inputHandler.setRotation(new VecF3(settings.getInitialRotationX(), settings.getInitialRotationY(), 0f));
         inputHandler.setViewDist(settings.getInitialZoom());
 
-        timeBar.setValue(frameNumber - lowestFrameNumber);
-        frameCounter.setValue(frameNumber - lowestFrameNumber);
-
-        currentState = states.STOPPED;
+        stop();
 
         while (running) {
             if ((currentState == states.PLAYING) || (currentState == states.REDRAWING)
                     || (currentState == states.MOVIEMAKING)) {
                 try {
                     startTime = System.currentTimeMillis();
-
-                    if (currentState != states.REDRAWING) {
-                        try {
-                            currentFrame = updateFrame(
-                                    NetCDFUtil.getNextFile(ncfile, NetCDFUtil.getFrameNumber(ncfile)), false);
-                        } catch (final IOException e) {
-                            setFrame(frameNumber - 1, false);
-                            currentState = states.WAITINGONFRAME;
-                            System.err.println(e);
-                            System.err.println(" run File not found, retrying from frame " + frameNumber + ".");
-                            continue;
-                        }
-                    }
 
                     if (currentState == states.MOVIEMAKING) {
                         if (settings.getMovieRotate()) {
@@ -200,9 +171,12 @@ public class NetCDFTimedPlayer implements Runnable {
                         }
                     }
 
-                    timeBar.setValue(frameNumber - lowestFrameNumber);
-                    frameCounter.setValue(frameNumber - lowestFrameNumber);
+                    // Forward frame
+                    if (currentState != states.REDRAWING) {
+                        updateFrame(frameNumber + 1, false);
+                    }
 
+                    // Wait for the _rest_ of the timeframe
                     stopTime = System.currentTimeMillis();
                     if (((startTime - stopTime) < settings.getWaittimeMovie()) && (currentState != states.MOVIEMAKING)) {
                         Thread.sleep(settings.getWaittimeMovie() - (startTime - stopTime));
@@ -230,51 +204,33 @@ public class NetCDFTimedPlayer implements Runnable {
     }
 
     public void setFrame(int value, boolean overrideUpdate) {
-        // System.out.println("setValue?");
-        currentState = states.STOPPED;
+        stop();
 
-        try {
-            currentFrame = updateFrame(NetCDFUtil.getFile(ncfile, value), overrideUpdate);
-            timeBar.setValue(frameNumber - lowestFrameNumber);
-            frameCounter.setValue(frameNumber - lowestFrameNumber);
-        } catch (final IOException e) {
-            logger.warn("setFrame File not found, retrying from frame " + (value - 1) + ".");
-
-            if (value - 1 < 0) {
-                setFrame(NetCDFUtil.getLowestFileNumber(ncfile), overrideUpdate);
-            } else {
-                setFrame(value - 1, overrideUpdate);
-            }
-            currentState = states.WAITINGONFRAME;
-        } catch (final Throwable t) {
-            logger.error("Got error in setFrame!");
-            t.printStackTrace(System.err);
-        }
+        updateFrame(value, overrideUpdate);
     }
 
-    public void start() {
+    public synchronized void start() {
         currentState = states.PLAYING;
     }
 
-    public void stop() {
+    public synchronized void stop() {
         currentState = states.STOPPED;
     }
 
-    private synchronized NetCDFFrame updateFrame(File ncfile, boolean overrideUpdate) throws IOException {
-        int newFrameNumber = NetCDFUtil.getFrameNumber(ncfile);
-
+    private synchronized void updateFrame(int newFrameNumber, boolean overrideUpdate) {
         if (currentFrame == null || newFrameNumber != frameNumber || overrideUpdate) {
-            NetCDFFrame frame = new NetCDFFrame(newFrameNumber);
+            NetCDFFrame frame = frameManager.getFrame(newFrameNumber);
 
-            System.out.println("Updating file number: " + NetCDFUtil.getFrameNumber(ncfile));
+            if (!frame.isError()) {
+                frameNumber = newFrameNumber;
+                this.timeBar.setValue(newFrameNumber);
+                this.frameCounter.setValue(newFrameNumber);
 
-            // TODO: read and process
-
-            frameNumber = newFrameNumber;
-            return frame;
+                currentFrame = frame;
+            } else {
+                currentState = states.WAITINGONFRAME;
+            }
         }
-
-        return currentFrame;
     }
 
     public int getLowestFrameNumber() {

@@ -45,22 +45,22 @@ public class ImauPanel extends CommonPanel {
         NONE, VISUAL, MOVIE
     }
 
-    private final ImauSettings    settings           = ImauSettings.getInstance();
-    private final static Logger   logger             = LoggerFactory.getLogger(ImauPanel.class);
+    private final ImauSettings settings = ImauSettings.getInstance();
+    private final static Logger logger = LoggerFactory.getLogger(ImauPanel.class);
 
-    private static final long     serialVersionUID   = 1L;
+    private static final long serialVersionUID = 1L;
 
-    protected JSlider             timeBar;
+    protected JSlider timeBar;
 
     protected JFormattedTextField frameCounter;
-    private TweakState            currentConfigState = TweakState.NONE;
+    private TweakState currentConfigState = TweakState.NONE;
 
-    private final JPanel          configPanel;
+    private final JPanel configPanel;
 
-    private final JPanel          visualConfig, movieConfig;
+    private final JPanel visualConfig, movieConfig;
 
-    private final ImauWindow      imauWindow;
-    private NetCDFTimedPlayer     timer;
+    private final ImauWindow imauWindow;
+    private NetCDFTimedPlayer timer;
 
     public ImauPanel(ImauWindow imauWindow, String path, String cmdlnfileName) {
         super(imauWindow, InputHandler.getInstance());
@@ -248,7 +248,7 @@ public class ImauPanel extends CommonPanel {
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    timer.setFrame(timeBar.getValue() + timer.getLowestFrameNumber(), false);
+                    timer.setFrame(timeBar.getValue(), false);
                     playButton.setIcon(playIcon);
                 }
             }
@@ -267,8 +267,7 @@ public class ImauPanel extends CommonPanel {
                 if (source.hasFocus()) {
                     if (source == frameCounter) {
                         if (timer.isInitialized()) {
-                            timer.setFrame(
-                                    ((Number) frameCounter.getValue()).intValue() + timer.getLowestFrameNumber(), false);
+                            timer.setFrame(((Number) frameCounter.getValue()).intValue(), false);
                         }
                         playButton.setIcon(playIcon);
                     }
@@ -333,7 +332,7 @@ public class ImauPanel extends CommonPanel {
 
             timer = new NetCDFTimedPlayer(imauWindow, timeBar, frameCounter);
 
-            timer.open(file);
+            timer.init(file);
             new Thread(timer).start();
 
             final String path = NetCDFUtil.getPath(file);

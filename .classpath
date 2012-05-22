@@ -7,6 +7,29 @@
 	<classpathentry kind="lib" path="lib/jogl/gluegen-rt.jar"/>
 	<classpathentry kind="lib" path="lib/jogl/jogl-all-natives-windows-amd64.jar"/>
 	<classpathentry kind="lib" path="lib/jogl/jogl.all.jar"/>
-	<classpathentry kind="lib" path="lib/netcdfAll-4.2.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/bounce-0.14.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/bufr-3.0.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/commons-codec-1.3.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/commons-httpclient-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/commons-logging-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/ehcache-1.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/forms-1.0.7.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/grib-8.0.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/jcommon-1.0.15.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/jdom.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/je-4.0.71.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/jfreechart-1.0.12.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/netcdf-4.2.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/netcdfUI-4.2.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/opendap-2.2.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/protobuf-java-2.3.0.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/quartz-1.7.3.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/resourcesOptional.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/slf4j-api-1.5.6.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/slf4j-log4j12-1.5.6.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/spring-2.5.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/stax-api-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/netcdf/visadNoDods.jar"/>
 	<classpathentry kind="output" path="tmp"/>
 </classpath>
