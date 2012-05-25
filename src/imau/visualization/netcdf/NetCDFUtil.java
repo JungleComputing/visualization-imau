@@ -16,7 +16,7 @@ import ucar.nc2.Variable;
 
 public class NetCDFUtil {
     private final static ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger       logger   = LoggerFactory.getLogger(NetCDFUtil.class);
+    private final static Logger logger = LoggerFactory.getLogger(NetCDFUtil.class);
 
     static class ExtFilter implements FilenameFilter {
         private final String ext;
@@ -58,6 +58,17 @@ public class NetCDFUtil {
             ncfile = NetcdfFile.open(filename);
         } catch (IOException ioe) {
             log("trying to open " + filename, ioe);
+        }
+
+        return ncfile;
+    }
+
+    public static NetcdfFile open(File file) {
+        NetcdfFile ncfile = null;
+        try {
+            ncfile = NetcdfFile.open(file.getAbsolutePath());
+        } catch (IOException ioe) {
+            log("trying to open " + file.getAbsolutePath(), ioe);
         }
 
         return ncfile;
