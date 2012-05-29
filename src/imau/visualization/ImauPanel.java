@@ -60,7 +60,7 @@ public class ImauPanel extends CommonPanel {
     private final JPanel visualConfig, movieConfig;
 
     private final ImauWindow imauWindow;
-    private NetCDFTimedPlayer timer;
+    private static NetCDFTimedPlayer timer;
 
     public ImauPanel(ImauWindow imauWindow, String path, String cmdlnfileName) {
         super(imauWindow, InputHandler.getInstance());
@@ -398,5 +398,9 @@ public class ImauPanel extends CommonPanel {
             configPanel.setVisible(true);
             configPanel.add(movieConfig, BorderLayout.WEST);
         }
+    }
+
+    public static NetCDFTimedPlayer getTimer() {
+        return timer;
     }
 }

@@ -1,10 +1,14 @@
 package imau.visualization.adaptor;
 
+import imau.visualization.ImauSettings;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.List;
+
+import javax.media.opengl.GL3;
 
 import ucar.ma2.Array;
 import ucar.ma2.Index;
@@ -14,12 +18,18 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 public class NetCDFFrame implements Runnable {
+    private ImauSettings settings = ImauSettings.getInstance();
+
     private int frameNumber;
 
     private boolean initialized, doneProcessing;
 
     private boolean error;
     private String errMessage;
+
+    private int pixels, width, height;
+    private TGridPoint[] tGridPoints;
+    private NetCDFTexture image;
 
     private File initialFile;
 
@@ -54,8 +64,8 @@ public class NetCDFFrame implements Runnable {
                 Array u_lat = NetCDFUtil.getData(ncfile, "u_lat");
                 Array u_lon = NetCDFUtil.getData(ncfile, "u_lon");
 
-                int tlat_dim = 0;
-                int tlon_dim = 0;
+                int width = 0;
+                int height = 0;
                 int tdepth_dim = 0;
                 int ulat_dim = 0;
                 int ulon_dim = 0;
@@ -63,15 +73,15 @@ public class NetCDFFrame implements Runnable {
                 List<Dimension> dims = ncfile.getDimensions();
                 for (Dimension d : dims) {
                     if (d.getName().compareTo("t_lat") == 0) {
-                        tlat_dim = d.getLength();
+                        width = d.getLength();
                     } else if (d.getName().compareTo("t_lon") == 0) {
-                        tlon_dim = d.getLength();
+                        height = d.getLength();
                     } else if (d.getName().compareTo("depth_t") == 0) {
                         tdepth_dim = d.getLength();
                     } else if (d.getName().compareTo("u_lat") == 0) {
-                        tlat_dim = d.getLength();
+                        width = d.getLength();
                     } else if (d.getName().compareTo("u_lon") == 0) {
-                        tlon_dim = d.getLength();
+                        height = d.getLength();
                     }
                 }
 
@@ -81,9 +91,13 @@ public class NetCDFFrame implements Runnable {
 
                 Array ssh = vssh.read();
 
+                this.pixels = width * height;
+                tGridPoints = new TGridPoint[pixels];
+
                 int[] origin = new int[] { 0, 0, 0 };
-                int[] size = new int[] { 1, tlat_dim, tlon_dim };
+                int[] size = new int[] { 1, width, height };
                 for (int tdepth_i = 0; tdepth_i < tdepth_dim; tdepth_i++) {
+
                     float tdepth = t_depth.getFloat(tdepth_i);
 
                     origin[0] = tdepth_i;
@@ -92,72 +106,87 @@ public class NetCDFFrame implements Runnable {
 
                     Index index = salt.getIndex();
 
-                    for (int tlat_i = 0; tlat_i < tlat_dim; tlat_i++) {
+                    for (int tlat_i = 0; tlat_i < width; tlat_i++) {
                         float tlat = t_lat.getFloat(tlat_i);
 
-                        for (int tlon_i = 0; tlon_i < tlon_dim; tlon_i++) {
-                            float tlon = t_lat.getFloat(tlon_i);
+                        for (int tlon_i = 0; tlon_i < height; tlon_i++) {
+                            float tlon = t_lon.getFloat(tlon_i);
 
                             index.set(tlat_i, tlon_i);
 
-                            float height = ssh.getFloat(index);
+                            float seaHeight = ssh.getFloat(index);
                             float salinity = salt.getFloat(index);
                             float temperature = temp.getFloat(index);
 
-                            TGridPoint sm = new TGridPoint(tlat, tlon, tdepth, height, salinity, temperature);
-                            System.out.println(sm);
+                            tGridPoints[(tlat_i * height) + tlon_i] = new TGridPoint(tlat, tlon, tdepth, seaHeight,
+                                    salinity, temperature);
+                            // System.out.println(tGridPoints[(tlat_i *
+                            // tlat_dim) + tlon_i]);
                         }
                     }
                 }
 
-                // System.out.println("grid size check: " + salt.getSize());
-
-                // for (int tlat_i = 0; tlat_i < tlat_dim; tlat_i++) {
-                // for (int tlon_i = 0; tlon_i < tlon_dim; tlon_i++) {
-                //
-                // }
-                // }
-
-                // for (int i = 0; i < 10; i++) {
-                //
-                // double tlat = t_lat.getDouble(i);
-                // double tlon = t_lon.getDouble(i);
-                //
-                // double tdepth = t_depth.getDouble(i);
-                //
-                // double ulat = u_lat.getDouble(i);
-                // double ulon = u_lon.getDouble(i);
-                //
-                // double sal = salt.getDouble(i);
-                // double vx = uvel.getDouble(i);
-                // double vy = vvel.getDouble(i);
-                //
-                // GridPoint gp = new GridPoint(tlat, tlon, tdepth, ulat, ulon,
-                // sal, vx, vy);
-                //
-                // System.out.println("T Lat: " + gp.t_lat);
-                // System.out.println("T Lon: " + gp.t_lon);
-                // // System.out.println("U Lat: " + ulat);
-                // // System.out.println("U Lon: " + ulon);
-                // }
-
-                // Close the file
                 NetCDFUtil.close(ncfile);
+
+                initialized = true;
             } catch (IOException e) {
                 error = true;
                 errMessage = e.getMessage();
+                e.printStackTrace();
             } catch (InvalidRangeException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+
         }
+    }
+
+    public NetCDFTexture getImage() {
+        if (!doneProcessing) {
+            process();
+        }
+
+        return image;
     }
 
     public synchronized void process() {
         if (!initialized) {
             init();
         }
-        doneProcessing = true;
+
+        if (!doneProcessing) {
+            ByteBuffer outBuf = ByteBuffer.allocate(pixels * 4);
+            outBuf.clear();
+            outBuf.rewind();
+
+            float sal_max = -1;
+            for (int i = 0; i < pixels; i++) {
+                float sal = tGridPoints[i].salinity;
+                if (sal > sal_max) {
+                    sal_max = sal;
+                }
+                if (sal < 0 && sal > -1.0E33) {
+                    System.out.println("Faulty value? : " + sal);
+                }
+            }
+
+            System.out.println("Sal max: " + sal_max);
+
+            for (int i = 0; i < pixels; i++) {
+                outBuf.put((byte) 0xFF); // (tGridPoints[i].salinity / sal_max *
+                                         // 255));
+                outBuf.put((byte) (tGridPoints[i].salinity / sal_max * 255));
+                outBuf.put((byte) (tGridPoints[i].salinity / sal_max * 255));
+                outBuf.put((byte) 0xFF);
+            }
+
+            outBuf.rewind();
+
+            this.image = new NetCDFTexture(GL3.GL_TEXTURE10, outBuf, width, height);
+
+            doneProcessing = true;
+        }
+
     }
 
     @Override

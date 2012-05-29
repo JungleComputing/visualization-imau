@@ -1,5 +1,11 @@
 package imau.visualization;
 
+import imau.visualization.adaptor.NetCDFTexture;
+import imau.visualization.adaptor.NetCDFTimedPlayer;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
@@ -8,12 +14,23 @@ import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 
 import openglCommon.CommonWindow;
+import openglCommon.datastructures.Material;
 import openglCommon.datastructures.Picture;
+import openglCommon.exceptions.CompilationFailedException;
+import openglCommon.exceptions.UninitializedException;
+import openglCommon.math.MatF3;
 import openglCommon.math.MatF4;
+import openglCommon.math.MatrixFMath;
+import openglCommon.math.VecF3;
+import openglCommon.models.base.Quad;
+import openglCommon.shaders.Program;
 import openglCommon.util.InputHandler;
 
 public class ImauWindow extends CommonWindow {
     private final ImauSettings settings = ImauSettings.getInstance();
+
+    private Quad fsq;
+    private Program fsqProgram;
 
     public ImauWindow(InputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
@@ -21,6 +38,7 @@ public class ImauWindow extends CommonWindow {
 
     @Override
     public void display(GLAutoDrawable drawable) {
+        NetCDFTimedPlayer timer = ImauPanel.getTimer();
         try {
             final int status = drawable.getContext().makeCurrent();
             if ((status != GLContext.CONTEXT_CURRENT) && (status != GLContext.CONTEXT_CURRENT_NEW)) {
@@ -31,8 +49,34 @@ public class ImauWindow extends CommonWindow {
             e.printStackTrace();
         }
 
+        final int width = GLContext.getCurrent().getGLDrawable().getWidth();
+        final int height = GLContext.getCurrent().getGLDrawable().getHeight();
+
         final GL3 gl = drawable.getContext().getGL().getGL3();
-        gl.glViewport(0, 0, canvasWidth, canvasHeight);
+        gl.glViewport(0, 0, width, height);
+
+        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+
+        final float aspect = (float) width / (float) height;
+
+        final MatF3 n = new MatF3();
+        final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
+
+        fsqProgram.setUniformMatrix("PMatrix", new MatF4());
+        fsqProgram.setUniform("scrWidth", width);
+        fsqProgram.setUniform("scrHeight", height);
+
+        MatF4 mv = new MatF4();
+        NetCDFTexture texture = timer.getFrame().getImage();
+        try {
+            texture.init(gl);
+            texture.use(gl);
+            fsqProgram.setUniform("my_texture", texture.getGLMultiTexUnit());
+            fsq.draw(gl, fsqProgram, mv);
+
+        } catch (UninitializedException e1) {
+            e1.printStackTrace();
+        }
 
         try {
             drawable.getContext().release();
@@ -65,6 +109,18 @@ public class ImauWindow extends CommonWindow {
 
         drawable.getContext().makeCurrent();
         final GL3 gl = drawable.getGL().getGL3();
+
+        fsq = new Quad(Material.random(), 2, 2, new VecF3(0, 0, 0.1f));
+        fsq.init(gl);
+
+        try {
+            fsqProgram = loader.createProgram(gl, "fsqProgram", new File("shaders/vs_texture.vp"), new File(
+                    "shaders/fs_texture.fp"));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (CompilationFailedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
