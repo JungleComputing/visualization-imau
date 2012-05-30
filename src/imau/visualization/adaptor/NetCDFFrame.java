@@ -1,6 +1,7 @@
 package imau.visualization.adaptor;
 
 import imau.visualization.ImauSettings;
+import imau.visualization.ImauSettings.varNames;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.util.List;
 
 import javax.media.opengl.GL3;
 
+import openglCommon.textures.Texture2D;
 import ucar.ma2.Array;
 import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
@@ -20,6 +22,12 @@ import ucar.nc2.Variable;
 public class NetCDFFrame implements Runnable {
     private ImauSettings settings = ImauSettings.getInstance();
 
+    private varNames redBand = settings.getRedBand();
+    private varNames greenBand = settings.getGreenBand();
+    private varNames blueBand = settings.getBlueBand();
+
+    private int selectedDepth = settings.getDepthDef();
+
     private int frameNumber;
 
     private boolean initialized, doneProcessing;
@@ -29,9 +37,11 @@ public class NetCDFFrame implements Runnable {
 
     private int pixels, width, height;
     private TGridPoint[] tGridPoints;
-    private NetCDFTexture image;
+    private Texture2D image;
 
     private File initialFile;
+
+    private float epsilon = settings.getEpsilon();
 
     public NetCDFFrame(int frameNumber, File initialFile) {
         this.frameNumber = frameNumber;
@@ -58,90 +68,132 @@ public class NetCDFFrame implements Runnable {
                 // Read data
                 Array t_lat = NetCDFUtil.getData(ncfile, "t_lat");
                 Array t_lon = NetCDFUtil.getData(ncfile, "t_lon");
+                int tlat_dim = 0;
+                int tlon_dim = 0;
 
                 Array t_depth = NetCDFUtil.getData(ncfile, "depth_t");
-
-                Array u_lat = NetCDFUtil.getData(ncfile, "u_lat");
-                Array u_lon = NetCDFUtil.getData(ncfile, "u_lon");
-
-                int width = 0;
-                int height = 0;
                 int tdepth_dim = 0;
-                int ulat_dim = 0;
-                int ulon_dim = 0;
+
+                // Array u_lat = NetCDFUtil.getData(ncfile, "u_lat");
+                // Array u_lon = NetCDFUtil.getData(ncfile, "u_lon");
+                // int ulat_dim = 0;
+                // int ulon_dim = 0;
 
                 List<Dimension> dims = ncfile.getDimensions();
                 for (Dimension d : dims) {
                     if (d.getName().compareTo("t_lat") == 0) {
-                        width = d.getLength();
+                        tlat_dim = d.getLength();
                     } else if (d.getName().compareTo("t_lon") == 0) {
-                        height = d.getLength();
+                        tlon_dim = d.getLength();
                     } else if (d.getName().compareTo("depth_t") == 0) {
                         tdepth_dim = d.getLength();
-                    } else if (d.getName().compareTo("u_lat") == 0) {
-                        width = d.getLength();
-                    } else if (d.getName().compareTo("u_lon") == 0) {
-                        height = d.getLength();
+                        // } else if (d.getName().compareTo("u_lat") == 0) {
+                        // ulat_dim = d.getLength();
+                        // } else if (d.getName().compareTo("u_lon") == 0) {
+                        // ulon_dim = d.getLength();
                     }
                 }
+
+                Variable vssh = ncfile.findVariable("SSH");
+                Variable vshf = ncfile.findVariable("SHF");
+                Variable vsfwf = ncfile.findVariable("SFWF");
+                Variable vhmxl = ncfile.findVariable("HMXL");
 
                 Variable vsalt = ncfile.findVariable("SALT");
                 Variable vtemp = ncfile.findVariable("TEMP");
-                Variable vssh = ncfile.findVariable("SSH");
 
                 Array ssh = vssh.read();
+                Array shf = vshf.read();
+                Array sfwf = vsfwf.read();
+                Array hmxl = vhmxl.read();
 
-                this.pixels = width * height;
+                this.pixels = tlat_dim * tlon_dim;
+
+                this.height = tlat_dim;
+                this.width = tlon_dim;
+
                 tGridPoints = new TGridPoint[pixels];
 
                 int[] origin = new int[] { 0, 0, 0 };
-                int[] size = new int[] { 1, width, height };
-                for (int tdepth_i = 0; tdepth_i < tdepth_dim; tdepth_i++) {
+                int[] size = new int[] { 1, tlat_dim, tlon_dim };
 
-                    float tdepth = t_depth.getFloat(tdepth_i);
+                // for (int tdepth_i = 0; tdepth_i < tdepth_dim; tdepth_i++) {
+                int tdepth_i = selectedDepth;
+                float tdepth = t_depth.getFloat(tdepth_i);
 
-                    origin[0] = tdepth_i;
-                    Array salt = vsalt.read(origin, size).reduce(0);
-                    Array temp = vtemp.read(origin, size).reduce(0);
+                origin[0] = tdepth_i;
+                Array salt = vsalt.read(origin, size).reduce(0);
+                Array temp = vtemp.read(origin, size).reduce(0);
 
-                    Index index = salt.getIndex();
+                Index ssh_index = ssh.getIndex();
+                Index shf_index = shf.getIndex();
+                Index sfwf_index = sfwf.getIndex();
+                Index hmxl_index = hmxl.getIndex();
 
-                    for (int tlat_i = 0; tlat_i < width; tlat_i++) {
+                Index salt_index = salt.getIndex();
+                Index temp_index = temp.getIndex();
+
+                for (int tlon_i = 0; tlon_i < tlon_dim; tlon_i++) {
+                    float tlon = t_lon.getFloat(tlon_i);
+
+                    for (int tlat_i = 0; tlat_i < tlat_dim; tlat_i++) {
                         float tlat = t_lat.getFloat(tlat_i);
 
-                        for (int tlon_i = 0; tlon_i < height; tlon_i++) {
-                            float tlon = t_lon.getFloat(tlon_i);
+                        ssh_index.set(tlat_i, tlon_i);
+                        shf_index.set(tlat_i, tlon_i);
+                        sfwf_index.set(tlat_i, tlon_i);
+                        hmxl_index.set(tlat_i, tlon_i);
 
-                            index.set(tlat_i, tlon_i);
+                        salt_index.set(tlat_i, tlon_i);
+                        temp_index.set(tlat_i, tlon_i);
 
-                            float seaHeight = ssh.getFloat(index);
-                            float salinity = salt.getFloat(index);
-                            float temperature = temp.getFloat(index);
+                        float seaHeight = ssh.getFloat(ssh_index);
+                        float surfHeatFlux = shf.getFloat(shf_index);
+                        float saltFlux = sfwf.getFloat(sfwf_index);
+                        float mixedLayerDepth = hmxl.getFloat(hmxl_index);
 
-                            tGridPoints[(tlat_i * height) + tlon_i] = new TGridPoint(tlat, tlon, tdepth, seaHeight,
-                                    salinity, temperature);
-                            // System.out.println(tGridPoints[(tlat_i *
-                            // tlat_dim) + tlon_i]);
-                        }
+                        float salinity = salt.getFloat(salt_index);
+                        float temperature = temp.getFloat(temp_index);
+
+                        tGridPoints[(tlat_i * tlon_dim) + tlon_i] = new TGridPoint(tlat, tlon, tdepth, seaHeight,
+                                surfHeatFlux, saltFlux, mixedLayerDepth, salinity, temperature);
                     }
                 }
+                // }
 
                 NetCDFUtil.close(ncfile);
-
-                initialized = true;
             } catch (IOException e) {
                 error = true;
                 errMessage = e.getMessage();
-                e.printStackTrace();
             } catch (InvalidRangeException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
+            initialized = true;
         }
     }
 
-    public NetCDFTexture getImage() {
+    public Texture2D getImage() {
+        if (settings.getDepthDef() != selectedDepth) {
+            selectedDepth = settings.getDepthDef();
+            initialized = false;
+            doneProcessing = false;
+            init();
+        }
+        if (settings.getRedBand() != redBand) {
+            redBand = settings.getRedBand();
+            doneProcessing = false;
+        }
+        if (settings.getGreenBand() != greenBand) {
+            greenBand = settings.getGreenBand();
+            doneProcessing = false;
+        }
+        if (settings.getBlueBand() != blueBand) {
+            blueBand = settings.getBlueBand();
+            doneProcessing = false;
+        }
+
         if (!doneProcessing) {
             process();
         }
@@ -159,34 +211,112 @@ public class NetCDFFrame implements Runnable {
             outBuf.clear();
             outBuf.rewind();
 
-            float sal_max = -1;
-            for (int i = 0; i < pixels; i++) {
-                float sal = tGridPoints[i].salinity;
-                if (sal > sal_max) {
-                    sal_max = sal;
-                }
-                if (sal < 0 && sal > -1.0E33) {
-                    System.out.println("Faulty value? : " + sal);
-                }
-            }
+            // float max = Float.MIN_VALUE, min = Float.MAX_VALUE;
+            // for (int i = 0; i < pixels; i++) {
+            // float val = tGridPoints[i].hmxl;
+            // if (val > max) {
+            // max = val;
+            // }
+            // if (val < min && val > -1E33) {
+            // min = val;
+            // }
+            // }
+            // System.out.println("max: " + max);
+            // System.out.println("min: " + min);
 
-            System.out.println("Sal max: " + sal_max);
+            float max_ssh = settings.getMaxSsh();
+            float min_ssh = settings.getMinSsh();
+            float diff_ssh = max_ssh - min_ssh;
+
+            float max_shf = settings.getMaxShf();
+            float min_shf = settings.getMinShf();
+            float diff_shf = max_shf - min_shf;
+
+            float max_sfwf = settings.getMaxSfwf();
+            float min_sfwf = settings.getMinSfwf();
+            float diff_sfwf = max_sfwf - min_sfwf;
+
+            float max_hmxl = settings.getMaxHmxl();
+            float min_hmxl = settings.getMinHmxl();
+            float diff_hmxl = max_hmxl - min_hmxl;
+
+            float max_salt = settings.getMaxSalt();
+            float min_salt = settings.getMinSalt();
+            float diff_salt = max_salt - min_salt;
+
+            float max_temp = settings.getMaxTemp();
+            float min_temp = settings.getMinTemp();
+            float diff_temp = max_temp - min_temp;
 
             for (int i = 0; i < pixels; i++) {
-                outBuf.put((byte) 0xFF); // (tGridPoints[i].salinity / sal_max *
-                                         // 255));
-                outBuf.put((byte) (tGridPoints[i].salinity / sal_max * 255));
-                outBuf.put((byte) (tGridPoints[i].salinity / sal_max * 255));
+                byte red = 0, green = 0, blue = 0;
+
+                if (redBand == varNames.SSH) {
+                    red = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
+                } else if (redBand == varNames.SHF) {
+                    red = calc(min_shf, diff_shf, tGridPoints[i].shf);
+                } else if (redBand == varNames.SFWF) {
+                    red = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
+                } else if (redBand == varNames.HMXL) {
+                    red = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
+                } else if (redBand == varNames.SALT) {
+                    red = calc(min_salt, diff_salt, tGridPoints[i].salinity);
+                } else if (redBand == varNames.TEMP) {
+                    red = calc(min_temp, diff_temp, tGridPoints[i].temp);
+                }
+
+                if (greenBand == varNames.SSH) {
+                    green = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
+                } else if (redBand == varNames.SHF) {
+                    green = calc(min_shf, diff_shf, tGridPoints[i].shf);
+                } else if (redBand == varNames.SFWF) {
+                    green = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
+                } else if (redBand == varNames.HMXL) {
+                    green = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
+                } else if (redBand == varNames.SALT) {
+                    green = calc(min_salt, diff_salt, tGridPoints[i].salinity);
+                } else if (redBand == varNames.TEMP) {
+                    green = calc(min_temp, diff_temp, tGridPoints[i].temp);
+                }
+
+                if (blueBand == varNames.SSH) {
+                    blue = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
+                } else if (redBand == varNames.SHF) {
+                    blue = calc(min_shf, diff_shf, tGridPoints[i].shf);
+                } else if (redBand == varNames.SFWF) {
+                    blue = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
+                } else if (redBand == varNames.HMXL) {
+                    blue = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
+                } else if (redBand == varNames.SALT) {
+                    blue = calc(min_salt, diff_salt, tGridPoints[i].salinity);
+                } else if (redBand == varNames.TEMP) {
+                    blue = calc(min_temp, diff_temp, tGridPoints[i].temp);
+                }
+
+                outBuf.put(red);
+                outBuf.put(green);
+                outBuf.put(blue);
                 outBuf.put((byte) 0xFF);
             }
 
-            outBuf.rewind();
+            outBuf.flip();
 
             this.image = new NetCDFTexture(GL3.GL_TEXTURE10, outBuf, width, height);
+            // this.image = new ImageTexture("textures/bricks.jpg",
+            // GL3.GL_TEXTURE1);
 
             doneProcessing = true;
         }
 
+    }
+
+    private byte calc(float min, float diff, float var) {
+        float result = (var - min) / diff;
+        if (result < epsilon) {
+            result = 0;
+        }
+
+        return (byte) (result * 255);
     }
 
     @Override
@@ -196,7 +326,13 @@ public class NetCDFFrame implements Runnable {
     }
 
     public boolean isError() {
+        init();
+
         return error;
+    }
+
+    public String getError() {
+        return errMessage;
     }
 
 }

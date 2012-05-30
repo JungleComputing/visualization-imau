@@ -228,6 +228,7 @@ public class NetCDFTimedPlayer implements Runnable {
 
                 currentFrame = frame;
             } else {
+                logger.warn(frame.getError());
                 currentState = states.WAITINGONFRAME;
             }
         }

@@ -1,6 +1,5 @@
 package imau.visualization;
 
-import imau.visualization.adaptor.NetCDFTexture;
 import imau.visualization.adaptor.NetCDFTimedPlayer;
 
 import java.io.File;
@@ -24,6 +23,7 @@ import openglCommon.math.MatrixFMath;
 import openglCommon.math.VecF3;
 import openglCommon.models.base.Quad;
 import openglCommon.shaders.Program;
+import openglCommon.textures.Texture2D;
 import openglCommon.util.InputHandler;
 
 public class ImauWindow extends CommonWindow {
@@ -38,7 +38,6 @@ public class ImauWindow extends CommonWindow {
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        NetCDFTimedPlayer timer = ImauPanel.getTimer();
         try {
             final int status = drawable.getContext().makeCurrent();
             if ((status != GLContext.CONTEXT_CURRENT) && (status != GLContext.CONTEXT_CURRENT_NEW)) {
@@ -55,6 +54,22 @@ public class ImauWindow extends CommonWindow {
         final GL3 gl = drawable.getContext().getGL().getGL3();
         gl.glViewport(0, 0, width, height);
 
+        displayContext();
+
+        try {
+            drawable.getContext().release();
+        } catch (final GLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void displayContext() {
+        NetCDFTimedPlayer timer = ImauPanel.getTimer();
+
+        final int width = GLContext.getCurrent().getGLDrawable().getWidth();
+        final int height = GLContext.getCurrent().getGLDrawable().getHeight();
+        final GL3 gl = GLContext.getCurrentGL().getGL3();
+
         gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
         final float aspect = (float) width / (float) height;
@@ -67,21 +82,15 @@ public class ImauWindow extends CommonWindow {
         fsqProgram.setUniform("scrHeight", height);
 
         MatF4 mv = new MatF4();
-        NetCDFTexture texture = timer.getFrame().getImage();
+        Texture2D texture = timer.getFrame().getImage();
         try {
             texture.init(gl);
             texture.use(gl);
-            fsqProgram.setUniform("my_texture", texture.getGLMultiTexUnit());
+            fsqProgram.setUniform("my_texture", texture.getMultitexNumber());
             fsq.draw(gl, fsqProgram, mv);
 
         } catch (UninitializedException e1) {
             e1.printStackTrace();
-        }
-
-        try {
-            drawable.getContext().release();
-        } catch (final GLException e) {
-            e.printStackTrace();
         }
     }
 
@@ -164,6 +173,7 @@ public class ImauWindow extends CommonWindow {
         gl.glClearColor(0f, 0f, 0f, 0f);
 
         // TODO Draw Context
+        displayContext();
 
         final Picture p = new Picture(width, height);
 
