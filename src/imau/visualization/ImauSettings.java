@@ -297,4 +297,22 @@ public class ImauSettings extends Settings {
     public void setBlueBand(varNames blueBand) {
         ImauSettings.blueBand = blueBand;
     }
+
+    public String bandNameToString(varNames var) {
+        if (var == varNames.SSH) {
+            return "Sea Surface Height";
+        } else if (var == varNames.SHF) {
+            return "Total Surface Heat Flux";
+        } else if (var == varNames.SFWF) {
+            return "Virtual Salt Flux ";
+        } else if (var == varNames.HMXL) {
+            return "Mixed Layer Depth";
+        } else if (var == varNames.SALT) {
+            return "Salinity";
+        } else if (var == varNames.TEMP) {
+            return "Potential Temperature";
+        } else {
+            return "";
+        }
+    }
 }

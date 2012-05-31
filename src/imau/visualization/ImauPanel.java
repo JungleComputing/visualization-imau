@@ -347,107 +347,107 @@ public class ImauPanel extends CommonPanel {
         visualConfig.add(GoggleSwing.sliderBox("Depth setting", depthListener, settings.getDepthMin(),
                 settings.getDepthMax(), 1, settings.getDepthDef(), depthSetting));
 
-        visualConfig.add(GoggleSwing.radioBox("Red Band",
-                new String[] { "SSH", "SHF", "SFWF", "HMXL", "SALT", "TEMP" }, new ActionListener[] {
-                        new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setRedBand(varNames.SSH);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setRedBand(varNames.SHF);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setRedBand(varNames.SFWF);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setRedBand(varNames.HMXL);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setRedBand(varNames.SALT);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setRedBand(varNames.TEMP);
-                            }
-                        } }));
+        visualConfig.add(GoggleSwing.radioBox("Red Band", new String[] { "Sea Surface Height",
+                "Total Surface Heat Flux", "Virtual Salt Flux", "Mixed Layer Depth", "Salinity",
+                "Potential Temperature" }, new ActionListener[] { new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setRedBand(varNames.SSH);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setRedBand(varNames.SHF);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setRedBand(varNames.SFWF);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setRedBand(varNames.HMXL);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setRedBand(varNames.SALT);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setRedBand(varNames.TEMP);
+            }
+        } }, settings.bandNameToString(settings.getRedBand())));
 
-        visualConfig.add(GoggleSwing.radioBox("Green Band",
-                new String[] { "SSH", "SHF", "SFWF", "HMXL", "SALT", "TEMP" }, new ActionListener[] {
-                        new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setGreenBand(varNames.SSH);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setGreenBand(varNames.SHF);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setGreenBand(varNames.SFWF);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setGreenBand(varNames.HMXL);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setGreenBand(varNames.SALT);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setGreenBand(varNames.TEMP);
-                            }
-                        } }));
+        visualConfig.add(GoggleSwing.radioBox("Green Band", new String[] { "Sea Surface Height",
+                "Total Surface Heat Flux", "Virtual Salt Flux", "Mixed Layer Depth", "Salinity",
+                "Potential Temperature" }, new ActionListener[] { new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setGreenBand(varNames.SSH);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setGreenBand(varNames.SHF);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setGreenBand(varNames.SFWF);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setGreenBand(varNames.HMXL);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setGreenBand(varNames.SALT);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setGreenBand(varNames.TEMP);
+            }
+        } }, settings.bandNameToString(settings.getGreenBand())));
 
-        visualConfig.add(GoggleSwing.radioBox("Blue Band",
-                new String[] { "SSH", "SHF", "SFWF", "HMXL", "SALT", "TEMP" }, new ActionListener[] {
-                        new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setBlueBand(varNames.SSH);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setBlueBand(varNames.SHF);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setBlueBand(varNames.SFWF);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setBlueBand(varNames.HMXL);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setBlueBand(varNames.SALT);
-                            }
-                        }, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent arg0) {
-                                settings.setBlueBand(varNames.TEMP);
-                            }
-                        } }));
+        visualConfig.add(GoggleSwing.radioBox("Blue Band", new String[] { "Sea Surface Height",
+                "Total Surface Heat Flux", "Virtual Salt Flux", "Mixed Layer Depth", "Salinity",
+                "Potential Temperature" }, new ActionListener[] { new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setBlueBand(varNames.SSH);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setBlueBand(varNames.SHF);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setBlueBand(varNames.SFWF);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setBlueBand(varNames.HMXL);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setBlueBand(varNames.SALT);
+            }
+        }, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                settings.setBlueBand(varNames.TEMP);
+            }
+        } }, settings.bandNameToString(settings.getBlueBand())));
     }
 
     protected void handleFile(File file) {

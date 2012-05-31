@@ -24,9 +24,9 @@ import javax.swing.event.ChangeListener;
 
 public class GoggleSwing {
     public static class CheckBoxItem {
-        String       label;
+        String label;
 
-        boolean      selection;
+        boolean selection;
         ItemListener listener;
 
         public CheckBoxItem(String label, boolean selection, ItemListener listener) {
@@ -167,7 +167,7 @@ public class GoggleSwing {
         return GoggleSwing.vBoxedComponents(vcomponents, true);
     }
 
-    public static Box radioBox(String name, String[] labels, ActionListener[] actions) {
+    public static Box radioBox(String name, String[] labels, ActionListener[] actions, String selectedOption) {
         final ArrayList<Component> vcomponents = new ArrayList<Component>();
         final ButtonGroup group = new ButtonGroup();
 
@@ -177,7 +177,7 @@ public class GoggleSwing {
         for (int i = 0; i < labels.length; i++) {
             final JRadioButton btn = new JRadioButton(labels[i]);
             group.add(btn);
-            if (i == 0) {
+            if (labels[i].compareTo(selectedOption) == 0) {
                 btn.setSelected(true);
             }
             btn.addActionListener(actions[i]);

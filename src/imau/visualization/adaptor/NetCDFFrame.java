@@ -267,29 +267,29 @@ public class NetCDFFrame implements Runnable {
 
                 if (greenBand == varNames.SSH) {
                     green = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
-                } else if (redBand == varNames.SHF) {
+                } else if (greenBand == varNames.SHF) {
                     green = calc(min_shf, diff_shf, tGridPoints[i].shf);
-                } else if (redBand == varNames.SFWF) {
+                } else if (greenBand == varNames.SFWF) {
                     green = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
-                } else if (redBand == varNames.HMXL) {
+                } else if (greenBand == varNames.HMXL) {
                     green = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
-                } else if (redBand == varNames.SALT) {
+                } else if (greenBand == varNames.SALT) {
                     green = calc(min_salt, diff_salt, tGridPoints[i].salinity);
-                } else if (redBand == varNames.TEMP) {
+                } else if (greenBand == varNames.TEMP) {
                     green = calc(min_temp, diff_temp, tGridPoints[i].temp);
                 }
 
                 if (blueBand == varNames.SSH) {
                     blue = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
-                } else if (redBand == varNames.SHF) {
+                } else if (blueBand == varNames.SHF) {
                     blue = calc(min_shf, diff_shf, tGridPoints[i].shf);
-                } else if (redBand == varNames.SFWF) {
+                } else if (blueBand == varNames.SFWF) {
                     blue = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
-                } else if (redBand == varNames.HMXL) {
+                } else if (blueBand == varNames.HMXL) {
                     blue = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
-                } else if (redBand == varNames.SALT) {
+                } else if (blueBand == varNames.SALT) {
                     blue = calc(min_salt, diff_salt, tGridPoints[i].salinity);
-                } else if (redBand == varNames.TEMP) {
+                } else if (blueBand == varNames.TEMP) {
                     blue = calc(min_temp, diff_temp, tGridPoints[i].temp);
                 }
 

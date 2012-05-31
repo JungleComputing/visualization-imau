@@ -82,15 +82,17 @@ public class ImauWindow extends CommonWindow {
         fsqProgram.setUniform("scrHeight", height);
 
         MatF4 mv = new MatF4();
-        Texture2D texture = timer.getFrame().getImage();
-        try {
-            texture.init(gl);
-            texture.use(gl);
-            fsqProgram.setUniform("my_texture", texture.getMultitexNumber());
-            fsq.draw(gl, fsqProgram, mv);
+        if (timer.isInitialized()) {
+            Texture2D texture = timer.getFrame().getImage();
+            try {
+                texture.init(gl);
+                texture.use(gl);
+                fsqProgram.setUniform("my_texture", texture.getMultitexNumber());
+                fsq.draw(gl, fsqProgram, mv);
 
-        } catch (UninitializedException e1) {
-            e1.printStackTrace();
+            } catch (UninitializedException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
