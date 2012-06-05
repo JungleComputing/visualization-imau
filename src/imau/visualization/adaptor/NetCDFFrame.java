@@ -43,6 +43,8 @@ public class NetCDFFrame implements Runnable {
 
     private float epsilon = settings.getEpsilon();
 
+    private float latMax, latMin;
+
     public NetCDFFrame(int frameNumber, File initialFile) {
         this.frameNumber = frameNumber;
         this.initialFile = initialFile;
@@ -93,6 +95,9 @@ public class NetCDFFrame implements Runnable {
                         // ulon_dim = d.getLength();
                     }
                 }
+
+                latMin = t_lat.getFloat(0);
+                latMax = t_lat.getFloat(tlat_dim - 1);
 
                 Variable vssh = ncfile.findVariable("SSH");
                 Variable vshf = ncfile.findVariable("SHF");
@@ -207,22 +212,24 @@ public class NetCDFFrame implements Runnable {
         }
 
         if (!doneProcessing) {
-            ByteBuffer outBuf = ByteBuffer.allocate(pixels * 4);
+            int newHeight = (int) Math.floor((180f / ((float) latMax - (float) latMin)) * (float) height);
+
+            int newStart = (int) Math.floor(180f / ((float) latMin + 90f));
+            int newStop = (int) Math.floor(180f / ((float) latMax + 90f));
+
+            int newPixels = newHeight * width;
+
+            // System.out.println("newHeight: " + newHeight);
+            // System.out.println("Start: " + newStart);
+            // System.out.println("Stop: " + newStop);
+            //
+            // System.out.println("Height : " + height);
+            // System.out.println("Height?: " + (newHeight - (newStop +
+            // newStart)));
+
+            ByteBuffer outBuf = ByteBuffer.allocate(newPixels * 4);
             outBuf.clear();
             outBuf.rewind();
-
-            // float max = Float.MIN_VALUE, min = Float.MAX_VALUE;
-            // for (int i = 0; i < pixels; i++) {
-            // float val = tGridPoints[i].hmxl;
-            // if (val > max) {
-            // max = val;
-            // }
-            // if (val < min && val > -1E33) {
-            // min = val;
-            // }
-            // }
-            // System.out.println("max: " + max);
-            // System.out.println("min: " + min);
 
             float max_ssh = settings.getMaxSsh();
             float min_ssh = settings.getMinSsh();
@@ -248,7 +255,16 @@ public class NetCDFFrame implements Runnable {
             float min_temp = settings.getMinTemp();
             float diff_temp = max_temp - min_temp;
 
-            for (int i = 0; i < pixels; i++) {
+            for (int i = 0; i < newStart; i++) {
+                for (int w = 0; w < width; w++) {
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                }
+            }
+
+            for (int i = newStart * width; i < pixels; i++) {
                 byte red = 0, green = 0, blue = 0;
 
                 if (redBand == varNames.SSH) {
@@ -299,9 +315,18 @@ public class NetCDFFrame implements Runnable {
                 outBuf.put((byte) 0xFF);
             }
 
+            for (int i = newHeight - newStop; i < newHeight; i++) {
+                for (int w = 0; w < width; w++) {
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                }
+            }
+
             outBuf.flip();
 
-            this.image = new NetCDFTexture(GL3.GL_TEXTURE10, outBuf, width, height);
+            this.image = new NetCDFTexture(GL3.GL_TEXTURE1, outBuf, width, height);
             // this.image = new ImageTexture("textures/bricks.jpg",
             // GL3.GL_TEXTURE1);
 

@@ -1,0 +1,19 @@
+#version 140
+
+in vec4 MCvertex;
+in vec3 MCnormal;
+
+out vec3 vertex_pos;
+out vec3 vertex_normal;
+
+uniform mat4 MVMatrix;
+uniform mat4 PMatrix;
+uniform mat3 NormalMatrix;
+
+void main() 
+{
+	gl_Position = PMatrix * MVMatrix * MCvertex;
+    
+    vertex_pos = (MVMatrix * MCvertex).xyz;
+    vertex_normal = normalize(NormalMatrix * MCnormal);
+ } 

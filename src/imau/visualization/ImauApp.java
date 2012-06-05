@@ -8,14 +8,14 @@ import java.io.IOException;
 
 import javax.swing.JFrame;
 
-import openglCommon.util.InputHandler;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import util.ImauInputHandler;
+
 public class ImauApp {
     private final static ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger       log      = LoggerFactory.getLogger(ImauApp.class);
+    private final static Logger log = LoggerFactory.getLogger(ImauApp.class);
 
     public static void main(String[] arguments) {
         String cmdlnfileName = null;
@@ -44,7 +44,7 @@ public class ImauApp {
         frame.setPreferredSize(new Dimension(ImauApp.settings.getDefaultScreenWidth(), ImauApp.settings
                 .getDefaultScreenHeight()));
 
-        final ImauWindow amuseWindow = new ImauWindow(InputHandler.getInstance(), true);
+        final ImauWindow amuseWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
         final ImauPanel amusePanel = new ImauPanel(amuseWindow, path, cmdlnfileName);
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
