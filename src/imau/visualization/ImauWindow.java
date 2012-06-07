@@ -16,7 +16,6 @@ import openglCommon.CommonWindow;
 import openglCommon.datastructures.Material;
 import openglCommon.datastructures.Picture;
 import openglCommon.exceptions.CompilationFailedException;
-import openglCommon.exceptions.UninitializedException;
 import openglCommon.math.Color4;
 import openglCommon.math.MatF3;
 import openglCommon.math.MatF4;
@@ -27,8 +26,8 @@ import openglCommon.math.VecF4;
 import openglCommon.models.GeoSphere;
 import openglCommon.models.Model;
 import openglCommon.models.base.Quad;
+import openglCommon.models.base.Sphere;
 import openglCommon.shaders.Program;
-import openglCommon.textures.Texture2D;
 import util.ImauInputHandler;
 
 public class ImauWindow extends CommonWindow {
@@ -96,36 +95,40 @@ public class ImauWindow extends CommonWindow {
 
         loader.setUniformMatrix("NormalMatrix", MatrixFMath.getNormalMatrix(mv));
         loader.setUniformMatrix("PMatrix", p);
-        loader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
+        // loader.setUniformMatrix("SMatrix", MatrixFMath.scale(1));
 
-        loader.setUniform("scrWidth", width);
-        loader.setUniform("scrHeight", height);
+        // loader.setUniform("scrWidth", width);
+        // loader.setUniform("scrHeight", height);
 
-        if (timer.isInitialized()) {
-            Texture2D texture = timer.getFrame().getImage();
-            try {
-                texture.init(gl);
-                texture.use(gl);
-                loader.setUniform("my_texture", texture.getMultitexNumber());
-                fsqProgram.setUniformMatrix("PMatrix", new MatF4());
+        // if (timer.isInitialized()) {
+        // Texture2D texture = timer.getFrame().getImage();
+        // try {
+        // texture.init(gl);
+        // texture.use(gl);
+        // loader.setUniform("my_texture", texture.getMultitexNumber());
+        // fsqProgram.setUniformMatrix("PMatrix", new MatF4());
+        //
+        // texturedSphereProgram.setUniformVector("LightPos", new VecF3(100f,
+        // 100f, 0f));
+        // texturedSphereProgram.setUniform("Shininess", 100f);
+        // texturedSphereProgram.setUniformVector("lDiffuse", new VecF4(1, 1, 1,
+        // 1));
+        // texturedSphereProgram.setUniformVector("lAmbient", new VecF4(1, 1, 1,
+        // 1));
+        // texturedSphereProgram.setUniformVector("lSpecular", new VecF4(1, 1,
+        // 1, 1));
 
-                texturedSphereProgram.setUniformVector("LightPos", new VecF3(100f, 100f, 0f));
-                texturedSphereProgram.setUniform("Shininess", 100f);
-                texturedSphereProgram.setUniformVector("lDiffuse", new VecF4(1, 1, 1, 1));
-                texturedSphereProgram.setUniformVector("lAmbient", new VecF4(1, 1, 1, 1));
-                texturedSphereProgram.setUniformVector("lSpecular", new VecF4(1, 1, 1, 1));
+        // testModel.draw(gl, texturedSphereProgram, mv);
 
-                // testModel.draw(gl, texturedSphereProgram, mv);
+        // atmProgram.setUniformMatrix("NormalMatrix", new MatF3());
+        atmModel.draw(gl, atmProgram, mv);
 
-                // atmProgram.setUniformMatrix("NormalMatrix", new MatF3());
-                atmModel.draw(gl, atmProgram, mv);
+        // fsq.draw(gl, fsqProgram, new MatF4());
 
-                // fsq.draw(gl, fsqProgram, new MatF4());
-
-            } catch (UninitializedException e1) {
-                e1.printStackTrace();
-            }
-        }
+        // } catch (UninitializedException e1) {
+        // e1.printStackTrace();
+        // }
+        // }
     }
 
     @Override
@@ -160,11 +163,22 @@ public class ImauWindow extends CommonWindow {
         fsq = new Quad(Material.random(), 2, 2, new VecF3(0, 0, 0.1f));
         fsq.init(gl);
 
-        testModel = new GeoSphere(Material.random(), 60, 90, 50f, false);
+        testModel = new Sphere(Material.random(), 5, 50f, new VecF3(), false);// new
+                                                                              // GeoSphere(Material.random(),
+                                                                              // 60,
+                                                                              // 90,
+                                                                              // 50f,
+                                                                              // false);
         testModel.init(gl);
 
         Color4 atmosphereColor = new Color4(0.0f, 1.0f, 1.0f, 0.005f);
-        atmModel = new GeoSphere(new Material(atmosphereColor, atmosphereColor, atmosphereColor), 60, 90, 55f, false);
+
+        // atmModel = new Sphere(new Material(atmosphereColor, atmosphereColor,
+        // atmosphereColor), 5, 55f, new VecF3(),
+        // false);
+
+        atmModel = new GeoSphere(new Material(atmosphereColor, atmosphereColor, atmosphereColor), 50, 50, 55f, false);
+
         atmModel.init(gl);
 
         inputHandler.setViewDist(-130f);
