@@ -45,8 +45,8 @@ public class ImauSettings extends Settings {
 
     private static float MIN_SALT = 0.00f;
     private static float MAX_SALT = 0.05f;
-    private static float MIN_TEMP = -0.6f;
-    private static float MAX_TEMP = 3.5f;
+    private static float MIN_TEMP = -7.5f;
+    private static float MAX_TEMP = 35f;
 
     private static int DEPTH_MIN = 0;
     private static int DEPTH_DEF = 0;

@@ -20,5 +20,5 @@ void main()
     vertex_pos = (MVMatrix * MCvertex).xyz;
     vertex_normal = normalize(NormalMatrix * MCnormal);
     
-    tCoord = MCtexCoord.xy;
+    tCoord = MCtexCoord.xy; 
  } 

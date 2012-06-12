@@ -7,6 +7,7 @@ import imau.visualization.netcdf.NetCDFUtil;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.media.opengl.GL3;
@@ -43,7 +44,11 @@ public class NetCDFFrame implements Runnable {
 
     private float epsilon = settings.getEpsilon();
 
-    private float latMax, latMin;
+    float latMin, latMax;
+
+    private DataTexture dataTex;
+
+    private HashMap<BandCombination, Texture2D> storedTextures;
 
     public NetCDFFrame(int frameNumber, File initialFile) {
         this.frameNumber = frameNumber;
@@ -54,6 +59,8 @@ public class NetCDFFrame implements Runnable {
 
         this.error = false;
         this.errMessage = "";
+
+        storedTextures = new HashMap<BandCombination, Texture2D>();
     }
 
     public int getNumber() {
@@ -96,8 +103,52 @@ public class NetCDFFrame implements Runnable {
                     }
                 }
 
-                latMin = t_lat.getFloat(0);
-                latMax = t_lat.getFloat(tlat_dim - 1);
+                this.height = tlat_dim;
+                this.width = tlon_dim;
+
+                latMin = t_lat.getFloat(0) + 90f;
+                latMax = t_lat.getFloat(height - 1) + 90f;
+                // float span = latMax - latMin;
+                //
+                // System.out.println("latMin " + latMin);
+                // System.out.println("latMax " + latMax);
+                //
+                // HashMap<Integer, Float> latitudes = new HashMap<Integer,
+                // Float>();
+                // for (int i = 0; i < tlat_dim; i++) {
+                // float lat = t_lat.getFloat(i) + 90f;
+                // latitudes.put(i, lat);
+                // }
+                //
+                // FloatBuffer tempBuffer = FloatBuffer.allocate(100 * 100);
+                // for (float row = 0f; row < 100f; row++) {
+                // float value = (row / 100) * 180f;
+                //
+                // int floor = getFlooredIndex(latitudes, value);
+                // float lat = t_lat.getFloat(floor) + 90f;
+                //
+                // if (lat > latMin && lat < latMax) {
+                // if (frameNumber == 75) {
+                // System.out.println("i: " + value + " : " + floor + " : " +
+                // lat);
+                // }
+                //
+                // for (float col = 0f; col < 100f; col++) {
+                // tempBuffer.put((lat / 180f));
+                // }
+                // } else {
+                // if (frameNumber == 75) {
+                // System.out.println("i: " + value + " : -1 : -1");
+                // }
+                // for (float col = 0f; col < 100f; col++) {
+                // tempBuffer.put(-1f);
+                // }
+                // }
+                // }
+                // tempBuffer.rewind();
+                //
+                // dataTex = new DataTexture(GL3.GL_TEXTURE11, tempBuffer, 100,
+                // 100);
 
                 Variable vssh = ncfile.findVariable("SSH");
                 Variable vshf = ncfile.findVariable("SHF");
@@ -113,9 +164,6 @@ public class NetCDFFrame implements Runnable {
                 Array hmxl = vhmxl.read();
 
                 this.pixels = tlat_dim * tlon_dim;
-
-                this.height = tlat_dim;
-                this.width = tlon_dim;
 
                 tGridPoints = new TGridPoint[pixels];
 
@@ -179,6 +227,39 @@ public class NetCDFFrame implements Runnable {
         }
     }
 
+    private int getFlooredIndex(HashMap<Integer, Float> map, float latitude) {
+        int index = 0;
+
+        while (index < map.size()) {
+            float value = map.get(index);
+
+            if (value < latitude) {
+                index++;
+            } else {
+                break;
+            }
+        }
+
+        return index;
+    }
+
+    private float getFlooredLatitude(HashMap<Integer, Float> map, int index) {
+        float result = 0f;
+
+        while (index > 0) {
+            if (map.containsKey(index)) {
+                result = map.get(index);
+            }
+            index--;
+        }
+
+        return result;
+    }
+
+    public DataTexture getTexCoords() {
+        return dataTex;
+    }
+
     public Texture2D getImage() {
         if (settings.getDepthDef() != selectedDepth) {
             selectedDepth = settings.getDepthDef();
@@ -206,30 +287,45 @@ public class NetCDFFrame implements Runnable {
         return image;
     }
 
-    public synchronized void process() {
+    public Texture2D getImage2(int glMultitexNumber, varNames redBand, varNames greenBand, varNames blueBand) {
+        if (settings.getDepthDef() != selectedDepth) {
+            selectedDepth = settings.getDepthDef();
+            initialized = false;
+        }
+
         if (!initialized) {
             init();
         }
 
-        if (!doneProcessing) {
+        BandCombination combo = new BandCombination(redBand, greenBand, blueBand);
+
+        if (storedTextures.containsKey(combo)) {
+            return storedTextures.get(combo);
+        } else {
             int newHeight = (int) Math.floor((180f / ((float) latMax - (float) latMin)) * (float) height);
 
-            int newStart = (int) Math.floor(180f / ((float) latMin + 90f));
-            int newStop = (int) Math.floor(180f / ((float) latMax + 90f));
+            int newStart = (int) Math.floor(180f / latMin);
+            int newStop = (int) Math.floor(180f / latMax);
 
             int newPixels = newHeight * width;
-
-            // System.out.println("newHeight: " + newHeight);
-            // System.out.println("Start: " + newStart);
-            // System.out.println("Stop: " + newStop);
-            //
-            // System.out.println("Height : " + height);
-            // System.out.println("Height?: " + (newHeight - (newStop +
-            // newStart)));
 
             ByteBuffer outBuf = ByteBuffer.allocate(newPixels * 4);
             outBuf.clear();
             outBuf.rewind();
+
+            float max = Float.MIN_VALUE;
+            float min = Float.MAX_VALUE;
+            for (int i = 0; i < pixels; i++) {
+                float val = tGridPoints[i].temp;
+                if (val > max) {
+                    max = val;
+                }
+                if (val < min && val > -1E33) {
+                    min = val;
+                }
+            }
+            // System.out.println("MAX: " + max);
+            // System.out.println("MIN: " + min);
 
             float max_ssh = settings.getMaxSsh();
             float min_ssh = settings.getMinSsh();
@@ -255,7 +351,7 @@ public class NetCDFFrame implements Runnable {
             float min_temp = settings.getMinTemp();
             float diff_temp = max_temp - min_temp;
 
-            for (int i = 0; i < newStart; i++) {
+            for (int i = newHeight - newStop; i < newHeight; i++) {
                 for (int w = 0; w < width; w++) {
                     outBuf.put((byte) 0);
                     outBuf.put((byte) 0);
@@ -264,56 +360,129 @@ public class NetCDFFrame implements Runnable {
                 }
             }
 
-            for (int i = newStart * width; i < pixels; i++) {
-                byte red = 0, green = 0, blue = 0;
+            for (int row = height - 1; row >= 0; row--) {
+                // for (int row = 0; row < height; row++) {
+                for (int col = 0; col < width; col++) {
+                    int i = (row * width + col);
 
-                if (redBand == varNames.SSH) {
-                    red = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
-                } else if (redBand == varNames.SHF) {
-                    red = calc(min_shf, diff_shf, tGridPoints[i].shf);
-                } else if (redBand == varNames.SFWF) {
-                    red = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
-                } else if (redBand == varNames.HMXL) {
-                    red = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
-                } else if (redBand == varNames.SALT) {
-                    red = calc(min_salt, diff_salt, tGridPoints[i].salinity);
-                } else if (redBand == varNames.TEMP) {
-                    red = calc(min_temp, diff_temp, tGridPoints[i].temp);
+                    byte red = 0, green = 0, blue = 0;
+
+                    if (redBand == varNames.SSH) {
+                        red = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
+                    } else if (redBand == varNames.SHF) {
+                        red = calc(min_shf, diff_shf, tGridPoints[i].shf);
+                    } else if (redBand == varNames.SFWF) {
+                        red = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
+                    } else if (redBand == varNames.HMXL) {
+                        red = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
+                    } else if (redBand == varNames.SALT) {
+                        red = calc(min_salt, diff_salt, tGridPoints[i].salinity);
+                    } else if (redBand == varNames.TEMP) {
+                        red = calc(min_temp, diff_temp, tGridPoints[i].temp);
+                    }
+
+                    if (greenBand == varNames.SSH) {
+                        green = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
+                    } else if (greenBand == varNames.SHF) {
+                        green = calc(min_shf, diff_shf, tGridPoints[i].shf);
+                    } else if (greenBand == varNames.SFWF) {
+                        green = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
+                    } else if (greenBand == varNames.HMXL) {
+                        green = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
+                    } else if (greenBand == varNames.SALT) {
+                        green = calc(min_salt, diff_salt, tGridPoints[i].salinity);
+                    } else if (greenBand == varNames.TEMP) {
+                        green = calc(min_temp, diff_temp, tGridPoints[i].temp);
+                    }
+
+                    if (blueBand == varNames.SSH) {
+                        blue = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
+                    } else if (blueBand == varNames.SHF) {
+                        blue = calc(min_shf, diff_shf, tGridPoints[i].shf);
+                    } else if (blueBand == varNames.SFWF) {
+                        blue = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
+                    } else if (blueBand == varNames.HMXL) {
+                        blue = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
+                    } else if (blueBand == varNames.SALT) {
+                        blue = calc(min_salt, diff_salt, tGridPoints[i].salinity);
+                    } else if (blueBand == varNames.TEMP) {
+                        blue = calc(min_temp, diff_temp, tGridPoints[i].temp);
+                    }
+
+                    outBuf.put(red);
+                    outBuf.put(green);
+                    outBuf.put(blue);
+                    outBuf.put((byte) 0xFF);
                 }
-
-                if (greenBand == varNames.SSH) {
-                    green = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
-                } else if (greenBand == varNames.SHF) {
-                    green = calc(min_shf, diff_shf, tGridPoints[i].shf);
-                } else if (greenBand == varNames.SFWF) {
-                    green = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
-                } else if (greenBand == varNames.HMXL) {
-                    green = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
-                } else if (greenBand == varNames.SALT) {
-                    green = calc(min_salt, diff_salt, tGridPoints[i].salinity);
-                } else if (greenBand == varNames.TEMP) {
-                    green = calc(min_temp, diff_temp, tGridPoints[i].temp);
-                }
-
-                if (blueBand == varNames.SSH) {
-                    blue = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
-                } else if (blueBand == varNames.SHF) {
-                    blue = calc(min_shf, diff_shf, tGridPoints[i].shf);
-                } else if (blueBand == varNames.SFWF) {
-                    blue = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
-                } else if (blueBand == varNames.HMXL) {
-                    blue = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
-                } else if (blueBand == varNames.SALT) {
-                    blue = calc(min_salt, diff_salt, tGridPoints[i].salinity);
-                } else if (blueBand == varNames.TEMP) {
-                    blue = calc(min_temp, diff_temp, tGridPoints[i].temp);
-                }
-
-                outBuf.put(red);
-                outBuf.put(green);
-                outBuf.put(blue);
-                outBuf.put((byte) 0xFF);
             }
+
+            while (outBuf.hasRemaining()) {
+                outBuf.put((byte) 0);
+            }
+
+            outBuf.flip();
+
+            Texture2D image = new NetCDFTexture(glMultitexNumber, outBuf, width, newHeight);
+
+            storedTextures.put(combo, image);
+            return image;
+        }
+    }
+
+    public synchronized void process() {
+        if (!initialized) {
+            init();
+        }
+
+        if (!doneProcessing) {
+            int newHeight = (int) Math.floor((180f / ((float) latMax - (float) latMin)) * (float) height);
+
+            int newStart = (int) Math.floor(180f / latMin);
+            int newStop = (int) Math.floor(180f / latMax);
+
+            int newPixels = newHeight * width;
+
+            ByteBuffer outBuf = ByteBuffer.allocate(newPixels * 4);
+            outBuf.clear();
+            outBuf.rewind();
+
+            float max = Float.MIN_VALUE;
+            float min = Float.MAX_VALUE;
+            for (int i = 0; i < pixels; i++) {
+                float val = tGridPoints[i].temp;
+                if (val > max) {
+                    max = val;
+                }
+                if (val < min && val > -1E33) {
+                    min = val;
+                }
+            }
+            // System.out.println("MAX: " + max);
+            // System.out.println("MIN: " + min);
+
+            float max_ssh = settings.getMaxSsh();
+            float min_ssh = settings.getMinSsh();
+            float diff_ssh = max_ssh - min_ssh;
+
+            float max_shf = settings.getMaxShf();
+            float min_shf = settings.getMinShf();
+            float diff_shf = max_shf - min_shf;
+
+            float max_sfwf = settings.getMaxSfwf();
+            float min_sfwf = settings.getMinSfwf();
+            float diff_sfwf = max_sfwf - min_sfwf;
+
+            float max_hmxl = settings.getMaxHmxl();
+            float min_hmxl = settings.getMinHmxl();
+            float diff_hmxl = max_hmxl - min_hmxl;
+
+            float max_salt = settings.getMaxSalt();
+            float min_salt = settings.getMinSalt();
+            float diff_salt = max_salt - min_salt;
+
+            float max_temp = settings.getMaxTemp();
+            float min_temp = settings.getMinTemp();
+            float diff_temp = max_temp - min_temp;
 
             for (int i = newHeight - newStop; i < newHeight; i++) {
                 for (int w = 0; w < width; w++) {
@@ -324,10 +493,70 @@ public class NetCDFFrame implements Runnable {
                 }
             }
 
+            for (int row = height - 1; row >= 0; row--) {
+                // for (int row = 0; row < height; row++) {
+                for (int col = 0; col < width; col++) {
+                    int i = (row * width + col);
+
+                    byte red = 0, green = 0, blue = 0;
+
+                    if (redBand == varNames.SSH) {
+                        red = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
+                    } else if (redBand == varNames.SHF) {
+                        red = calc(min_shf, diff_shf, tGridPoints[i].shf);
+                    } else if (redBand == varNames.SFWF) {
+                        red = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
+                    } else if (redBand == varNames.HMXL) {
+                        red = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
+                    } else if (redBand == varNames.SALT) {
+                        red = calc(min_salt, diff_salt, tGridPoints[i].salinity);
+                    } else if (redBand == varNames.TEMP) {
+                        red = calc(min_temp, diff_temp, tGridPoints[i].temp);
+                    }
+
+                    if (greenBand == varNames.SSH) {
+                        green = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
+                    } else if (greenBand == varNames.SHF) {
+                        green = calc(min_shf, diff_shf, tGridPoints[i].shf);
+                    } else if (greenBand == varNames.SFWF) {
+                        green = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
+                    } else if (greenBand == varNames.HMXL) {
+                        green = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
+                    } else if (greenBand == varNames.SALT) {
+                        green = calc(min_salt, diff_salt, tGridPoints[i].salinity);
+                    } else if (greenBand == varNames.TEMP) {
+                        green = calc(min_temp, diff_temp, tGridPoints[i].temp);
+                    }
+
+                    if (blueBand == varNames.SSH) {
+                        blue = calc(min_ssh, diff_ssh, tGridPoints[i].ssh);
+                    } else if (blueBand == varNames.SHF) {
+                        blue = calc(min_shf, diff_shf, tGridPoints[i].shf);
+                    } else if (blueBand == varNames.SFWF) {
+                        blue = calc(min_sfwf, diff_sfwf, tGridPoints[i].sfwf);
+                    } else if (blueBand == varNames.HMXL) {
+                        blue = calc(min_hmxl, diff_hmxl, tGridPoints[i].hmxl);
+                    } else if (blueBand == varNames.SALT) {
+                        blue = calc(min_salt, diff_salt, tGridPoints[i].salinity);
+                    } else if (blueBand == varNames.TEMP) {
+                        blue = calc(min_temp, diff_temp, tGridPoints[i].temp);
+                    }
+
+                    outBuf.put(red);
+                    outBuf.put(green);
+                    outBuf.put(blue);
+                    outBuf.put((byte) 0xFF);
+                }
+            }
+
+            while (outBuf.hasRemaining()) {
+                outBuf.put((byte) 0);
+            }
+
             outBuf.flip();
 
-            this.image = new NetCDFTexture(GL3.GL_TEXTURE1, outBuf, width, height);
-            // this.image = new ImageTexture("textures/bricks.jpg",
+            this.image = new NetCDFTexture(GL3.GL_TEXTURE1, outBuf, width, newHeight);
+            // this.image = new ImageTexture("textures/earth_flat_map.jpg",
             // GL3.GL_TEXTURE1);
 
             doneProcessing = true;

@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 import openglCommon.textures.Texture2D;
 
 public class ImageTexture extends Texture2D {
-    public ImageTexture(String filename, int glMultiTexUnit) {
+    public ImageTexture(String filename, int w_offSet, int h_offSet, int glMultiTexUnit) {
         super(glMultiTexUnit);
 
         BufferedImage bi = null;
@@ -24,13 +24,13 @@ public class ImageTexture extends Texture2D {
             e.printStackTrace();
         }
 
-        int x = 0, y = 0, w = bi.getWidth(), h = bi.getHeight();
+        int x = 0, y = 0, width = bi.getWidth(), height = bi.getHeight();
 
-        this.width = w;
-        this.height = h;
+        this.width = width;
+        this.height = height;
 
-        int[] pixels = new int[w * h];
-        PixelGrabber pg = new PixelGrabber(bi, x, y, w, h, pixels, 0, w);
+        int[] pixels = new int[width * height];
+        PixelGrabber pg = new PixelGrabber(bi, x, y, width, height, pixels, 0, width);
         try {
             pg.grabPixels();
         } catch (InterruptedException e) {
@@ -38,19 +38,28 @@ public class ImageTexture extends Texture2D {
             return;
         }
 
-        ByteBuffer tempBuffer = ByteBuffer.allocate(w * h * 4);
+        ByteBuffer tempBuffer = ByteBuffer.allocate(width * height * 4);
 
-        for (int j = 0; j < h; j++) {
-            for (int i = 0; i < w; i++) {
+        for (int row = (height + h_offSet) - 1; row >= h_offSet; row--) {
+            int i = row;
+            if (row >= height) {
+                i = row - height;
+            }
 
-                tempBuffer.put((byte) ((pixels[j * w + i] >> 16) & 0xff)); // red
-                tempBuffer.put((byte) ((pixels[j * w + i] >> 8) & 0xff)); // green
-                tempBuffer.put((byte) ((pixels[j * w + i]) & 0xff)); // blue
-                tempBuffer.put((byte) ((pixels[j * w + i] >> 24) & 0xff)); // alpha
+            for (int col = w_offSet; col < (width + w_offSet); col++) {
+                int j = col;
+                if (col >= width) {
+                    j = col - width;
+                }
+
+                tempBuffer.put((byte) ((pixels[i * width + j] >> 16) & 0xff)); // red
+                tempBuffer.put((byte) ((pixels[i * width + j] >> 8) & 0xff)); // green
+                tempBuffer.put((byte) ((pixels[i * width + j]) & 0xff)); // blue
+                tempBuffer.put((byte) ((pixels[i * width + j] >> 24) & 0xff)); // alpha
             }
         }
 
-        tempBuffer.flip();
+        tempBuffer.rewind();
 
         pixelBuffer = tempBuffer;
     }
