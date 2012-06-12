@@ -297,7 +297,7 @@ public class NetCDFFrame implements Runnable {
             init();
         }
 
-        BandCombination combo = new BandCombination(redBand, greenBand, blueBand);
+        BandCombination combo = new BandCombination(selectedDepth, redBand, greenBand, blueBand);
 
         if (storedTextures.containsKey(combo)) {
             return storedTextures.get(combo);
