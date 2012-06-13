@@ -118,7 +118,7 @@ public class GoggleSwing {
         }
     }
 
-    private static Box hBoxedComponents(ArrayList<Component> components) {
+    public static Box hBoxedComponents(ArrayList<Component> components) {
         final Box hrzOuterBox = Box.createHorizontalBox();
         hrzOuterBox.setAlignmentX(Component.LEFT_ALIGNMENT);
         hrzOuterBox.add(GoggleSwing.horizontalStrut(2));

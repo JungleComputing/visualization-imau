@@ -35,4 +35,64 @@ public class BandCombination {
         // now a proper field-by-field evaluation can be made
         return (selectedDepth == that.selectedDepth && redBand == that.redBand && greenBand == that.greenBand && blueBand == that.blueBand);
     }
+
+    public int getRedBandIndex() {
+        int result = 0;
+
+        if (redBand == varNames.SSH) {
+            result = 0;
+        } else if (redBand == varNames.SHF) {
+            result = 1;
+        } else if (redBand == varNames.SFWF) {
+            result = 2;
+        } else if (redBand == varNames.HMXL) {
+            result = 3;
+        } else if (redBand == varNames.SALT) {
+            result = 4;
+        } else if (redBand == varNames.TEMP) {
+            result = 5;
+        }
+
+        return result;
+    }
+
+    public int getGreenBandIndex() {
+        int result = 0;
+
+        if (greenBand == varNames.SSH) {
+            result = 0;
+        } else if (greenBand == varNames.SHF) {
+            result = 1;
+        } else if (greenBand == varNames.SFWF) {
+            result = 2;
+        } else if (greenBand == varNames.HMXL) {
+            result = 3;
+        } else if (greenBand == varNames.SALT) {
+            result = 4;
+        } else if (greenBand == varNames.TEMP) {
+            result = 5;
+        }
+
+        return result;
+    }
+
+    public int getBlueBandIndex() {
+        int result = 0;
+
+        if (blueBand == varNames.SSH) {
+            result = 0;
+        } else if (blueBand == varNames.SHF) {
+            result = 1;
+        } else if (blueBand == varNames.SFWF) {
+            result = 2;
+        } else if (blueBand == varNames.HMXL) {
+            result = 3;
+        } else if (blueBand == varNames.SALT) {
+            result = 4;
+        } else if (blueBand == varNames.TEMP) {
+            result = 5;
+        }
+
+        return result;
+    }
 }
