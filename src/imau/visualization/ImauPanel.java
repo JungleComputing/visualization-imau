@@ -16,10 +16,13 @@ import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.ArrayList;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
@@ -347,107 +350,113 @@ public class ImauPanel extends CommonPanel {
         visualConfig.add(GoggleSwing.sliderBox("Depth setting", depthListener, settings.getDepthMin(),
                 settings.getDepthMax(), 1, settings.getDepthDef(), depthSetting));
 
-        visualConfig.add(GoggleSwing.radioBox("Red Band", new String[] { "Sea Surface Height",
-                "Total Surface Heat Flux", "Virtual Salt Flux", "Mixed Layer Depth", "Salinity",
-                "Potential Temperature" }, new ActionListener[] { new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setRedBand(varNames.SSH);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setRedBand(varNames.SHF);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setRedBand(varNames.SFWF);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setRedBand(varNames.HMXL);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setRedBand(varNames.SALT);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setRedBand(varNames.TEMP);
-            }
-        } }, settings.bandNameToString(settings.getRedBand())));
+        final ArrayList<Component> vcomponents = new ArrayList<Component>();
+        vcomponents.add(new JLabel("Window Selection"));
+        vcomponents.add(Box.createHorizontalGlue());
 
-        visualConfig.add(GoggleSwing.radioBox("Green Band", new String[] { "Sea Surface Height",
-                "Total Surface Heat Flux", "Virtual Salt Flux", "Mixed Layer Depth", "Salinity",
-                "Potential Temperature" }, new ActionListener[] { new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setGreenBand(varNames.SSH);
+        final JComboBox comboBox = new JComboBox(new String[] { "All", "Left Bottom", "Right Bottom", "Left Top",
+                "Right Top" });
+        comboBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                int selection = comboBox.getSelectedIndex();
+                settings.setWindowSelection(selection);
             }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setGreenBand(varNames.SHF);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setGreenBand(varNames.SFWF);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setGreenBand(varNames.HMXL);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setGreenBand(varNames.SALT);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setGreenBand(varNames.TEMP);
-            }
-        } }, settings.bandNameToString(settings.getGreenBand())));
+        });
+        comboBox.setMaximumSize(new Dimension(300, 25));
+        vcomponents.add(comboBox);
+        vcomponents.add(GoggleSwing.verticalStrut(5));
 
-        visualConfig.add(GoggleSwing.radioBox("Blue Band", new String[] { "Sea Surface Height",
-                "Total Surface Heat Flux", "Virtual Salt Flux", "Mixed Layer Depth", "Salinity",
-                "Potential Temperature" }, new ActionListener[] { new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setBlueBand(varNames.SSH);
+        visualConfig.add(GoggleSwing.vBoxedComponents(vcomponents, true));
+
+        String[] variables = { "SSH", "SHF", "SFWF", "HMXL", "SALT", "TEMP" };
+
+        final ArrayList<Component> vcomponentsLBR = new ArrayList<Component>();
+        vcomponentsLBR.add(new JLabel("Left Bottom Red Selection"));
+        vcomponentsLBR.add(Box.createHorizontalGlue());
+
+        final JComboBox comboBoxLBR = new JComboBox(variables);
+        comboBoxLBR.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                int selection = comboBoxLBR.getSelectedIndex();
+                if (selection == 0) {
+                    settings.setLBBand(0, varNames.SSH);
+                } else if (selection == 1) {
+                    settings.setLBBand(0, varNames.SHF);
+                } else if (selection == 2) {
+                    settings.setLBBand(0, varNames.SFWF);
+                } else if (selection == 3) {
+                    settings.setLBBand(0, varNames.HMXL);
+                } else if (selection == 4) {
+                    settings.setLBBand(0, varNames.SALT);
+                } else if (selection == 5) {
+                    settings.setLBBand(0, varNames.TEMP);
+                }
             }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setBlueBand(varNames.SHF);
+        });
+        comboBoxLBR.setMaximumSize(new Dimension(300, 25));
+        vcomponentsLBR.add(comboBoxLBR);
+        vcomponentsLBR.add(GoggleSwing.verticalStrut(5));
+
+        visualConfig.add(GoggleSwing.vBoxedComponents(vcomponentsLBR, true));
+
+        final ArrayList<Component> vcomponentsLBG = new ArrayList<Component>();
+        vcomponentsLBG.add(new JLabel("Left Bottom Green Selection"));
+        vcomponentsLBG.add(Box.createHorizontalGlue());
+
+        final JComboBox comboBoxLBG = new JComboBox(variables);
+        comboBoxLBG.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                int selection = comboBoxLBG.getSelectedIndex();
+                if (selection == 0) {
+                    settings.setLBBand(1, varNames.SSH);
+                } else if (selection == 1) {
+                    settings.setLBBand(1, varNames.SHF);
+                } else if (selection == 2) {
+                    settings.setLBBand(1, varNames.SFWF);
+                } else if (selection == 3) {
+                    settings.setLBBand(1, varNames.HMXL);
+                } else if (selection == 4) {
+                    settings.setLBBand(1, varNames.SALT);
+                } else if (selection == 5) {
+                    settings.setLBBand(1, varNames.TEMP);
+                }
             }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setBlueBand(varNames.SFWF);
+        });
+        comboBoxLBG.setMaximumSize(new Dimension(300, 25));
+        vcomponentsLBG.add(comboBoxLBG);
+        vcomponentsLBG.add(GoggleSwing.verticalStrut(5));
+
+        visualConfig.add(GoggleSwing.vBoxedComponents(vcomponentsLBG, true));
+
+        final ArrayList<Component> vcomponentsLBB = new ArrayList<Component>();
+        vcomponentsLBB.add(new JLabel("Left Bottom Blue Selection"));
+        vcomponentsLBB.add(Box.createHorizontalGlue());
+
+        final JComboBox comboBoxLBB = new JComboBox(variables);
+        comboBoxLBB.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                int selection = comboBoxLBB.getSelectedIndex();
+                if (selection == 0) {
+                    settings.setLBBand(2, varNames.SSH);
+                } else if (selection == 1) {
+                    settings.setLBBand(2, varNames.SHF);
+                } else if (selection == 2) {
+                    settings.setLBBand(2, varNames.SFWF);
+                } else if (selection == 3) {
+                    settings.setLBBand(2, varNames.HMXL);
+                } else if (selection == 4) {
+                    settings.setLBBand(2, varNames.SALT);
+                } else if (selection == 5) {
+                    settings.setLBBand(2, varNames.TEMP);
+                }
             }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setBlueBand(varNames.HMXL);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setBlueBand(varNames.SALT);
-            }
-        }, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                settings.setBlueBand(varNames.TEMP);
-            }
-        } }, settings.bandNameToString(settings.getBlueBand())));
+        });
+        comboBoxLBB.setMaximumSize(new Dimension(300, 25));
+        vcomponentsLBB.add(comboBoxLBB);
+        vcomponentsLBB.add(GoggleSwing.verticalStrut(5));
+
+        visualConfig.add(GoggleSwing.vBoxedComponents(vcomponentsLBB, true));
+
     }
 
     protected void handleFile(File file) {

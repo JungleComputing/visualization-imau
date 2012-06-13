@@ -287,6 +287,10 @@ public class NetCDFFrame implements Runnable {
         return image;
     }
 
+    public Texture2D getImage2(int glMultitexNumber, BandCombination bandComboLT) {
+        return getImage2(glMultitexNumber, bandComboLT.redBand, bandComboLT.greenBand, bandComboLT.blueBand);
+    }
+
     public Texture2D getImage2(int glMultitexNumber, varNames redBand, varNames greenBand, varNames blueBand) {
         if (settings.getDepthDef() != selectedDepth) {
             selectedDepth = settings.getDepthDef();

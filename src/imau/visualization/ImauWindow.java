@@ -1,6 +1,5 @@
 package imau.visualization;
 
-import imau.visualization.ImauSettings.varNames;
 import imau.visualization.adaptor.BumpTexture;
 import imau.visualization.adaptor.NetCDFFrame;
 import imau.visualization.adaptor.NetCDFTimedPlayer;
@@ -125,10 +124,11 @@ public class ImauWindow extends CommonWindow {
         // dataTex.getMultitexNumber());
         // loader.setUniform("my_texture", texture.getMultitexNumber());
 
-        Texture2D texture00 = frame.getImage2(GL3.GL_TEXTURE11, varNames.TEMP, varNames.SFWF, varNames.SFWF);
-        Texture2D texture01 = frame.getImage2(GL3.GL_TEXTURE12, varNames.TEMP, varNames.SALT, varNames.SALT);
-        Texture2D texture10 = frame.getImage2(GL3.GL_TEXTURE13, varNames.HMXL, varNames.HMXL, varNames.TEMP);
-        Texture2D texture11 = frame.getImage2(GL3.GL_TEXTURE14, varNames.SHF, varNames.SHF, varNames.TEMP);
+        settings.getBandComboLT();
+        Texture2D texture00 = frame.getImage2(GL3.GL_TEXTURE11, settings.getBandComboLB());
+        Texture2D texture01 = frame.getImage2(GL3.GL_TEXTURE12, settings.getBandComboRB());
+        Texture2D texture10 = frame.getImage2(GL3.GL_TEXTURE13, settings.getBandComboLT());
+        Texture2D texture11 = frame.getImage2(GL3.GL_TEXTURE14, settings.getBandComboRT());
         texture00.init(gl);
         texture01.init(gl);
         texture10.init(gl);
@@ -213,7 +213,15 @@ public class ImauWindow extends CommonWindow {
         postprocessShader.setUniform("scrWidth", width);
         postprocessShader.setUniform("scrHeight", height);
 
-        postprocessShader.setUniform("divs", 2);
+        int selection = settings.getWindowSelection();
+        // System.out.println("Selection: " + selection);
+        if (selection == 0) {
+            postprocessShader.setUniform("divs", 2);
+        } else {
+            postprocessShader.setUniform("divs", 1);
+            postprocessShader.setUniform("selection", selection);
+        }
+
         // postprocessShader.setUniform("amountY", 2);
 
         try {

@@ -18,6 +18,7 @@ out vec4 fragColor;
 const float overallBrightness = 2.0; 
 
 uniform int divs;
+uniform int selection;
 
 float getDiv3(float var) {
 	if (var < (1.0/3.0)) {
@@ -75,8 +76,22 @@ void main() {
 				sphereColor = vec4(texture(sphereTexture11, tCoord).rgb, 1.0);
 			}
 		}
+		
 		atmColor  = vec4(texture(atmTexture, tCoord).rgb, 1.0);
-	}	
+	} else {
+		vec2 tCoord = vec2(x,y);
+		if (selection == 1) {
+			sphereColor = vec4(texture(sphereTexture00, tCoord).rgb, 1.0);
+		} else if (selection == 2) {
+			sphereColor = vec4(texture(sphereTexture01, tCoord).rgb, 1.0);
+		} else if (selection == 3) {
+			sphereColor = vec4(texture(sphereTexture10, tCoord).rgb, 1.0);
+		} else if (selection == 4) {
+			sphereColor = vec4(texture(sphereTexture11, tCoord).rgb, 1.0);
+		}
+		
+		atmColor  = vec4(texture(atmTexture, tCoord).rgb, 1.0);
+	}
     
     vec4 color = mix(sphereColor * sphereBrightness, atmColor * atmBrightness, 0.5); 
     

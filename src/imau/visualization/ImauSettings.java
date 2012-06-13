@@ -1,5 +1,6 @@
 package imau.visualization;
 
+import imau.visualization.adaptor.BandCombination;
 import openglCommon.util.Settings;
 import openglCommon.util.TypedProperties;
 
@@ -16,6 +17,11 @@ public class ImauSettings extends Settings {
     public static enum varNames {
         SSH, SHF, SFWF, HMXL, SALT, TEMP
     };
+
+    private static BandCombination comboLT = new BandCombination(0, varNames.SALT, varNames.SALT, varNames.SALT);
+    private static BandCombination comboRT = new BandCombination(0, varNames.TEMP, varNames.TEMP, varNames.TEMP);
+    private static BandCombination comboLB = new BandCombination(0, varNames.SSH, varNames.SSH, varNames.SSH);
+    private static BandCombination comboRB = new BandCombination(0, varNames.SFWF, varNames.SFWF, varNames.SFWF);
 
     private static varNames redBand = varNames.TEMP;
     private static varNames greenBand = varNames.TEMP;
@@ -51,6 +57,8 @@ public class ImauSettings extends Settings {
     private static int DEPTH_MIN = 0;
     private static int DEPTH_DEF = 0;
     private static int DEPTH_MAX = 41;
+
+    private static int WINDOW_SELECTION = 0;
 
     public static ImauSettings getInstance() {
         return SingletonHolder.instance;
@@ -314,5 +322,91 @@ public class ImauSettings extends Settings {
         } else {
             return "";
         }
+    }
+
+    public void setWindowSelection(int i) {
+        ImauSettings.WINDOW_SELECTION = i;
+    }
+
+    public int getWindowSelection() {
+        return ImauSettings.WINDOW_SELECTION;
+    }
+
+    public String selectionToString(int windowSelection) {
+        if (windowSelection == 1) {
+            return "Left Top";
+        } else if (windowSelection == 2) {
+            return "Right Top";
+        } else if (windowSelection == 3) {
+            return "Left Bottom";
+        } else if (windowSelection == 4) {
+            return "Right Bottom";
+        }
+
+        return "All";
+    }
+
+    public void setLTBand(int rgb, varNames band) {
+        BandCombination combo = comboLT;
+
+        if (rgb == 0) {
+            combo.redBand = band;
+        } else if (rgb == 1) {
+            combo.greenBand = band;
+        } else if (rgb == 2) {
+            combo.blueBand = band;
+        }
+    }
+
+    public void setRTBand(int rgb, varNames band) {
+        BandCombination combo = comboRT;
+
+        if (rgb == 0) {
+            combo.redBand = band;
+        } else if (rgb == 1) {
+            combo.greenBand = band;
+        } else if (rgb == 2) {
+            combo.blueBand = band;
+        }
+    }
+
+    public void setLBBand(int rgb, varNames band) {
+        BandCombination combo = comboLB;
+
+        if (rgb == 0) {
+            combo.redBand = band;
+        } else if (rgb == 1) {
+            combo.greenBand = band;
+        } else if (rgb == 2) {
+            combo.blueBand = band;
+        }
+    }
+
+    public void setRBBand(int rgb, varNames band) {
+        BandCombination combo = comboRB;
+
+        if (rgb == 0) {
+            combo.redBand = band;
+        } else if (rgb == 1) {
+            combo.greenBand = band;
+        } else if (rgb == 2) {
+            combo.blueBand = band;
+        }
+    }
+
+    public BandCombination getBandComboLT() {
+        return comboLT;
+    }
+
+    public BandCombination getBandComboRT() {
+        return comboRT;
+    }
+
+    public BandCombination getBandComboLB() {
+        return comboLB;
+    }
+
+    public BandCombination getBandComboRB() {
+        return comboRB;
     }
 }

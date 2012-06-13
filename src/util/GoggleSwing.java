@@ -15,6 +15,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
@@ -186,6 +187,28 @@ public class GoggleSwing {
         return GoggleSwing.vBoxedComponents(vcomponents, true);
     }
 
+    public static Box dropdownBoxesBox(String name, String[] boxLabels, String[] optionLabels,
+            ActionListener[][] actions, String selectedOption) {
+        final ArrayList<Component> vcomponents = new ArrayList<Component>();
+        vcomponents.add(new JLabel(name));
+        vcomponents.add(Box.createHorizontalGlue());
+
+        final ArrayList<Component> hcomponents = new ArrayList<Component>();
+
+        for (int i = 0; i < boxLabels.length; i++) {
+            JComboBox comboBox = new JComboBox();
+            for (int j = 0; j < optionLabels.length; j++) {
+                comboBox.addItem(optionLabels[j]);
+                comboBox.addActionListener(actions[i][j]);
+            }
+
+            hcomponents.add(comboBox);
+        }
+        vcomponents.add(hBoxedComponents(hcomponents));
+
+        return GoggleSwing.vBoxedComponents(vcomponents, true);
+    }
+
     public static Box sliderBox(String label, ChangeListener listener, int min, int max, int spacing, int norm,
             JLabel dynamicLabel) {
         final ArrayList<Component> components = new ArrayList<Component>();
@@ -234,7 +257,7 @@ public class GoggleSwing {
         return GoggleSwing.vBoxedComponents(vcomponents, false);
     }
 
-    private static Box vBoxedComponents(ArrayList<Component> components, boolean bordered) {
+    public static Box vBoxedComponents(ArrayList<Component> components, boolean bordered) {
         final Box hrzBox = Box.createHorizontalBox();
         hrzBox.add(GoggleSwing.horizontalStrut(2));
 
