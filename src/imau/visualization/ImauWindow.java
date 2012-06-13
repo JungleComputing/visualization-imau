@@ -219,8 +219,9 @@ public class ImauWindow extends CommonWindow {
             postprocessShader.setUniform("divs", 2);
         } else {
             postprocessShader.setUniform("divs", 1);
-            postprocessShader.setUniform("selection", selection);
         }
+
+        postprocessShader.setUniform("selection", selection);
 
         // postprocessShader.setUniform("amountY", 2);
 
