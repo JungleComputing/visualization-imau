@@ -141,6 +141,8 @@ public class ImauWindow extends CommonWindow {
 
         drawAtmosphere(gl, mv, atmProgram, atmFBO);
 
+        blur(gl, atmFBO, fsq, 1, 2, 4);
+
         if (post_process) {
             renderTexturesToScreen(gl, width, height, sphereFBO00, sphereFBO01, sphereFBO10, sphereFBO11, atmFBO);
         }
