@@ -1,9 +1,9 @@
 #version 150
 
-uniform sampler2D sphereTexture00;
-uniform sampler2D sphereTexture01;
-uniform sampler2D sphereTexture10;
-uniform sampler2D sphereTexture11;
+uniform sampler2D sphereTextureLT;
+uniform sampler2D sphereTextureRT;
+uniform sampler2D sphereTextureLB;
+uniform sampler2D sphereTextureRB;
 
 uniform sampler2D atmTexture;
 
@@ -62,18 +62,18 @@ void main() {
 		if (x < (1.0/2.0)) {
 			if (y < (1.0/2.0)) {
 				tCoord = vec2(x*2.0,y*2.0);
-				sphereColor = vec4(texture(sphereTexture00, tCoord).rgb, 1.0);	  			
+				sphereColor = vec4(texture(sphereTextureLB, tCoord).rgb, 1.0);	  			
 			} else {
 				tCoord = vec2(x*2.0,(y - (1.0/2.0)) * 2.0);
-				sphereColor = vec4(texture(sphereTexture10, tCoord).rgb, 1.0);
+				sphereColor = vec4(texture(sphereTextureLT, tCoord).rgb, 1.0);
 			}
 		} else {
 			if (y < (1.0/2.0)) {
 				tCoord = vec2((x - (1.0/2.0)) * 2.0,y*2.0);
-				sphereColor = vec4(texture(sphereTexture01, tCoord).rgb, 1.0);
+				sphereColor = vec4(texture(sphereTextureRB, tCoord).rgb, 1.0);
 			} else {
 				tCoord = vec2((x - (1.0/2.0)) * 2.0,(y - (1.0/2.0)) * 2.0);
-				sphereColor = vec4(texture(sphereTexture11, tCoord).rgb, 1.0);
+				sphereColor = vec4(texture(sphereTextureRT, tCoord).rgb, 1.0);
 			}
 		}
 		
@@ -81,13 +81,13 @@ void main() {
 	} else {
 		vec2 tCoord = vec2(x,y);
 		if (selection == 1) {
-			sphereColor = vec4(texture(sphereTexture00, tCoord).rgb, 1.0);
+			sphereColor = vec4(texture(sphereTextureLT, tCoord).rgb, 1.0);
 		} else if (selection == 2) {
-			sphereColor = vec4(texture(sphereTexture01, tCoord).rgb, 1.0);
+			sphereColor = vec4(texture(sphereTextureRT, tCoord).rgb, 1.0);
 		} else if (selection == 3) {
-			sphereColor = vec4(texture(sphereTexture10, tCoord).rgb, 1.0);
+			sphereColor = vec4(texture(sphereTextureLB, tCoord).rgb, 1.0);
 		} else if (selection == 4) {
-			sphereColor = vec4(texture(sphereTexture11, tCoord).rgb, 1.0);
+			sphereColor = vec4(texture(sphereTextureRB, tCoord).rgb, 1.0);
 		}
 		
 		atmColor  = vec4(texture(atmTexture, tCoord).rgb, 1.0);

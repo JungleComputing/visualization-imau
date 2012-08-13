@@ -3,6 +3,8 @@
 in vec3 vertex_pos;
 in vec3 vertex_normal;
 
+out vec4 fragColor;
+
 void main() {
 	vec3 matColor = vec3(0.3, 0.6, 1.0);
 	
@@ -12,5 +14,5 @@ void main() {
 	
 	float diffuse_factor = max(.5-dotP, 0.0);	
 
-	gl_FragColor = vec4(matColor,diffuse_factor);
+	fragColor = vec4(matColor,diffuse_factor);
 } 

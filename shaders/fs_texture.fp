@@ -7,6 +7,8 @@ uniform sampler2D my_texture;
 uniform int scrWidth;
 uniform int scrHeight;
 
+out vec4 fragColor;
+
 void main() { 
 	vec2 tCoord   = vec2(gl_FragCoord.x/float(scrWidth), gl_FragCoord.y/float(scrHeight));
 	
@@ -27,6 +29,6 @@ void main() {
 	//	diffuse_factor = worldColor;
 	//}
 			
-    gl_FragColor = diffuse_factor;
+    fragColor = diffuse_factor;
 } 
 

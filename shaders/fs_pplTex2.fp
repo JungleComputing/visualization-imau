@@ -18,6 +18,8 @@ uniform mat4 MVMatrix;
 
 //uniform mat3 NormalMatrix;
 
+out vec4 fragColor;
+
 void main() {
 	//float map = texture(mapping_texture, tCoord).a;
 	vec4 matColor; 
@@ -56,6 +58,6 @@ void main() {
  	vec4 specular_factor = pow(max(dot(reflection, eyespace_normal), 0.0), 0.3 * Shininess) * matColor;
  	specular_factor = clamp(specular_factor, 0.0, 1.0);
 
-	gl_FragColor = ambient_factor; // + diffuse_factor + specular_factor;
+	fragColor = ambient_factor; // + diffuse_factor + specular_factor;
 } 
 

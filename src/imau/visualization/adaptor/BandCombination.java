@@ -3,22 +3,21 @@ package imau.visualization.adaptor;
 import imau.visualization.ImauSettings.varNames;
 
 public class BandCombination {
-    public int selectedDepth;
-    public varNames redBand;
-    public varNames greenBand;
-    public varNames blueBand;
+    public int      selectedDepth;
+    public varNames band;
+    public String   colorMapFileName;
 
-    public BandCombination(int selectedDepth, varNames redBand, varNames greenBand, varNames blueBand) {
+    public BandCombination(int selectedDepth, varNames band,
+            String ColorMapFileName) {
         this.selectedDepth = selectedDepth;
-        this.redBand = redBand;
-        this.greenBand = greenBand;
-        this.blueBand = blueBand;
+        this.band = band;
+        this.colorMapFileName = ColorMapFileName;
     }
 
     @Override
     public int hashCode() {
-        int hashCode = (int) (selectedDepth + 187 * 3187 + redBand.hashCode() + 23 * 6833 + greenBand.hashCode() + 7
-                * 7207 + blueBand.hashCode() + 11 * 7919);
+        int hashCode = (selectedDepth + 187 * 3187 + band.hashCode() + 23
+                * 6833 + colorMapFileName.hashCode());
         return hashCode;
     }
 
@@ -33,63 +32,24 @@ public class BandCombination {
         BandCombination that = (BandCombination) thatObject;
 
         // now a proper field-by-field evaluation can be made
-        return (selectedDepth == that.selectedDepth && redBand == that.redBand && greenBand == that.greenBand && blueBand == that.blueBand);
+        return (selectedDepth == that.selectedDepth && band == that.band && colorMapFileName
+                .compareTo(that.colorMapFileName) == 0);
     }
 
-    public int getRedBandIndex() {
+    public int getBandIndex() {
         int result = 0;
 
-        if (redBand == varNames.SSH) {
+        if (band == varNames.SSH) {
             result = 0;
-        } else if (redBand == varNames.SHF) {
+        } else if (band == varNames.SHF) {
             result = 1;
-        } else if (redBand == varNames.SFWF) {
+        } else if (band == varNames.SFWF) {
             result = 2;
-        } else if (redBand == varNames.HMXL) {
+        } else if (band == varNames.HMXL) {
             result = 3;
-        } else if (redBand == varNames.SALT) {
+        } else if (band == varNames.SALT) {
             result = 4;
-        } else if (redBand == varNames.TEMP) {
-            result = 5;
-        }
-
-        return result;
-    }
-
-    public int getGreenBandIndex() {
-        int result = 0;
-
-        if (greenBand == varNames.SSH) {
-            result = 0;
-        } else if (greenBand == varNames.SHF) {
-            result = 1;
-        } else if (greenBand == varNames.SFWF) {
-            result = 2;
-        } else if (greenBand == varNames.HMXL) {
-            result = 3;
-        } else if (greenBand == varNames.SALT) {
-            result = 4;
-        } else if (greenBand == varNames.TEMP) {
-            result = 5;
-        }
-
-        return result;
-    }
-
-    public int getBlueBandIndex() {
-        int result = 0;
-
-        if (blueBand == varNames.SSH) {
-            result = 0;
-        } else if (blueBand == varNames.SHF) {
-            result = 1;
-        } else if (blueBand == varNames.SFWF) {
-            result = 2;
-        } else if (blueBand == varNames.HMXL) {
-            result = 3;
-        } else if (blueBand == varNames.SALT) {
-            result = 4;
-        } else if (blueBand == varNames.TEMP) {
+        } else if (band == varNames.TEMP) {
             result = 5;
         }
 

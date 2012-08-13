@@ -8,7 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ImauSettings extends Settings {
-    private final static Logger logger = LoggerFactory.getLogger(ImauSettings.class);
+    private final static Logger logger = LoggerFactory
+                                               .getLogger(ImauSettings.class);
 
     private static class SingletonHolder {
         public final static ImauSettings instance = new ImauSettings();
@@ -18,51 +19,65 @@ public class ImauSettings extends Settings {
         SSH, SHF, SFWF, HMXL, SALT, TEMP
     };
 
-    private static BandCombination comboLT = new BandCombination(0, varNames.SALT, varNames.SALT, varNames.SALT);
-    private static BandCombination comboRT = new BandCombination(0, varNames.TEMP, varNames.TEMP, varNames.TEMP);
-    private static BandCombination comboLB = new BandCombination(0, varNames.SSH, varNames.SSH, varNames.SSH);
-    private static BandCombination comboRB = new BandCombination(0, varNames.SFWF, varNames.SFWF, varNames.SFWF);
+    private static BandCombination comboLT               = new BandCombination(
+                                                                 0,
+                                                                 varNames.SALT,
+                                                                 "default");
+    private static BandCombination comboRT               = new BandCombination(
+                                                                 0,
+                                                                 varNames.TEMP,
+                                                                 "default");
+    private static BandCombination comboLB               = new BandCombination(
+                                                                 0,
+                                                                 varNames.SSH,
+                                                                 "default");
+    private static BandCombination comboRB               = new BandCombination(
+                                                                 0,
+                                                                 varNames.SFWF,
+                                                                 "default");
 
-    private static varNames redBand = varNames.TEMP;
-    private static varNames greenBand = varNames.TEMP;
-    private static varNames blueBand = varNames.TEMP;
+    private static int             MAX_GLOBES_ON_SCREEN  = 4;
 
-    private static long WAITTIME_FOR_RETRY = 10000;
-    private static long WAITTIME_FOR_MOVIE = 100;
-    private static float EPSILON = 1.0E-7f;
+    private static long            WAITTIME_FOR_RETRY    = 10000;
+    private static long            WAITTIME_FOR_MOVIE    = 100;
+    private static float           EPSILON               = 1.0E-7f;
 
-    private static int FILE_EXTENSION_LENGTH = 2;
-    private static int FILE_NUMBER_LENGTH = 4;
+    private static int             FILE_EXTENSION_LENGTH = 2;
+    private static int             FILE_NUMBER_LENGTH    = 4;
 
-    private static String[] ACCEPTABLE_POSTFIXES = { ".nc" };
+    private static String[]        ACCEPTABLE_POSTFIXES  = { ".nc" };
 
-    private static String CURRENT_POSTFIX = ".nc";
+    private static String          CURRENT_POSTFIX       = ".nc";
 
-    private static int PREPROCESSING_AMOUNT = 5;
+    private static int             PREPROCESSING_AMOUNT  = 5;
 
-    private static float MIN_SSH = -200f;
-    private static float MAX_SSH = 200f;
-    private static float MIN_SHF = -400f;
-    private static float MAX_SHF = 250f;
-    private static float MIN_SFWF = -3E-4f;
-    private static float MAX_SFWF = 3E-4f;
-    private static float MIN_HMXL = 750f;
-    private static float MAX_HMXL = 70000f;
+    private static float           MIN_SSH               = -200f;
+    private static float           MAX_SSH               = 200f;
+    private static float           MIN_SHF               = -400f;
+    private static float           MAX_SHF               = 250f;
+    private static float           MIN_SFWF              = -3E-4f;
+    private static float           MAX_SFWF              = 3E-4f;
+    private static float           MIN_HMXL              = 750f;
+    private static float           MAX_HMXL              = 70000f;
 
-    private static float MIN_SALT = 0.00f;
-    private static float MAX_SALT = 0.05f;
-    private static float MIN_TEMP = -7.5f;
-    private static float MAX_TEMP = 35f;
+    private static float           MIN_SALT              = 0.00f;
+    private static float           MAX_SALT              = 0.05f;
+    private static float           MIN_TEMP              = -7.5f;
+    private static float           MAX_TEMP              = 35f;
 
-    private static int DEPTH_MIN = 0;
-    private static int DEPTH_DEF = 0;
-    private static int DEPTH_MAX = 41;
+    private static int             DEPTH_MIN             = 0;
+    private static int             DEPTH_DEF             = 0;
+    private static int             DEPTH_MAX             = 41;
 
-    private static int WINDOW_SELECTION = 0;
+    private static int             WINDOW_SELECTION      = 0;
+
+    private static boolean         DYNAMIC_DIMENSIONS    = true;
 
     public static ImauSettings getInstance() {
         return SingletonHolder.instance;
     }
+
+    private String ltColorMap;
 
     private ImauSettings() {
         super();
@@ -71,14 +86,19 @@ public class ImauSettings extends Settings {
             final TypedProperties props = new TypedProperties();
             props.loadFromFile("settings.properties");
 
-            ImauSettings.WAITTIME_FOR_RETRY = props.getLongProperty("WAITTIME_FOR_RETRY");
-            ImauSettings.WAITTIME_FOR_MOVIE = props.getLongProperty("WAITTIME_FOR_MOVIE");
+            ImauSettings.WAITTIME_FOR_RETRY = props
+                    .getLongProperty("WAITTIME_FOR_RETRY");
+            ImauSettings.WAITTIME_FOR_MOVIE = props
+                    .getLongProperty("WAITTIME_FOR_MOVIE");
             ImauSettings.EPSILON = props.getFloatProperty("EPSILON");
 
-            ImauSettings.FILE_EXTENSION_LENGTH = props.getIntProperty("FILE_EXTENSION_LENGTH");
-            ImauSettings.FILE_NUMBER_LENGTH = props.getIntProperty("FILE_NUMBER_LENGTH");
+            ImauSettings.FILE_EXTENSION_LENGTH = props
+                    .getIntProperty("FILE_EXTENSION_LENGTH");
+            ImauSettings.FILE_NUMBER_LENGTH = props
+                    .getIntProperty("FILE_NUMBER_LENGTH");
 
-            ImauSettings.PREPROCESSING_AMOUNT = props.getIntProperty("PREPROCESSING_AMOUNT");
+            ImauSettings.PREPROCESSING_AMOUNT = props
+                    .getIntProperty("PREPROCESSING_AMOUNT");
 
             ImauSettings.MAX_SSH = props.getFloatProperty("MAX_SSH");
             ImauSettings.MIN_SSH = props.getFloatProperty("MIN_SSH");
@@ -282,30 +302,6 @@ public class ImauSettings extends Settings {
         DEPTH_MAX = value;
     }
 
-    public varNames getRedBand() {
-        return redBand;
-    }
-
-    public void setRedBand(varNames redBand) {
-        ImauSettings.redBand = redBand;
-    }
-
-    public varNames getGreenBand() {
-        return greenBand;
-    }
-
-    public void setGreenBand(varNames greenBand) {
-        ImauSettings.greenBand = greenBand;
-    }
-
-    public varNames getBlueBand() {
-        return blueBand;
-    }
-
-    public void setBlueBand(varNames blueBand) {
-        ImauSettings.blueBand = blueBand;
-    }
-
     public String bandNameToString(varNames var) {
         if (var == varNames.SSH) {
             return "Sea Surface Height";
@@ -346,52 +342,28 @@ public class ImauSettings extends Settings {
         return "All";
     }
 
-    public void setLTBand(int rgb, varNames band) {
-        BandCombination combo = comboLT;
-
-        if (rgb == 0) {
-            combo.redBand = band;
-        } else if (rgb == 1) {
-            combo.greenBand = band;
-        } else if (rgb == 2) {
-            combo.blueBand = band;
-        }
+    public void setLTBand(varNames band) {
+        BandCombination result = new BandCombination(comboLT.selectedDepth,
+                band, comboLT.colorMapFileName);
+        comboLT = result;
     }
 
-    public void setRTBand(int rgb, varNames band) {
-        BandCombination combo = comboRT;
-
-        if (rgb == 0) {
-            combo.redBand = band;
-        } else if (rgb == 1) {
-            combo.greenBand = band;
-        } else if (rgb == 2) {
-            combo.blueBand = band;
-        }
+    public void setRTBand(varNames band) {
+        BandCombination result = new BandCombination(comboRT.selectedDepth,
+                band, comboRT.colorMapFileName);
+        comboRT = result;
     }
 
-    public void setLBBand(int rgb, varNames band) {
-        BandCombination combo = comboLB;
-
-        if (rgb == 0) {
-            combo.redBand = band;
-        } else if (rgb == 1) {
-            combo.greenBand = band;
-        } else if (rgb == 2) {
-            combo.blueBand = band;
-        }
+    public void setLBBand(varNames band) {
+        BandCombination result = new BandCombination(comboLB.selectedDepth,
+                band, comboLB.colorMapFileName);
+        comboLB = result;
     }
 
-    public void setRBBand(int rgb, varNames band) {
-        BandCombination combo = comboRB;
-
-        if (rgb == 0) {
-            combo.redBand = band;
-        } else if (rgb == 1) {
-            combo.greenBand = band;
-        } else if (rgb == 2) {
-            combo.blueBand = band;
-        }
+    public void setRBBand(varNames band) {
+        BandCombination result = new BandCombination(comboRB.selectedDepth,
+                band, comboRB.colorMapFileName);
+        comboRB = result;
     }
 
     public BandCombination getBandComboLT() {
@@ -408,5 +380,33 @@ public class ImauSettings extends Settings {
 
     public BandCombination getBandComboRB() {
         return comboRB;
+    }
+
+    public void setLTColorMap(String selectedColorMap) {
+        BandCombination result = new BandCombination(comboLT.selectedDepth,
+                comboLT.band, selectedColorMap);
+        comboLT = result;
+    }
+
+    public void setRTColorMap(String selectedColorMap) {
+        BandCombination result = new BandCombination(comboRT.selectedDepth,
+                comboRT.band, selectedColorMap);
+        comboRT = result;
+    }
+
+    public void setLBColorMap(String selectedColorMap) {
+        BandCombination result = new BandCombination(comboLB.selectedDepth,
+                comboLB.band, selectedColorMap);
+        comboLB = result;
+    }
+
+    public void setRBColorMap(String selectedColorMap) {
+        BandCombination result = new BandCombination(comboRB.selectedDepth,
+                comboRB.band, selectedColorMap);
+        comboRB = result;
+    }
+
+    public boolean isDynamicDimensions() {
+        return DYNAMIC_DIMENSIONS;
     }
 }
