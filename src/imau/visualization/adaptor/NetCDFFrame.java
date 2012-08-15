@@ -1,7 +1,6 @@
 package imau.visualization.adaptor;
 
 import imau.visualization.ImauSettings;
-import imau.visualization.ImauSettings.varNames;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
@@ -12,7 +11,6 @@ import java.util.List;
 import javax.media.opengl.GL3;
 
 import openglCommon.textures.HDRTexture2D;
-import openglCommon.textures.Texture2D;
 import ucar.ma2.Array;
 import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
@@ -21,36 +19,33 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 public class NetCDFFrame implements Runnable {
-    private final ImauSettings                           settings      = ImauSettings
-                                                                               .getInstance();
+    private final ImauSettings                   settings      = ImauSettings
+                                                                       .getInstance();
 
-    private int                                          selectedDepth = settings
-                                                                               .getDepthDef();
+    private int                                  selectedDepth = settings
+                                                                       .getDepthDef();
 
-    private final int                                    frameNumber;
+    private final int                            frameNumber;
 
-    private boolean                                      initialized;
+    private boolean                              initialized;
 
-    private final boolean                                doneProcessing;
+    private final boolean                        doneProcessing;
 
-    private boolean                                      error;
-    private String                                       errMessage;
+    private boolean                              error;
+    private String                               errMessage;
 
-    private int                                          pixels, width, height;
-    private TGridPoint[]                                 tGridPoints;
-    private Texture2D                                    image;
+    private int                                  pixels, width, height;
+    private TGridPoint[]                         tGridPoints;
 
-    private final File                                   initialFile;
+    private final File                           initialFile;
 
-    private final float                                  epsilon       = settings
-                                                                               .getEpsilon();
+    private final float                          epsilon       = settings
+                                                                       .getEpsilon();
 
-    float                                                latMin, latMax;
+    float                                        latMin, latMax;
 
-    private final HashMap<Integer, BandCombination>      storedSingleCombinations;
-    private final HashMap<Integer, BandCombination>      storedDoubleCombinations;
-    private final HashMap<BandCombination, HDRTexture2D> storedSingleTextures;
-    private final HashMap<BandCombination, HDRTexture2D> storedDoubleTextures;
+    private final HashMap<Integer, GlobeState>   storedStates;
+    private final HashMap<Integer, HDRTexture2D> storedTextures;
 
     public NetCDFFrame(int frameNumber, File initialFile) {
         this.frameNumber = frameNumber;
@@ -62,10 +57,8 @@ public class NetCDFFrame implements Runnable {
         this.error = false;
         this.errMessage = "";
 
-        storedSingleCombinations = new HashMap<Integer, BandCombination>();
-        storedDoubleCombinations = new HashMap<Integer, BandCombination>();
-        storedSingleTextures = new HashMap<BandCombination, HDRTexture2D>();
-        storedDoubleTextures = new HashMap<BandCombination, HDRTexture2D>();
+        storedStates = new HashMap<Integer, GlobeState>();
+        storedTextures = new HashMap<Integer, HDRTexture2D>();
     }
 
     public int getNumber() {
@@ -182,20 +175,7 @@ public class NetCDFFrame implements Runnable {
         }
     }
 
-    public HDRTexture2D getImage(GL3 gl, int glMultitexUnit,
-            BandCombination bandCombo) {
-        return getImage(gl, glMultitexUnit, bandCombo.band,
-                bandCombo.colorMapFileName);
-    }
-
-    public HDRTexture2D getImage(GL3 gl, NetCDFFrame frame2,
-            int glMultitexUnit, BandCombination bandCombo) {
-        return getImage(gl, frame2, glMultitexUnit, bandCombo.band,
-                bandCombo.colorMapFileName);
-    }
-
-    public HDRTexture2D getImage(GL3 gl, int glMultitexUnit, varNames band,
-            String colorMapName) {
+    public HDRTexture2D getImage(GL3 gl, int glMultitexUnit, GlobeState state) {
         if (settings.getDepthDef() != selectedDepth) {
             selectedDepth = settings.getDepthDef();
             initialized = false;
@@ -205,42 +185,31 @@ public class NetCDFFrame implements Runnable {
             init();
         }
 
-        BandCombination combo = new BandCombination(selectedDepth, band,
-                colorMapName);
-
         int newHeight = (int) Math.floor((180f / (latMax - latMin)) * height);
         int blankRows = (int) Math.floor(180f / latMax);
 
         HDRTexture2D image;
 
-        // If the combo was used already, retrieve the image for re-use
-        if (storedSingleCombinations.containsKey(glMultitexUnit)) {
-            if (combo.equals(storedSingleCombinations.get(glMultitexUnit))) {
-                image = storedSingleTextures.get(combo);
-                return image;
-            } else {
-                // Delete the previous texture on this multitexunit, to save
-                // space on the GPU
-                // image = storedTextures.get(storedCombinations
-                // .get(glMultitexUnit));
-                // image.delete(gl);
-            }
+        // If the state was used already, retrieve the image for re-use
+        if (storedStates.containsKey(glMultitexUnit)
+                && storedStates.get(glMultitexUnit).equals(state)) {
+            return storedTextures.get(glMultitexUnit);
         }
 
-        // Either the combo has changed, or the glMultitexUnit was not used
-        // before, so change the image.
+        // Either the state has changed, or the glMultitexUnit was not used yet,
+        // so change the image.
 
         image = ImageMaker.getImage(gl, glMultitexUnit, frameNumber,
-                tGridPoints, band, colorMapName, width, height, newHeight,
+                state.getDepth(), tGridPoints, state, width, height, newHeight,
                 blankRows);
-        storedSingleTextures.put(combo, image);
-        storedSingleCombinations.put(glMultitexUnit, combo);
+        storedTextures.put(glMultitexUnit, image);
+        storedStates.put(glMultitexUnit, state);
 
         return image;
     }
 
     public HDRTexture2D getImage(GL3 gl, NetCDFFrame otherFrame,
-            int glMultitexUnit, varNames band, String colorMapName) {
+            int glMultitexUnit, GlobeState state) {
         if (settings.getDepthDef() != selectedDepth) {
             selectedDepth = settings.getDepthDef();
             initialized = false;
@@ -250,36 +219,25 @@ public class NetCDFFrame implements Runnable {
             init();
         }
 
-        BandCombination combo = new BandCombination(selectedDepth, band,
-                colorMapName);
-
         int newHeight = (int) Math.floor((180f / (latMax - latMin)) * height);
         int blankRows = (int) Math.floor(180f / latMax);
 
         HDRTexture2D image;
 
         // If the combo was used already, retrieve the image for re-use
-        if (storedDoubleCombinations.containsKey(glMultitexUnit)) {
-            if (combo.equals(storedDoubleCombinations.get(glMultitexUnit))) {
-                image = storedDoubleTextures.get(combo);
-                return image;
-            } else {
-                // Delete the previous texture on this multitexunit, to save
-                // space on the GPU
-                // image = storedTextures.get(storedCombinations
-                // .get(glMultitexUnit));
-                // image.delete(gl);
-            }
+        if (storedStates.containsKey(glMultitexUnit)
+                && storedStates.get(glMultitexUnit).equals(state)) {
+            return storedTextures.get(glMultitexUnit);
         }
 
         // Either the combo has changed, or the glMultitexUnit was not used
         // before, so change the image.
 
         image = ImageMaker.getImage(gl, glMultitexUnit, frameNumber,
-                tGridPoints, otherFrame.getGridPoints(), band, colorMapName,
-                width, height, newHeight, blankRows);
-        storedDoubleTextures.put(combo, image);
-        storedDoubleCombinations.put(glMultitexUnit, combo);
+                state.getDepth(), tGridPoints, otherFrame.getGridPoints(),
+                state, width, height, newHeight, blankRows);
+        storedTextures.put(glMultitexUnit, image);
+        storedStates.put(glMultitexUnit, state);
 
         return image;
     }

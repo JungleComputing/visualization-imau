@@ -1,6 +1,6 @@
 package imau.visualization;
 
-import imau.visualization.adaptor.BandCombination;
+import imau.visualization.adaptor.GlobeState;
 import openglCommon.util.Settings;
 import openglCommon.util.TypedProperties;
 
@@ -15,63 +15,67 @@ public class ImauSettings extends Settings {
         public final static ImauSettings instance = new ImauSettings();
     }
 
-    public static enum varNames {
+    public static enum VarNames {
         SSH, SHF, SFWF, HMXL, SALT, TEMP
     };
 
-    private static BandCombination comboLT               = new BandCombination(
-                                                                 0,
-                                                                 varNames.SALT,
-                                                                 "default");
-    private static BandCombination comboRT               = new BandCombination(
-                                                                 0,
-                                                                 varNames.TEMP,
-                                                                 "default");
-    private static BandCombination comboLB               = new BandCombination(
-                                                                 0,
-                                                                 varNames.SSH,
-                                                                 "default");
-    private static BandCombination comboRB               = new BandCombination(
-                                                                 0,
-                                                                 varNames.SFWF,
-                                                                 "default");
+    public static enum GlobeMode {
+        FIRST_DATASET, SECOND_DATASET, DIFF
+    };
 
-    private static int             MAX_GLOBES_ON_SCREEN  = 4;
+    private static GlobeState globeStateLT          = new GlobeState(
+                                                            GlobeState.DataMode.FIRST_DATASET,
+                                                            GlobeState.Variable.SALT,
+                                                            0, "default");
+    private static GlobeState globeStateRT          = new GlobeState(
+                                                            GlobeState.DataMode.FIRST_DATASET,
+                                                            GlobeState.Variable.TEMP,
+                                                            0, "default");
+    private static GlobeState globeStateLB          = new GlobeState(
+                                                            GlobeState.DataMode.FIRST_DATASET,
+                                                            GlobeState.Variable.SSH,
+                                                            0, "default");
+    private static GlobeState globeStateRB          = new GlobeState(
+                                                            GlobeState.DataMode.FIRST_DATASET,
+                                                            GlobeState.Variable.SFWF,
+                                                            0, "default");
 
-    private static long            WAITTIME_FOR_RETRY    = 10000;
-    private static long            WAITTIME_FOR_MOVIE    = 100;
-    private static float           EPSILON               = 1.0E-7f;
+    private static int        MAX_GLOBES_ON_SCREEN  = 4;
 
-    private static int             FILE_EXTENSION_LENGTH = 2;
-    private static int             FILE_NUMBER_LENGTH    = 4;
+    private static long       WAITTIME_FOR_RETRY    = 10000;
+    private static long       WAITTIME_FOR_MOVIE    = 100;
+    private static float      EPSILON               = 1.0E-7f;
 
-    private static String[]        ACCEPTABLE_POSTFIXES  = { ".nc" };
+    private static int        FILE_EXTENSION_LENGTH = 2;
+    private static int        FILE_NUMBER_LENGTH    = 4;
 
-    private static String          CURRENT_POSTFIX       = ".nc";
+    private static String[]   ACCEPTABLE_POSTFIXES  = { ".nc" };
 
-    private static int             PREPROCESSING_AMOUNT  = 5;
+    private static String     CURRENT_POSTFIX       = ".nc";
 
-    private static float           MIN_SSH               = -200f;
-    private static float           MAX_SSH               = 200f;
-    private static float           MIN_SHF               = -400f;
-    private static float           MAX_SHF               = 250f;
-    private static float           MIN_SFWF              = -3E-4f;
-    private static float           MAX_SFWF              = 3E-4f;
-    private static float           MIN_HMXL              = 750f;
-    private static float           MAX_HMXL              = 70000f;
+    private static int        PREPROCESSING_AMOUNT  = 5;
 
-    private static float           MIN_SALT              = 0.00f;
-    private static float           MAX_SALT              = 0.05f;
-    private static float           MIN_TEMP              = -7.5f;
-    private static float           MAX_TEMP              = 35f;
+    private static float      MIN_SSH               = -200f;
+    private static float      MAX_SSH               = 200f;
+    private static float      MIN_SHF               = -400f;
+    private static float      MAX_SHF               = 250f;
+    private static float      MIN_SFWF              = -3E-4f;
+    private static float      MAX_SFWF              = 3E-4f;
+    private static float      MIN_HMXL              = 750f;
+    private static float      MAX_HMXL              = 70000f;
 
-    private static int             DEPTH_MIN             = 0;
-    private static int             DEPTH_DEF             = 0;
-    private static int             DEPTH_MAX             = 41;
+    private static float      MIN_SALT              = 0.00f;
+    private static float      MAX_SALT              = 0.05f;
+    private static float      MIN_TEMP              = -7.5f;
+    private static float      MAX_TEMP              = 35f;
 
-    private static int             WINDOW_SELECTION      = 0;
+    private static int        DEPTH_MIN             = 0;
+    private static int        DEPTH_DEF             = 0;
+    private static int        DEPTH_MAX             = 41;
 
-    private static boolean         DYNAMIC_DIMENSIONS    = true;
+    private static int        WINDOW_SELECTION      = 0;
+
+    private static boolean    DYNAMIC_DIMENSIONS    = true;
 
     public static ImauSettings getInstance() {
         return SingletonHolder.instance;
@@ -290,7 +294,27 @@ public class ImauSettings extends Settings {
         return DEPTH_DEF;
     }
 
-    public void setDepthDef(int value) {
+    public void setDepth(int value) {
+        GlobeState state = globeStateLT;
+        GlobeState result = new GlobeState(state.getDataMode(),
+                state.getVariable(), value, state.getColorMap());
+        globeStateLT = result;
+
+        state = globeStateRT;
+        result = new GlobeState(state.getDataMode(), state.getVariable(),
+                value, state.getColorMap());
+        globeStateRT = result;
+
+        state = globeStateLB;
+        result = new GlobeState(state.getDataMode(), state.getVariable(),
+                value, state.getColorMap());
+        globeStateLB = result;
+
+        state = globeStateRB;
+        result = new GlobeState(state.getDataMode(), state.getVariable(),
+                value, state.getColorMap());
+        globeStateRB = result;
+
         DEPTH_DEF = value;
     }
 
@@ -302,18 +326,18 @@ public class ImauSettings extends Settings {
         DEPTH_MAX = value;
     }
 
-    public String bandNameToString(varNames var) {
-        if (var == varNames.SSH) {
+    public String bandNameToString(VarNames var) {
+        if (var == VarNames.SSH) {
             return "Sea Surface Height";
-        } else if (var == varNames.SHF) {
+        } else if (var == VarNames.SHF) {
             return "Total Surface Heat Flux";
-        } else if (var == varNames.SFWF) {
+        } else if (var == VarNames.SFWF) {
             return "Virtual Salt Flux ";
-        } else if (var == varNames.HMXL) {
+        } else if (var == VarNames.HMXL) {
             return "Mixed Layer Depth";
-        } else if (var == varNames.SALT) {
+        } else if (var == VarNames.SALT) {
             return "Salinity";
-        } else if (var == varNames.TEMP) {
+        } else if (var == VarNames.TEMP) {
             return "Potential Temperature";
         } else {
             return "";
@@ -342,68 +366,104 @@ public class ImauSettings extends Settings {
         return "All";
     }
 
-    public void setLTBand(varNames band) {
-        BandCombination result = new BandCombination(comboLT.selectedDepth,
-                band, comboLT.colorMapFileName);
-        comboLT = result;
+    public synchronized void setLTDataMode(GlobeState.DataMode dataMode) {
+        GlobeState state = globeStateLT;
+        GlobeState result = new GlobeState(dataMode, state.getVariable(),
+                state.getDepth(), state.getColorMap());
+        globeStateLT = result;
     }
 
-    public void setRTBand(varNames band) {
-        BandCombination result = new BandCombination(comboRT.selectedDepth,
-                band, comboRT.colorMapFileName);
-        comboRT = result;
+    public synchronized void setRTDataMode(GlobeState.DataMode dataMode) {
+        GlobeState state = globeStateRT;
+        GlobeState result = new GlobeState(dataMode, state.getVariable(),
+                state.getDepth(), state.getColorMap());
+        globeStateRT = result;
     }
 
-    public void setLBBand(varNames band) {
-        BandCombination result = new BandCombination(comboLB.selectedDepth,
-                band, comboLB.colorMapFileName);
-        comboLB = result;
+    public synchronized void setLBDataMode(GlobeState.DataMode dataMode) {
+        GlobeState state = globeStateLB;
+        GlobeState result = new GlobeState(dataMode, state.getVariable(),
+                state.getDepth(), state.getColorMap());
+        globeStateLB = result;
     }
 
-    public void setRBBand(varNames band) {
-        BandCombination result = new BandCombination(comboRB.selectedDepth,
-                band, comboRB.colorMapFileName);
-        comboRB = result;
+    public synchronized void setRBDataMode(GlobeState.DataMode dataMode) {
+        GlobeState state = globeStateRB;
+        GlobeState result = new GlobeState(dataMode, state.getVariable(),
+                state.getDepth(), state.getColorMap());
+        globeStateRB = result;
     }
 
-    public BandCombination getBandComboLT() {
-        return comboLT;
+    public synchronized void setLTVariable(GlobeState.Variable variable) {
+        GlobeState state = globeStateLT;
+        GlobeState result = new GlobeState(state.getDataMode(), variable,
+                state.getDepth(), state.getColorMap());
+        globeStateLT = result;
     }
 
-    public BandCombination getBandComboRT() {
-        return comboRT;
+    public synchronized void setRTVariable(GlobeState.Variable variable) {
+        GlobeState state = globeStateRT;
+        GlobeState result = new GlobeState(state.getDataMode(), variable,
+                state.getDepth(), state.getColorMap());
+        globeStateRT = result;
     }
 
-    public BandCombination getBandComboLB() {
-        return comboLB;
+    public synchronized void setLBVariable(GlobeState.Variable variable) {
+        GlobeState state = globeStateLB;
+        GlobeState result = new GlobeState(state.getDataMode(), variable,
+                state.getDepth(), state.getColorMap());
+        globeStateLB = result;
     }
 
-    public BandCombination getBandComboRB() {
-        return comboRB;
+    public synchronized void setRBVariable(GlobeState.Variable variable) {
+        GlobeState state = globeStateRB;
+        GlobeState result = new GlobeState(state.getDataMode(), variable,
+                state.getDepth(), state.getColorMap());
+        globeStateRB = result;
     }
 
-    public void setLTColorMap(String selectedColorMap) {
-        BandCombination result = new BandCombination(comboLT.selectedDepth,
-                comboLT.band, selectedColorMap);
-        comboLT = result;
+    public synchronized GlobeState getLTState() {
+        return globeStateLT;
     }
 
-    public void setRTColorMap(String selectedColorMap) {
-        BandCombination result = new BandCombination(comboRT.selectedDepth,
-                comboRT.band, selectedColorMap);
-        comboRT = result;
+    public synchronized GlobeState getRTState() {
+        return globeStateRT;
     }
 
-    public void setLBColorMap(String selectedColorMap) {
-        BandCombination result = new BandCombination(comboLB.selectedDepth,
-                comboLB.band, selectedColorMap);
-        comboLB = result;
+    public synchronized GlobeState getLBState() {
+        return globeStateLB;
     }
 
-    public void setRBColorMap(String selectedColorMap) {
-        BandCombination result = new BandCombination(comboRB.selectedDepth,
-                comboRB.band, selectedColorMap);
-        comboRB = result;
+    public synchronized GlobeState getRBState() {
+        return globeStateRB;
+    }
+
+    public synchronized void setLTColorMap(String selectedColorMap) {
+        GlobeState state = globeStateLT;
+        GlobeState result = new GlobeState(state.getDataMode(),
+                state.getVariable(), state.getDepth(), selectedColorMap);
+        globeStateLT = result;
+    }
+
+    public synchronized void setRTColorMap(String selectedColorMap) {
+        GlobeState state = globeStateRT;
+        GlobeState result = new GlobeState(state.getDataMode(),
+                state.getVariable(), state.getDepth(), selectedColorMap);
+        globeStateRT = result;
+    }
+
+    public synchronized void setLBColorMap(String selectedColorMap) {
+        GlobeState state = globeStateLB;
+        GlobeState result = new GlobeState(state.getDataMode(),
+                state.getVariable(), state.getDepth(), selectedColorMap);
+        globeStateLB = result;
+    }
+
+    public synchronized void setRBColorMap(String selectedColorMap) {
+        GlobeState state = globeStateRB;
+        GlobeState result = new GlobeState(state.getDataMode(),
+                state.getVariable(), state.getDepth(), selectedColorMap);
+        globeStateRB = result;
     }
 
     public boolean isDynamicDimensions() {

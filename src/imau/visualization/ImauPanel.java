@@ -1,7 +1,6 @@
 package imau.visualization;
 
-import imau.visualization.ImauSettings.varNames;
-import imau.visualization.adaptor.BandCombination;
+import imau.visualization.adaptor.GlobeState;
 import imau.visualization.adaptor.NetCDFTimedPlayer;
 import imau.visualization.netcdf.NetCDFUtil;
 
@@ -377,7 +376,7 @@ public class ImauPanel extends CommonPanel {
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    settings.setDepthDef(source.getValue());
+                    settings.setDepth(source.getValue());
                     depthSetting.setText("" + settings.getDepthDef());
                 }
             }
@@ -387,7 +386,11 @@ public class ImauPanel extends CommonPanel {
                 settings.getDepthDef(), depthSetting));
 
         final ArrayList<Component> vcomponents = new ArrayList<Component>();
-        vcomponents.add(new JLabel("Window Selection"));
+        JLabel windowlabel = new JLabel("Window Selection");
+        windowlabel.setMaximumSize(new Dimension(200, 25));
+        windowlabel.setAlignmentX(CENTER_ALIGNMENT);
+
+        vcomponents.add(windowlabel);
         vcomponents.add(Box.createHorizontalGlue());
 
         final JComboBox comboBox = new JComboBox(new String[] { "All",
@@ -405,109 +408,108 @@ public class ImauPanel extends CommonPanel {
 
         visualConfig.add(GoggleSwing.vBoxedComponents(vcomponents, true));
 
-        String[] variables = { "SSH", "SHF", "SFWF", "HMXL", "SALT", "TEMP" };
+        String[] dataModes = { GlobeState.verbalizeDataMode(0),
+                GlobeState.verbalizeDataMode(1),
+                GlobeState.verbalizeDataMode(2) };
+        String[] variables = { GlobeState.verbalizeVariable(0),
+                GlobeState.verbalizeVariable(1),
+                GlobeState.verbalizeVariable(2),
+                GlobeState.verbalizeVariable(3),
+                GlobeState.verbalizeVariable(4),
+                GlobeState.verbalizeVariable(5) };
         final String[] colorMaps = NetCDFUtil.getColorMaps();
 
+        final JComboBox dataModeComboBoxLT = new JComboBox(dataModes);
+        final JComboBox dataModeComboBoxRT = new JComboBox(dataModes);
+        final JComboBox dataModeComboBoxLB = new JComboBox(dataModes);
+        final JComboBox dataModeComboBoxRB = new JComboBox(dataModes);
+
+        dataModeComboBoxLT.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                int selection = dataModeComboBoxLT.getSelectedIndex();
+                if (selection == -1) {
+                    selection = 0;
+                }
+                settings.setLTDataMode(GlobeState.getDataModeByIndex(selection));
+            }
+        });
+        dataModeComboBoxRT.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                int selection = dataModeComboBoxRT.getSelectedIndex();
+                if (selection == -1) {
+                    selection = 0;
+                }
+                settings.setRTDataMode(GlobeState.getDataModeByIndex(selection));
+            }
+        });
+        dataModeComboBoxLB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                int selection = dataModeComboBoxLB.getSelectedIndex();
+                if (selection == -1) {
+                    selection = 0;
+                }
+                settings.setLBDataMode(GlobeState.getDataModeByIndex(selection));
+            }
+        });
+        dataModeComboBoxRB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                int selection = dataModeComboBoxRB.getSelectedIndex();
+                if (selection == -1) {
+                    selection = 0;
+                }
+                settings.setRBDataMode(GlobeState.getDataModeByIndex(selection));
+            }
+        });
+
         final JComboBox comboBoxLT = new JComboBox(variables);
+        final JComboBox comboBoxRT = new JComboBox(variables);
+        final JComboBox comboBoxLB = new JComboBox(variables);
+        final JComboBox comboBoxRB = new JComboBox(variables);
+
         comboBoxLT.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 int selection = comboBoxLT.getSelectedIndex();
-                if (selection == 0 || selection == -1) {
-                    settings.setLTBand(varNames.SSH);
-                } else if (selection == 1) {
-                    settings.setLTBand(varNames.SHF);
-                } else if (selection == 2) {
-                    settings.setLTBand(varNames.SFWF);
-                } else if (selection == 3) {
-                    settings.setLTBand(varNames.HMXL);
-                } else if (selection == 4) {
-                    settings.setLTBand(varNames.SALT);
-                } else if (selection == 5) {
-                    settings.setLTBand(varNames.TEMP);
+                if (selection == -1) {
+                    selection = 0;
                 }
+                settings.setLTVariable(GlobeState.getVariableByIndex(selection));
             }
         });
-        final JComboBox comboBoxRT = new JComboBox(variables);
         comboBoxRT.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 int selection = comboBoxRT.getSelectedIndex();
-                if (selection == 0 || selection == -1) {
-                    settings.setRTBand(varNames.SSH);
-                } else if (selection == 1) {
-                    settings.setRTBand(varNames.SHF);
-                } else if (selection == 2) {
-                    settings.setRTBand(varNames.SFWF);
-                } else if (selection == 3) {
-                    settings.setRTBand(varNames.HMXL);
-                } else if (selection == 4) {
-                    settings.setRTBand(varNames.SALT);
-                } else if (selection == 5) {
-                    settings.setRTBand(varNames.TEMP);
+                if (selection == -1) {
+                    selection = 0;
                 }
+                settings.setRTVariable(GlobeState.getVariableByIndex(selection));
             }
         });
-        final JComboBox comboBoxLB = new JComboBox(variables);
         comboBoxLB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 int selection = comboBoxLB.getSelectedIndex();
-                if (selection == 0 || selection == -1) {
-                    settings.setLBBand(varNames.SSH);
-                } else if (selection == 1) {
-                    settings.setLBBand(varNames.SHF);
-                } else if (selection == 2) {
-                    settings.setLBBand(varNames.SFWF);
-                } else if (selection == 3) {
-                    settings.setLBBand(varNames.HMXL);
-                } else if (selection == 4) {
-                    settings.setLBBand(varNames.SALT);
-                } else if (selection == 5) {
-                    settings.setLBBand(varNames.TEMP);
+                if (selection == -1) {
+                    selection = 0;
                 }
+                settings.setLBVariable(GlobeState.getVariableByIndex(selection));
             }
         });
-        final JComboBox comboBoxRB = new JComboBox(variables);
         comboBoxRB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 int selection = comboBoxRB.getSelectedIndex();
-                if (selection == 0 || selection == -1) {
-                    settings.setRBBand(varNames.SSH);
-                } else if (selection == 1) {
-                    settings.setRBBand(varNames.SHF);
-                } else if (selection == 2) {
-                    settings.setRBBand(varNames.SFWF);
-                } else if (selection == 3) {
-                    settings.setRBBand(varNames.HMXL);
-                } else if (selection == 4) {
-                    settings.setRBBand(varNames.SALT);
-                } else if (selection == 5) {
-                    settings.setRBBand(varNames.TEMP);
+                if (selection == -1) {
+                    selection = 0;
                 }
+                settings.setRBVariable(GlobeState.getVariableByIndex(selection));
             }
         });
-
-        final ArrayList<Component> vcomponentsLT = new ArrayList<Component>();
-        final ArrayList<Component> vcomponentsRT = new ArrayList<Component>();
-        final ArrayList<Component> vcomponentsLB = new ArrayList<Component>();
-        final ArrayList<Component> vcomponentsRB = new ArrayList<Component>();
-
-        vcomponentsLT.add(new JLabel("Left Top Selection"));
-        vcomponentsRT.add(new JLabel("Right Top Selection"));
-        vcomponentsLB.add(new JLabel("Left Bottom Selection"));
-        vcomponentsRB.add(new JLabel("Right Bottom Selection"));
-
-        vcomponentsLT.add(Box.createHorizontalGlue());
-        vcomponentsRT.add(Box.createHorizontalGlue());
-        vcomponentsLB.add(Box.createHorizontalGlue());
-        vcomponentsRB.add(Box.createHorizontalGlue());
-
-        final ArrayList<Component> hcomponentsLT = new ArrayList<Component>();
-        final ArrayList<Component> hcomponentsRT = new ArrayList<Component>();
-        final ArrayList<Component> hcomponentsLB = new ArrayList<Component>();
-        final ArrayList<Component> hcomponentsRB = new ArrayList<Component>();
 
         final JComboBox comboBoxLTColorMaps = new JComboBox(colorMaps);
         final JComboBox comboBoxRTColorMaps = new JComboBox(colorMaps);
@@ -543,45 +545,80 @@ public class ImauPanel extends CommonPanel {
             }
         });
 
-        BandCombination LTC = settings.getBandComboLT();
-        BandCombination RTC = settings.getBandComboRT();
-        BandCombination LBC = settings.getBandComboLB();
-        BandCombination RBC = settings.getBandComboRB();
+        final ArrayList<Component> vcomponentsLT = new ArrayList<Component>();
+        final ArrayList<Component> vcomponentsRT = new ArrayList<Component>();
+        final ArrayList<Component> vcomponentsLB = new ArrayList<Component>();
+        final ArrayList<Component> vcomponentsRB = new ArrayList<Component>();
 
-        comboBoxLT.setSelectedIndex(LTC.getBandIndex());
-        comboBoxRT.setSelectedIndex(RTC.getBandIndex());
-        comboBoxLB.setSelectedIndex(LBC.getBandIndex());
-        comboBoxRB.setSelectedIndex(RBC.getBandIndex());
+        JLabel ltLabel = new JLabel("Left Top Selection");
+        JLabel rtLabel = new JLabel("Right Top Selection");
+        JLabel lbLabel = new JLabel("Left Bottom Selection");
+        JLabel rbLabel = new JLabel("Right Bottom Selection");
 
-        comboBoxLTColorMaps.setSelectedItem(LTC.colorMapFileName);
-        comboBoxRTColorMaps.setSelectedItem(RTC.colorMapFileName);
-        comboBoxLBColorMaps.setSelectedItem(LBC.colorMapFileName);
-        comboBoxRBColorMaps.setSelectedItem(RBC.colorMapFileName);
+        ltLabel.setMaximumSize(new Dimension(200, 25));
+        rtLabel.setMaximumSize(new Dimension(200, 25));
+        lbLabel.setMaximumSize(new Dimension(200, 25));
+        rbLabel.setMaximumSize(new Dimension(200, 25));
 
-        comboBoxLT.setMaximumSize(new Dimension(300, 25));
-        comboBoxRT.setMaximumSize(new Dimension(300, 25));
-        comboBoxLB.setMaximumSize(new Dimension(300, 25));
-        comboBoxRB.setMaximumSize(new Dimension(300, 25));
+        ltLabel.setAlignmentX(CENTER_ALIGNMENT);
+        rtLabel.setAlignmentX(CENTER_ALIGNMENT);
+        lbLabel.setAlignmentX(CENTER_ALIGNMENT);
+        rbLabel.setAlignmentX(CENTER_ALIGNMENT);
 
-        comboBoxLTColorMaps.setMaximumSize(new Dimension(300, 25));
-        comboBoxRTColorMaps.setMaximumSize(new Dimension(300, 25));
-        comboBoxLBColorMaps.setMaximumSize(new Dimension(300, 25));
-        comboBoxRBColorMaps.setMaximumSize(new Dimension(300, 25));
+        vcomponentsLT.add(ltLabel);
+        vcomponentsRT.add(rtLabel);
+        vcomponentsLB.add(lbLabel);
+        vcomponentsRB.add(rbLabel);
 
-        hcomponentsLT.add(comboBoxLT);
-        hcomponentsRT.add(comboBoxRT);
-        hcomponentsLB.add(comboBoxLB);
-        hcomponentsRB.add(comboBoxRB);
+        GlobeState LTC = settings.getLTState();
+        GlobeState RTC = settings.getRTState();
+        GlobeState LBC = settings.getLBState();
+        GlobeState RBC = settings.getRBState();
 
-        hcomponentsLT.add(comboBoxLTColorMaps);
-        hcomponentsRT.add(comboBoxRTColorMaps);
-        hcomponentsLB.add(comboBoxLBColorMaps);
-        hcomponentsRB.add(comboBoxRBColorMaps);
+        dataModeComboBoxLT.setSelectedIndex(LTC.getDataModeIndex());
+        dataModeComboBoxRT.setSelectedIndex(RTC.getDataModeIndex());
+        dataModeComboBoxLB.setSelectedIndex(LBC.getDataModeIndex());
+        dataModeComboBoxRB.setSelectedIndex(RBC.getDataModeIndex());
 
-        vcomponentsLT.add(GoggleSwing.hBoxedComponents(hcomponentsLT));
-        vcomponentsRT.add(GoggleSwing.hBoxedComponents(hcomponentsRT));
-        vcomponentsLB.add(GoggleSwing.hBoxedComponents(hcomponentsLB));
-        vcomponentsRB.add(GoggleSwing.hBoxedComponents(hcomponentsRB));
+        comboBoxLT.setSelectedIndex(LTC.getVariableIndex());
+        comboBoxRT.setSelectedIndex(RTC.getVariableIndex());
+        comboBoxLB.setSelectedIndex(LBC.getVariableIndex());
+        comboBoxRB.setSelectedIndex(RBC.getVariableIndex());
+
+        comboBoxLTColorMaps.setSelectedItem(LTC.getColorMap());
+        comboBoxRTColorMaps.setSelectedItem(RTC.getColorMap());
+        comboBoxLBColorMaps.setSelectedItem(LBC.getColorMap());
+        comboBoxRBColorMaps.setSelectedItem(RBC.getColorMap());
+
+        dataModeComboBoxLT.setMaximumSize(new Dimension(200, 25));
+        dataModeComboBoxRT.setMaximumSize(new Dimension(200, 25));
+        dataModeComboBoxLB.setMaximumSize(new Dimension(200, 25));
+        dataModeComboBoxRB.setMaximumSize(new Dimension(200, 25));
+
+        comboBoxLT.setMaximumSize(new Dimension(200, 25));
+        comboBoxRT.setMaximumSize(new Dimension(200, 25));
+        comboBoxLB.setMaximumSize(new Dimension(200, 25));
+        comboBoxRB.setMaximumSize(new Dimension(200, 25));
+
+        comboBoxLTColorMaps.setMaximumSize(new Dimension(200, 25));
+        comboBoxRTColorMaps.setMaximumSize(new Dimension(200, 25));
+        comboBoxLBColorMaps.setMaximumSize(new Dimension(200, 25));
+        comboBoxRBColorMaps.setMaximumSize(new Dimension(200, 25));
+
+        vcomponentsLT.add(dataModeComboBoxLT);
+        vcomponentsRT.add(dataModeComboBoxRT);
+        vcomponentsLB.add(dataModeComboBoxLB);
+        vcomponentsRB.add(dataModeComboBoxRB);
+
+        vcomponentsLT.add(comboBoxLT);
+        vcomponentsRT.add(comboBoxRT);
+        vcomponentsLB.add(comboBoxLB);
+        vcomponentsRB.add(comboBoxRB);
+
+        vcomponentsLT.add(comboBoxLTColorMaps);
+        vcomponentsRT.add(comboBoxRTColorMaps);
+        vcomponentsLB.add(comboBoxLBColorMaps);
+        vcomponentsRB.add(comboBoxRBColorMaps);
 
         vcomponentsLT.add(GoggleSwing.verticalStrut(5));
         vcomponentsRT.add(GoggleSwing.verticalStrut(5));
