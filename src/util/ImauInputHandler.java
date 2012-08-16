@@ -1,5 +1,7 @@
 package util;
 
+import imau.visualization.ImauApp;
+
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -9,7 +11,7 @@ import openglCommon.util.InputHandler;
 import openglCommon.util.Settings;
 
 public class ImauInputHandler extends InputHandler {
-    private final Settings settings = Settings.getInstance();
+    private final Settings     settings           = Settings.getInstance();
     private final InputHandler superClassInstance = InputHandler.getInstance();
 
     private static class SingletonHolder {
@@ -66,6 +68,10 @@ public class ImauInputHandler extends InputHandler {
     @Override
     public void keyPressed(KeyEvent e) {
         super.keyPressed(e);
+
+        if (e.getKeyCode() == KeyEvent.VK_P) {
+            ImauApp.getImage();
+        }
     }
 
     @Override

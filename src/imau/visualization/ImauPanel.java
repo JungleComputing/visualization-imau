@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import util.GoggleSwing;
+import util.ImauInputHandler;
 
 public class ImauPanel extends CommonPanel {
     public static enum TweakState {
@@ -71,7 +72,7 @@ public class ImauPanel extends CommonPanel {
     private File                     file1;
 
     public ImauPanel(ImauWindow imauWindow, String path, String cmdlnfileName) {
-        super(imauWindow, InputHandler.getInstance());
+        super(imauWindow, ImauInputHandler.getInstance());
         this.imauWindow = imauWindow;
 
         timeBar = new openglCommon.util.CustomJSlider();
