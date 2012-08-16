@@ -2,6 +2,7 @@ package imau.visualization;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -22,9 +23,12 @@ public class ImauApp {
                                                        .getLogger(ImauApp.class);
 
     private static JFrame             frame;
+    private static ImauPanel          imauPanel;
+    private static ImauWindow         imauWindow;
 
     public static void main(String[] arguments) {
         String cmdlnfileName = null;
+        String cmdlnfileName2 = null;
         String path = "";
 
         for (int i = 0; i < arguments.length; i++) {
@@ -36,6 +40,9 @@ public class ImauApp {
                         0,
                         cmdlnfile.getPath().length()
                                 - cmdlnfile.getName().length());
+            } else if (arguments[i].equals("-o2")) {
+                i++;
+                cmdlnfileName2 = arguments[i];
             } else if (arguments[i].equals("-resume")) {
                 i++;
                 ImauApp.settings.setInitial_simulation_frame(Integer
@@ -57,21 +64,20 @@ public class ImauApp {
                 .getDefaultScreenWidth(), ImauApp.settings
                 .getDefaultScreenHeight()));
 
-        final ImauWindow amuseWindow = new ImauWindow(
-                ImauInputHandler.getInstance(), true);
-        final ImauPanel amusePanel = new ImauPanel(amuseWindow, path,
-                cmdlnfileName);
+        imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
+        imauPanel = new ImauPanel(imauWindow, path, cmdlnfileName,
+                cmdlnfileName2);
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
-                    frame.getContentPane().add(amusePanel);
+                    frame.getContentPane().add(imauPanel);
 
                     frame.addWindowListener(new WindowAdapter() {
                         @Override
                         public void windowClosing(WindowEvent we) {
-                            amusePanel.close();
+                            imauPanel.close();
                             System.exit(0);
                         }
                     });
@@ -91,26 +97,32 @@ public class ImauApp {
         frame.setVisible(true);
     }
 
-    public static BufferedImage getImage() {
-        frame.pack();
+    public static BufferedImage getFrameImage() {
         Component component = frame.getContentPane();
         BufferedImage image = new BufferedImage(component.getWidth(),
                 component.getHeight(), BufferedImage.TYPE_INT_RGB);
+
         // call the Component's paint method, using
         // the Graphics object of the image.
-
         component.paint(image.getGraphics());
+
+        return image;
+    }
+
+    public static Point getCanvaslocation() {
+        return imauPanel.getCanvasLocation();
+    }
+
+    public static void getImage() {
         try {
-            ImageIO.write(image, "png", new File("screenshot.png"));
+            ImageIO.write(imauWindow.getScreenshot(), "png", new File(
+                    "screenshot.png"));
+
             System.out.println("screenshot!");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-        frame.repaint();
-
-        return image;
     }
 
     private static void log(String l, IOException ioe) {

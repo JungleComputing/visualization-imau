@@ -9,6 +9,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FocusTraversalPolicy;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -71,7 +72,8 @@ public class ImauPanel extends CommonPanel {
 
     private File                     file1;
 
-    public ImauPanel(ImauWindow imauWindow, String path, String cmdlnfileName) {
+    public ImauPanel(ImauWindow imauWindow, String path, String cmdlnfileName,
+            String cmdlnfileName2) {
         super(imauWindow, ImauInputHandler.getInstance());
         this.imauWindow = imauWindow;
 
@@ -156,7 +158,11 @@ public class ImauPanel extends CommonPanel {
         add(bottomPanel, BorderLayout.SOUTH);
 
         // Read command line file information
-        if (cmdlnfileName != null) {
+        if (cmdlnfileName != null && cmdlnfileName2 != null) {
+            final File cmdlnfile = new File(cmdlnfileName);
+            final File cmdlnfile2 = new File(cmdlnfileName2);
+            handleFile(cmdlnfile, cmdlnfile2);
+        } else if (cmdlnfileName != null) {
             final File cmdlnfile = new File(cmdlnfileName);
             handleFile(cmdlnfile);
         }
@@ -164,6 +170,11 @@ public class ImauPanel extends CommonPanel {
 
     void close() {
         imauWindow.dispose(glCanvas);
+    }
+
+    public Point getCanvasLocation() {
+        Point topLeft = glCanvas.getLocation();
+        return topLeft;
     }
 
     private JPanel createBottomPanel() {
@@ -634,7 +645,9 @@ public class ImauPanel extends CommonPanel {
 
     protected void handleFile(File file) {
         if (file != null && NetCDFUtil.isAcceptableFile(file)) {
-
+            if (timer.isInitialized()) {
+                timer.close();
+            }
             timer = new NetCDFTimedPlayer(imauWindow, timeBar, frameCounter);
 
             timer.init(file);
@@ -659,10 +672,12 @@ public class ImauPanel extends CommonPanel {
     protected void handleFile(File file1, File file2) {
         if (file1 != null && NetCDFUtil.isAcceptableFile(file1)
                 && file2 != null && NetCDFUtil.isAcceptableFile(file2)) {
-            // timer = new NetCDFTimedPlayer(imauWindow, timeBar, frameCounter);
-            timer.close();
+            if (timer.isInitialized()) {
+                timer.close();
+            }
+            timer = new NetCDFTimedPlayer(imauWindow, timeBar, frameCounter);
             timer.init(file1, file2);
-            // new Thread(timer).start();
+            new Thread(timer).start();
 
             final String path = NetCDFUtil.getPath(file1);
 

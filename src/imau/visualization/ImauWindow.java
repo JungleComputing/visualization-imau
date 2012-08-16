@@ -4,6 +4,8 @@ import imau.visualization.adaptor.GlobeState;
 import imau.visualization.adaptor.NetCDFFrame;
 import imau.visualization.adaptor.NetCDFTimedPlayer;
 
+import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 
@@ -34,8 +36,10 @@ import openglCommon.shaders.Program;
 import openglCommon.textures.HDRTexture2D;
 import util.ImauInputHandler;
 
+import com.jogamp.opengl.util.awt.Screenshot;
+
 public class ImauWindow extends CommonWindow {
-    private final ImauSettings settings = ImauSettings.getInstance();
+    private final ImauSettings settings     = ImauSettings.getInstance();
 
     private Quad               fsq;
     private Program            fsqProgram, texturedSphereProgram, atmProgram,
@@ -48,6 +52,8 @@ public class ImauWindow extends CommonWindow {
             sphereHDRFBO11, atmHDRFBO;
 
     private NetCDFFrame        currentFrame1, currentFrame2;
+
+    private BufferedImage      currentImage = null;
 
     public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
@@ -91,6 +97,8 @@ public class ImauWindow extends CommonWindow {
         }
 
         try {
+            currentImage = Screenshot.readToBufferedImage(canvasWidth,
+                    canvasHeight);
             drawable.getContext().release();
         } catch (final GLException e) {
             e.printStackTrace();
@@ -131,44 +139,6 @@ public class ImauWindow extends CommonWindow {
         HDRTexture2D textureLB = null;
         HDRTexture2D textureRB = null;
 
-        if (frame1 != null) {
-            if (settings.getLTState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-                textureLT = frame1.getImage(gl, GL3.GL_TEXTURE11,
-                        settings.getLTState());
-            }
-            if (settings.getRTState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-                textureRT = frame1.getImage(gl, GL3.GL_TEXTURE12,
-                        settings.getRTState());
-            }
-            if (settings.getLBState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-                textureLB = frame1.getImage(gl, GL3.GL_TEXTURE13,
-                        settings.getLBState());
-            }
-            if (settings.getRBState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-                textureRB = frame1.getImage(gl, GL3.GL_TEXTURE14,
-                        settings.getRBState());
-            }
-        }
-
-        if (frame2 != null) {
-            if (settings.getLTState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-                textureLT = frame2.getImage(gl, GL3.GL_TEXTURE11,
-                        settings.getLTState());
-            }
-            if (settings.getRTState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-                textureRT = frame2.getImage(gl, GL3.GL_TEXTURE12,
-                        settings.getRTState());
-            }
-            if (settings.getLBState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-                textureLB = frame2.getImage(gl, GL3.GL_TEXTURE13,
-                        settings.getLBState());
-            }
-            if (settings.getRBState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-                textureRB = frame2.getImage(gl, GL3.GL_TEXTURE14,
-                        settings.getRBState());
-            }
-        }
-
         if (frame1 != null && frame2 != null) {
             if (settings.getLTState().getDataMode() == GlobeState.DataMode.DIFF) {
                 textureLT = frame1.getImage(gl, frame2, GL3.GL_TEXTURE11,
@@ -188,40 +158,71 @@ public class ImauWindow extends CommonWindow {
             }
         }
 
-        if (textureLT == null) {
-            System.err.println("Illegal state combination in LT");
-            System.exit(1);
+        if (frame2 != null) {
+            if (settings.getLTState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
+                textureLT = frame2.getImage(gl, GL3.GL_TEXTURE11,
+                        settings.getLTState());
+            } else {
+
+            }
+            if (settings.getRTState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
+                textureRT = frame2.getImage(gl, GL3.GL_TEXTURE12,
+                        settings.getRTState());
+            }
+            if (settings.getLBState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
+                textureLB = frame2.getImage(gl, GL3.GL_TEXTURE13,
+                        settings.getLBState());
+            }
+            if (settings.getRBState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
+                textureRB = frame2.getImage(gl, GL3.GL_TEXTURE14,
+                        settings.getRBState());
+            }
         }
-        if (textureRT == null) {
-            System.err.println("Illegal state combination in RT");
-            System.exit(1);
+
+        if (frame1 != null) {
+            if (textureLT == null
+                    || settings.getLTState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
+                textureLT = frame1.getImage(gl, GL3.GL_TEXTURE11,
+                        settings.getLTState());
+            }
+            if (textureRT == null
+                    || settings.getRTState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
+                textureRT = frame1.getImage(gl, GL3.GL_TEXTURE12,
+                        settings.getRTState());
+            }
+            if (textureLB == null
+                    || settings.getLBState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
+                textureLB = frame1.getImage(gl, GL3.GL_TEXTURE13,
+                        settings.getLBState());
+            }
+            if (textureRB == null
+                    || settings.getRBState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
+                textureRB = frame1.getImage(gl, GL3.GL_TEXTURE14,
+                        settings.getRBState());
+            }
         }
-        if (textureLB == null) {
-            System.err.println("Illegal state combination in LB");
-            System.exit(1);
-        }
-        if (textureRB == null) {
-            System.err.println("Illegal state combination in RB");
-            System.exit(1);
-        }
 
-        textureLT.init(gl);
-        textureRT.init(gl);
-        textureLB.init(gl);
-        textureRB.init(gl);
+        if (textureLT != null && textureRT != null && textureLB != null
+                && textureRB != null) {
+            textureLT.init(gl);
+            textureRT.init(gl);
+            textureLB.init(gl);
+            textureRB.init(gl);
 
-        drawSphere(gl, mv, textureLT, texturedSphereProgram, sphereHDRFBOLT);
-        drawSphere(gl, mv, textureRT, texturedSphereProgram, sphereHDRFBORT);
-        drawSphere(gl, mv, textureLB, texturedSphereProgram, sphereHDRFBOLB);
-        drawSphere(gl, mv, textureRB, texturedSphereProgram, sphereHDRFBORB);
+            drawSphere(gl, mv, textureLT, texturedSphereProgram, sphereHDRFBOLT);
+            drawSphere(gl, mv, textureRT, texturedSphereProgram, sphereHDRFBORT);
+            drawSphere(gl, mv, textureLB, texturedSphereProgram, sphereHDRFBOLB);
+            drawSphere(gl, mv, textureRB, texturedSphereProgram, sphereHDRFBORB);
 
-        drawAtmosphere(gl, mv, atmProgram, atmHDRFBO);
+            drawAtmosphere(gl, mv, atmProgram, atmHDRFBO);
 
-        blur(gl, atmHDRFBO, fsq, 1, 2, 4);
+            blur(gl, atmHDRFBO, fsq, 1, 2, 4);
 
-        if (post_process) {
-            renderTexturesToScreen(gl, width, height, sphereHDRFBOLT,
-                    sphereHDRFBORT, sphereHDRFBOLB, sphereHDRFBORB, atmHDRFBO);
+            if (post_process) {
+                renderTexturesToScreen(gl, width, height, sphereHDRFBOLT,
+                        sphereHDRFBORT, sphereHDRFBOLB, sphereHDRFBORB,
+                        atmHDRFBO);
+            }
         }
     }
 
@@ -531,6 +532,50 @@ public class ImauWindow extends CommonWindow {
         } catch (final GLException e) {
             e.printStackTrace();
         }
+    }
+
+    public BufferedImage getScreenshot() {
+        BufferedImage frame = ImauApp.getFrameImage();
+        Point p = ImauApp.getCanvaslocation();
+        System.out.println("FrameX: " + frame.getWidth() + " FrameY: "
+                + frame.getHeight());
+        System.out.println("glX: " + currentImage.getWidth() + " glY: "
+                + currentImage.getHeight());
+        System.out.println("X: " + p.x + " Y: " + p.y);
+
+        int[] rgb = new int[frame.getWidth() * frame.getHeight()];
+
+        for (int y = 0; y < currentImage.getHeight(); y++) {
+            int frameY = y + p.y;
+
+            if (y < p.y || y + p.y > currentImage.getHeight()) {
+                for (int x = 0; x < currentImage.getWidth(); x++) {
+                    int frameX = x + p.x;
+
+                    rgb[frameY * frame.getWidth() + frameX] = frame.getRGB(
+                            frameX, frameY);
+                }
+            } else {
+                for (int x = 0; x < currentImage.getWidth(); x++) {
+                    int frameX = x + p.x;
+                    if (x < p.x || x + p.x > currentImage.getWidth()) {
+                        rgb[frameY * frame.getWidth() + frameX] = frame.getRGB(
+                                frameX, frameY);
+                    } else {
+                        rgb[frameY * frame.getWidth() + frameX] = currentImage
+                                .getRGB(x, y);
+                    }
+                }
+            }
+        }
+
+        BufferedImage result = new BufferedImage(frame.getWidth(),
+                frame.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+        result.setRGB(0, 0, result.getWidth(), result.getHeight(), rgb, 0,
+                result.getWidth());
+
+        return result;
     }
 
     @Override
