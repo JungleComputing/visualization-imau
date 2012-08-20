@@ -97,10 +97,12 @@ public class ImauWindow extends CommonWindow {
         }
 
         try {
-            currentImage = Screenshot.readToBufferedImage(canvasWidth,
-                    canvasHeight);
+            if (settings.isIMAGE_STREAM_OUTPUT()) {
+                currentImage = Screenshot.readToBufferedImage(canvasWidth,
+                        canvasHeight);
 
-            knitImages();
+                knitImages();
+            }
             drawable.getContext().release();
         } catch (final GLException e) {
             e.printStackTrace();

@@ -77,6 +77,8 @@ public class ImauSettings extends Settings {
 
     private static boolean    DYNAMIC_DIMENSIONS    = true;
 
+    private static boolean    IMAGE_STREAM_OUTPUT   = false;
+
     public static ImauSettings getInstance() {
         return SingletonHolder.instance;
     }
@@ -468,5 +470,13 @@ public class ImauSettings extends Settings {
 
     public boolean isDynamicDimensions() {
         return DYNAMIC_DIMENSIONS;
+    }
+
+    public boolean isIMAGE_STREAM_OUTPUT() {
+        return IMAGE_STREAM_OUTPUT;
+    }
+
+    public void setIMAGE_STREAM_OUTPUT(boolean iMAGE_STREAM_OUTPUT) {
+        IMAGE_STREAM_OUTPUT = iMAGE_STREAM_OUTPUT;
     }
 }
