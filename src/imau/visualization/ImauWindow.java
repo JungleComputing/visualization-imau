@@ -99,6 +99,8 @@ public class ImauWindow extends CommonWindow {
         try {
             currentImage = Screenshot.readToBufferedImage(canvasWidth,
                     canvasHeight);
+
+            knitImages();
             drawable.getContext().release();
         } catch (final GLException e) {
             e.printStackTrace();
@@ -534,37 +536,65 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    public BufferedImage getScreenshot() {
+    private BufferedImage knitImages() {
         BufferedImage frame = ImauApp.getFrameImage();
         Point p = ImauApp.getCanvaslocation();
-        System.out.println("FrameX: " + frame.getWidth() + " FrameY: "
-                + frame.getHeight());
-        System.out.println("glX: " + currentImage.getWidth() + " glY: "
-                + currentImage.getHeight());
-        System.out.println("X: " + p.x + " Y: " + p.y);
 
         int[] rgb = new int[frame.getWidth() * frame.getHeight()];
 
-        for (int y = 0; y < currentImage.getHeight(); y++) {
-            int frameY = y + p.y;
+        for (int y = 0; y < frame.getHeight(); y++) {
+            int glCanvasY = y - p.y;
 
-            if (y < p.y || y + p.y > currentImage.getHeight()) {
-                for (int x = 0; x < currentImage.getWidth(); x++) {
-                    int frameX = x + p.x;
+            if (glCanvasY >= 0 && glCanvasY < currentImage.getHeight()) {
+                for (int x = 0; x < frame.getWidth(); x++) {
+                    int glCanvasX = x - p.x;
 
-                    rgb[frameY * frame.getWidth() + frameX] = frame.getRGB(
-                            frameX, frameY);
+                    if (glCanvasX >= 0 && glCanvasX < currentImage.getWidth()) {
+                        rgb[y * frame.getWidth() + x] = currentImage.getRGB(
+                                glCanvasX, glCanvasY);
+                    } else {
+                        rgb[y * frame.getWidth() + x] = frame.getRGB(x, y);
+                    }
                 }
             } else {
-                for (int x = 0; x < currentImage.getWidth(); x++) {
-                    int frameX = x + p.x;
-                    if (x < p.x || x + p.x > currentImage.getWidth()) {
-                        rgb[frameY * frame.getWidth() + frameX] = frame.getRGB(
-                                frameX, frameY);
+                for (int x = 0; x < frame.getWidth(); x++) {
+                    rgb[y * frame.getWidth() + x] = frame.getRGB(x, y);
+                }
+            }
+        }
+
+        BufferedImage result = new BufferedImage(frame.getWidth(),
+                frame.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+        result.setRGB(0, 0, result.getWidth(), result.getHeight(), rgb, 0,
+                result.getWidth());
+
+        return result;
+    }
+
+    public BufferedImage getScreenshot() {
+        BufferedImage frame = ImauApp.getFrameImage();
+        Point p = ImauApp.getCanvaslocation();
+
+        int[] rgb = new int[frame.getWidth() * frame.getHeight()];
+
+        for (int y = 0; y < frame.getHeight(); y++) {
+            int glCanvasY = y - p.y;
+
+            if (glCanvasY >= 0 && glCanvasY < currentImage.getHeight()) {
+                for (int x = 0; x < frame.getWidth(); x++) {
+                    int glCanvasX = x - p.x;
+
+                    if (glCanvasX >= 0 && glCanvasX < currentImage.getWidth()) {
+                        rgb[y * frame.getWidth() + x] = currentImage.getRGB(
+                                glCanvasX, glCanvasY);
                     } else {
-                        rgb[frameY * frame.getWidth() + frameX] = currentImage
-                                .getRGB(x, y);
+                        rgb[y * frame.getWidth() + x] = frame.getRGB(x, y);
                     }
+                }
+            } else {
+                for (int x = 0; x < frame.getWidth(); x++) {
+                    rgb[y * frame.getWidth() + x] = frame.getRGB(x, y);
                 }
             }
         }
