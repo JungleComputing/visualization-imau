@@ -554,6 +554,16 @@ public class ImauWindow extends CommonWindow {
         Point p = ImauApp.getCanvaslocation();
 
         int[] rgb = new int[frame.getWidth() * frame.getHeight()];
+        int[] frameRGB = new int[frame.getWidth() * frame.getHeight()];
+        frame.getRGB(0, 0, frame.getWidth(), frame.getHeight(), frameRGB, 0,
+                frame.getWidth());
+
+        int[] canvasRGB = new int[currentImage.getWidth()
+                * currentImage.getHeight()];
+        currentImage
+                .getRGB(0, 0, currentImage.getWidth(),
+                        currentImage.getHeight(), canvasRGB, 0,
+                        currentImage.getWidth());
 
         for (int y = 0; y < frame.getHeight(); y++) {
             int glCanvasY = y - p.y;
