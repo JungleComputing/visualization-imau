@@ -28,9 +28,11 @@ JNIEXPORT jint JNICALL Java_imau_visualization_jni_SageInterface_setup(JNIEnv *e
 	resY = (int)height;
 	frames = (double)fps;
 
-	sageInf = createSAIL("javaBridge", resX, resY, PIXFMT_8888, NULL, BOTTOM_TO_TOP, frames);
+	sageInf = createSAIL("javaBridge", resX, resY, PIXFMT_8888_INV, NULL, TOP_TO_BOTTOM, frames);
 	
 	buffer = nextBuffer(sageInf);
+
+
 
 	return 0;
 }
@@ -40,8 +42,13 @@ JNIEXPORT jint JNICALL Java_imau_visualization_jni_SageInterface_start(JNIEnv *e
 	//int1 = (long *)malloc(sizeof(long)*size);
 	//env->GetIntArrayRegion(arr,0,size,int1);
 	//free(int1);
-	env->GetIntArrayRegion(arr, 0, size, (int*)buffer);
 
+	jint *body = env->GetIntArrayElements(arr, 0);
+
+	memcpy(buffer, body, resX*resY*4);
+
+	//env->GetIntArrayRegion(arr, 0, size, (int*)buffer);
+	//memset(buffer, 100, resX*resY*4);
 	buffer = swapAndNextBuffer(sageInf);
 
 	processMessages(sageInf);

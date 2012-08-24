@@ -75,7 +75,7 @@ public class ImauSettings extends Settings {
 
     private static boolean    DYNAMIC_DIMENSIONS    = false;
 
-    private static boolean    IMAGE_STREAM_OUTPUT   = false;
+    private static boolean    IMAGE_STREAM_OUTPUT   = true;
 
     private static String     SAGE_DIRECTORY        = "/home/maarten/sage-code/sage3.0";
 

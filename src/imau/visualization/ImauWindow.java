@@ -5,6 +5,7 @@ import imau.visualization.adaptor.NetCDFFrame;
 import imau.visualization.adaptor.NetCDFTimedPlayer;
 import imau.visualization.jni.SageInterface;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -485,7 +486,8 @@ public class ImauWindow extends CommonWindow {
         }
 
         if (settings.isIMAGE_STREAM_OUTPUT()) {
-            sage = new SageInterface(canvasWidth, canvasHeight, 10);
+            Dimension frameDim = ImauApp.getFrameSize();
+            sage = new SageInterface(frameDim.width, frameDim.height, 10);
         }
     }
 

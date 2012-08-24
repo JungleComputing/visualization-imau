@@ -109,6 +109,10 @@ public class ImauApp {
         return image;
     }
 
+    public static Dimension getFrameSize() {
+        return frame.getContentPane().getSize();
+    }
+
     public static Point getCanvaslocation() {
         return imauPanel.getCanvasLocation();
     }
