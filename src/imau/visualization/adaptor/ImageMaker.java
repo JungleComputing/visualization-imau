@@ -53,11 +53,8 @@ public class ImageMaker {
     }
 
     private static HashMap<String, HashMap<Integer, Color>> colorMapMaps;
-    private static HashMap<GlobeState.Variable, Dimensions> dimensionMap;
-    private static HashMap<GlobeState.Variable, Dimensions> doubleDimensionMap;
-
-    private static int                                      currentFrameNumber;
-    private static int                                      currentDepth;
+    private static HashMap<GlobeState, Dimensions>          dimensionMap;
+    private static HashMap<GlobeState, Dimensions>          doubleDimensionMap;
 
     static {
         rebuild();
@@ -65,8 +62,8 @@ public class ImageMaker {
 
     public static void rebuild() {
         colorMapMaps = new HashMap<String, HashMap<Integer, Color>>();
-        dimensionMap = new HashMap<GlobeState.Variable, ImageMaker.Dimensions>();
-        doubleDimensionMap = new HashMap<GlobeState.Variable, ImageMaker.Dimensions>();
+        dimensionMap = new HashMap<GlobeState, ImageMaker.Dimensions>();
+        doubleDimensionMap = new HashMap<GlobeState, ImageMaker.Dimensions>();
 
         try {
             String[] colorMapFileNames = NetCDFUtil.getColorMaps();
@@ -99,10 +96,56 @@ public class ImageMaker {
         }
     }
 
+    public static HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
+            TGridPoint[] tGridPoints, GlobeState state, int width, int height) {
+
+        Variable variable = state.getVariable();
+        String colorMapName = state.getColorMap();
+
+        int pixels = height * width;
+
+        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        outBuf.clear();
+        outBuf.rewind();
+
+        for (int col = 0; col < width; col++) {
+            for (int row = height - 1; row >= 0; row--) {
+                int i = (row * width + col);
+
+                Color c = null;
+
+                Dimensions dims;
+
+                if (settings.isDynamicDimensions()) {
+                    dims = getDimensions(tGridPoints, state);
+                } else {
+                    dims = getDimensions(variable);
+                }
+
+                float var = (col / width) * dims.getDiff();
+
+                c = getColor(colorMapName, dims, var);
+
+                outBuf.put(c.red);
+                outBuf.put(c.green);
+                outBuf.put(c.blue);
+                outBuf.put(0f);
+
+            }
+        }
+
+        while (outBuf.hasRemaining()) {
+            outBuf.put(0f);
+        }
+
+        outBuf.flip();
+
+        return new NetCDFTexture(glMultitexUnit, outBuf, width, height);
+    }
+
     public static HDRTexture2D getImage(GL3 gl, int glMultitexUnit,
-            int frameNumber, int depth, TGridPoint[] tGridPoints,
-            GlobeState state, int dsWidth, int dsHeight, int imgHeight,
-            int blankStartRows) {
+            TGridPoint[] tGridPoints, GlobeState state, int dsWidth,
+            int dsHeight, int imgHeight, int blankStartRows) {
         Variable variable = state.getVariable();
         String colorMapName = state.getColorMap();
 
@@ -130,8 +173,7 @@ public class ImageMaker {
                 Dimensions dims;
 
                 if (settings.isDynamicDimensions()) {
-                    dims = getDimensions(frameNumber, depth, tGridPoints,
-                            variable);
+                    dims = getDimensions(tGridPoints, state);
                 } else {
                     dims = getDimensions(variable);
                 }
@@ -174,9 +216,9 @@ public class ImageMaker {
     }
 
     public static HDRTexture2D getImage(GL3 gl, int glMultitexUnit,
-            int frameNumber, int depth, TGridPoint[] tGridPoints1,
-            TGridPoint[] tGridPoints2, GlobeState state, int dsWidth,
-            int dsHeight, int imgHeight, int blankStartRows) {
+            TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
+            GlobeState state, int dsWidth, int dsHeight, int imgHeight,
+            int blankStartRows) {
         Variable variable = state.getVariable();
         String colorMapName = state.getColorMap();
 
@@ -203,8 +245,7 @@ public class ImageMaker {
 
                 Dimensions dims;
 
-                dims = getDimensions(frameNumber, depth, tGridPoints1,
-                        tGridPoints2, variable);
+                dims = getDimensions(tGridPoints1, tGridPoints2, state);
 
                 if (variable == GlobeState.Variable.SSH) {
                     c = getColor(colorMapName, dims, tGridPoints1[i].ssh,
@@ -247,6 +288,59 @@ public class ImageMaker {
         outBuf.flip();
 
         return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgHeight);
+    }
+
+    public synchronized static Color getLegendColor(String colorMapName,
+            Dimensions dim, float var) {
+        HashMap<Integer, Color> colorMap = colorMapMaps.get(colorMapName);
+
+        int cmEntries = colorMap.size();
+
+        Color color = null;
+
+        float result = (var - dim.min) / dim.getDiff();
+        float rawIndex = result * cmEntries;
+
+        if (var < dim.min) {
+            color = Color.WHITE;
+        } else if (var > dim.max) {
+            color = Color.WHITE;
+        } else {
+            float red = 0;
+            float green = 0;
+            float blue = 0;
+
+            int iLow = (int) Math.floor(rawIndex);
+            int iHigh = (int) Math.ceil(rawIndex);
+
+            Color cLow;
+            if (iLow == cmEntries) {
+                cLow = colorMap.get(cmEntries - 1);
+            } else if (iLow < 0) {
+                cLow = colorMap.get(0);
+            } else {
+                cLow = colorMap.get(iLow);
+            }
+
+            Color cHigh;
+            if (iHigh == cmEntries) {
+                cHigh = colorMap.get(cmEntries - 1);
+            } else if (iHigh < 0) {
+                cHigh = colorMap.get(0);
+            } else {
+                cHigh = colorMap.get(iHigh);
+            }
+
+            float colorInterval = (float) (rawIndex - Math.floor(rawIndex));
+
+            red = getInterpolatedColor(cHigh.red, cLow.red, colorInterval);
+            green = getInterpolatedColor(cHigh.green, cLow.green, colorInterval);
+            blue = getInterpolatedColor(cHigh.blue, cLow.blue, colorInterval);
+
+            color = new Color(red, green, blue);
+        }
+
+        return color;
     }
 
     public synchronized static Color getColor(String colorMapName,
@@ -385,17 +479,19 @@ public class ImageMaker {
         return result;
     }
 
-    private static Dimensions getDimensions(int frameNumber, int depth,
-            TGridPoint[] tGridPoints, GlobeState.Variable variable) {
+    private static Dimensions getDimensions(TGridPoint[] tGridPoints,
+            GlobeState state) {
         int pixels = tGridPoints.length;
         float max = Float.MIN_VALUE;
         float min = Float.MAX_VALUE;
 
-        if (dimensionMap.containsKey(variable)) {
-            return dimensionMap.get(variable);
+        if (dimensionMap.containsKey(state)) {
+            return dimensionMap.get(state);
+        } else {
+            dimensionMap.clear();
         }
 
-        if (variable == GlobeState.Variable.SSH) {
+        if (state.getVariable() == GlobeState.Variable.SSH) {
             for (int i = 0; i < pixels; i++) {
                 float val = tGridPoints[i].ssh;
                 if (val > max) {
@@ -405,7 +501,7 @@ public class ImageMaker {
                     min = val;
                 }
             }
-        } else if (variable == GlobeState.Variable.SHF) {
+        } else if (state.getVariable() == GlobeState.Variable.SHF) {
             for (int i = 0; i < pixels; i++) {
                 float val = tGridPoints[i].shf;
                 if (val > max) {
@@ -415,7 +511,7 @@ public class ImageMaker {
                     min = val;
                 }
             }
-        } else if (variable == GlobeState.Variable.SFWF) {
+        } else if (state.getVariable() == GlobeState.Variable.SFWF) {
             for (int i = 0; i < pixels; i++) {
                 float val = tGridPoints[i].sfwf;
                 if (val > max) {
@@ -425,7 +521,7 @@ public class ImageMaker {
                     min = val;
                 }
             }
-        } else if (variable == GlobeState.Variable.HMXL) {
+        } else if (state.getVariable() == GlobeState.Variable.HMXL) {
             for (int i = 0; i < pixels; i++) {
                 float val = tGridPoints[i].hmxl;
                 if (val > max) {
@@ -435,7 +531,7 @@ public class ImageMaker {
                     min = val;
                 }
             }
-        } else if (variable == GlobeState.Variable.SALT) {
+        } else if (state.getVariable() == GlobeState.Variable.SALT) {
             for (int i = 0; i < pixels; i++) {
                 float val = tGridPoints[i].salinity;
                 if (val > max) {
@@ -445,7 +541,7 @@ public class ImageMaker {
                     min = val;
                 }
             }
-        } else if (variable == GlobeState.Variable.TEMP) {
+        } else if (state.getVariable() == GlobeState.Variable.TEMP) {
             for (int i = 0; i < pixels; i++) {
                 float val = tGridPoints[i].temp;
                 if (val > max) {
@@ -458,28 +554,24 @@ public class ImageMaker {
         }
 
         Dimensions dim = new Dimensions(min, max);
-        dimensionMap.put(variable, dim);
-        currentFrameNumber = frameNumber;
-        currentDepth = depth;
+        dimensionMap.put(state, dim);
 
         return dim;
     }
 
-    private static Dimensions getDimensions(int frameNumber, int depth,
-            TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
-            GlobeState.Variable variable) {
+    private static Dimensions getDimensions(TGridPoint[] tGridPoints1,
+            TGridPoint[] tGridPoints2, GlobeState state) {
         int pixels = tGridPoints1.length;
         float max = Float.MIN_VALUE;
         float min = Float.MAX_VALUE;
 
-        if (currentFrameNumber == frameNumber && currentDepth == depth
-                && doubleDimensionMap.containsKey(variable)) {
-            return doubleDimensionMap.get(variable);
+        if (doubleDimensionMap.containsKey(state)) {
+            return doubleDimensionMap.get(state);
         } else {
             doubleDimensionMap.clear();
         }
 
-        if (variable == GlobeState.Variable.SSH) {
+        if (state.getVariable() == GlobeState.Variable.SSH) {
             for (int i = 0; i < pixels; i++) {
                 float val1 = tGridPoints1[i].ssh;
                 float val2 = tGridPoints2[i].ssh;
@@ -494,7 +586,7 @@ public class ImageMaker {
                     }
                 }
             }
-        } else if (variable == GlobeState.Variable.SHF) {
+        } else if (state.getVariable() == GlobeState.Variable.SHF) {
             for (int i = 0; i < pixels; i++) {
                 float val1 = tGridPoints1[i].shf;
                 float val2 = tGridPoints2[i].shf;
@@ -509,7 +601,7 @@ public class ImageMaker {
                     }
                 }
             }
-        } else if (variable == GlobeState.Variable.SFWF) {
+        } else if (state.getVariable() == GlobeState.Variable.SFWF) {
             for (int i = 0; i < pixels; i++) {
                 float val1 = tGridPoints1[i].sfwf;
                 float val2 = tGridPoints2[i].sfwf;
@@ -524,7 +616,7 @@ public class ImageMaker {
                     }
                 }
             }
-        } else if (variable == GlobeState.Variable.HMXL) {
+        } else if (state.getVariable() == GlobeState.Variable.HMXL) {
             for (int i = 0; i < pixels; i++) {
                 float val1 = tGridPoints1[i].hmxl;
                 float val2 = tGridPoints2[i].hmxl;
@@ -539,7 +631,7 @@ public class ImageMaker {
                     }
                 }
             }
-        } else if (variable == GlobeState.Variable.SALT) {
+        } else if (state.getVariable() == GlobeState.Variable.SALT) {
             for (int i = 0; i < pixels; i++) {
                 float val1 = tGridPoints1[i].salinity;
                 float val2 = tGridPoints2[i].salinity;
@@ -554,7 +646,7 @@ public class ImageMaker {
                     }
                 }
             }
-        } else if (variable == GlobeState.Variable.TEMP) {
+        } else if (state.getVariable() == GlobeState.Variable.TEMP) {
             for (int i = 0; i < pixels; i++) {
                 float val1 = tGridPoints1[i].temp;
                 float val2 = tGridPoints2[i].temp;
@@ -572,9 +664,7 @@ public class ImageMaker {
         }
 
         Dimensions dim = new Dimensions(min, max);
-        doubleDimensionMap.put(variable, dim);
-        currentFrameNumber = frameNumber;
-        currentDepth = depth;
+        doubleDimensionMap.put(state, dim);
 
         return dim;
     }

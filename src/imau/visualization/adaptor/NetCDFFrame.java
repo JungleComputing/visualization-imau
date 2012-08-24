@@ -46,6 +46,7 @@ public class NetCDFFrame implements Runnable {
 
     private final HashMap<Integer, GlobeState>   storedStates;
     private final HashMap<Integer, HDRTexture2D> storedTextures;
+    private final HashMap<Integer, HDRTexture2D> storedLegends;
 
     public NetCDFFrame(int frameNumber, File initialFile) {
         this.frameNumber = frameNumber;
@@ -59,6 +60,7 @@ public class NetCDFFrame implements Runnable {
 
         storedStates = new HashMap<Integer, GlobeState>();
         storedTextures = new HashMap<Integer, HDRTexture2D>();
+        storedLegends = new HashMap<Integer, HDRTexture2D>();
     }
 
     public int getNumber() {
@@ -175,7 +177,50 @@ public class NetCDFFrame implements Runnable {
         }
     }
 
+    public HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
+            GlobeState state) {
+        // if (state.getFrameNumber() != frameNumber) {
+        // System.err
+        // .println("ERROR: Request for frame nr "
+        // + state.getFrameNumber() + " to NetCDFFrame "
+        // + frameNumber);
+        // System.exit(1);
+        // }
+
+        if (settings.getDepthDef() != selectedDepth) {
+            selectedDepth = settings.getDepthDef();
+            initialized = false;
+        }
+
+        if (!initialized) {
+            init();
+        }
+
+        // If the state was used already, retrieve the image for re-use
+        if (storedStates.containsKey(glMultitexUnit)
+                && storedStates.get(glMultitexUnit).equals(state)) {
+            return storedLegends.get(glMultitexUnit);
+        }
+
+        HDRTexture2D image;
+
+        image = ImageMaker.getLegendImage(gl, glMultitexUnit, tGridPoints,
+                state, width, height);
+
+        storedLegends.put(glMultitexUnit, image);
+
+        return image;
+    }
+
     public HDRTexture2D getImage(GL3 gl, int glMultitexUnit, GlobeState state) {
+        // if (state.getFrameNumber() != frameNumber) {
+        // System.err
+        // .println("ERROR: Request for frame nr "
+        // + state.getFrameNumber() + " to NetCDFFrame "
+        // + frameNumber);
+        // System.exit(1);
+        // }
+
         if (settings.getDepthDef() != selectedDepth) {
             selectedDepth = settings.getDepthDef();
             initialized = false;
@@ -199,9 +244,8 @@ public class NetCDFFrame implements Runnable {
         // Either the state has changed, or the glMultitexUnit was not used yet,
         // so change the image.
 
-        image = ImageMaker.getImage(gl, glMultitexUnit, frameNumber,
-                state.getDepth(), tGridPoints, state, width, height, newHeight,
-                blankRows);
+        image = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints, state,
+                width, height, newHeight, blankRows);
         storedTextures.put(glMultitexUnit, image);
         storedStates.put(glMultitexUnit, state);
 
@@ -210,6 +254,14 @@ public class NetCDFFrame implements Runnable {
 
     public HDRTexture2D getImage(GL3 gl, NetCDFFrame otherFrame,
             int glMultitexUnit, GlobeState state) {
+        // if (state.getFrameNumber() != frameNumber) {
+        // System.err
+        // .println("ERROR: Request for frame nr "
+        // + state.getFrameNumber() + " to NetCDFFrame "
+        // + frameNumber);
+        // System.exit(1);
+        // }
+
         if (settings.getDepthDef() != selectedDepth) {
             selectedDepth = settings.getDepthDef();
             initialized = false;
@@ -233,9 +285,9 @@ public class NetCDFFrame implements Runnable {
         // Either the combo has changed, or the glMultitexUnit was not used
         // before, so change the image.
 
-        image = ImageMaker.getImage(gl, glMultitexUnit, frameNumber,
-                state.getDepth(), tGridPoints, otherFrame.getGridPoints(),
-                state, width, height, newHeight, blankRows);
+        image = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints,
+                otherFrame.getGridPoints(), state, width, height, newHeight,
+                blankRows);
         storedTextures.put(glMultitexUnit, image);
         storedStates.put(glMultitexUnit, state);
 

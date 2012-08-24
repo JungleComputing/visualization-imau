@@ -9,15 +9,17 @@ public class GlobeState {
         SSH, SHF, SFWF, HMXL, SALT, TEMP
     };
 
-    private DataMode currentDataMode = DataMode.FIRST_DATASET;
-    private Variable currentVariable = Variable.SSH;
-    private int      currentDepth    = 0;
-    private String   currentColorMap = "default";
+    private DataMode currentDataMode    = DataMode.FIRST_DATASET;
+    private Variable currentVariable    = Variable.SSH;
+    private int      currentFrameNumber = 0;
+    private int      currentDepth       = 0;
+    private String   currentColorMap    = "default";
 
-    public GlobeState(DataMode dataMode, Variable var, int depth,
-            String colorMap) {
+    public GlobeState(DataMode dataMode, Variable var, int frameNumber,
+            int depth, String colorMap) {
         this.currentDataMode = dataMode;
         this.currentVariable = var;
+        this.currentFrameNumber = frameNumber;
         this.currentDepth = depth;
         this.currentColorMap = colorMap;
     }
@@ -26,11 +28,12 @@ public class GlobeState {
     public int hashCode() {
         int dataModePrime = (currentDataMode.hashCode() + 3) * 23;
         int variablePrime = (currentVariable.hashCode() + 67) * 859;
+        int frameNumberPrime = (currentDepth + 131) * 1543;
         int depthPrime = (currentDepth + 251) * 2957;
         int colorMapPrime = (currentColorMap.hashCode() + 919) * 7883;
 
-        int hashCode = depthPrime + dataModePrime + variablePrime
-                + colorMapPrime;
+        int hashCode = frameNumberPrime + depthPrime + dataModePrime
+                + variablePrime + colorMapPrime;
 
         return hashCode;
     }
@@ -48,6 +51,7 @@ public class GlobeState {
         // now a proper field-by-field evaluation can be made
         return (currentDataMode == that.currentDataMode
                 && currentVariable == that.currentVariable
+                && currentFrameNumber == that.currentFrameNumber
                 && currentDepth == that.currentDepth && currentColorMap
                     .compareTo(that.currentColorMap) == 0);
     }
@@ -160,6 +164,10 @@ public class GlobeState {
 
     public Variable getVariable() {
         return currentVariable;
+    }
+
+    public int getFrameNumber() {
+        return currentFrameNumber;
     }
 
     public int getDepth() {

@@ -3,6 +3,7 @@ package imau.visualization;
 import imau.visualization.adaptor.GlobeState;
 import imau.visualization.adaptor.NetCDFFrame;
 import imau.visualization.adaptor.NetCDFTimedPlayer;
+import imau.visualization.jni.SageInterface;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -55,6 +56,8 @@ public class ImauWindow extends CommonWindow {
 
     private BufferedImage      currentImage = null;
 
+    private SageInterface      sage;
+
     public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
     }
@@ -101,7 +104,8 @@ public class ImauWindow extends CommonWindow {
                 currentImage = Screenshot.readToBufferedImage(canvasWidth,
                         canvasHeight);
 
-                knitImages();
+                int[] rgb = knitImages();
+                sage.display(rgb);
             }
             drawable.getContext().release();
         } catch (final GLException e) {
@@ -138,7 +142,7 @@ public class ImauWindow extends CommonWindow {
         loader.setUniformMatrix("NormalMatrix", MatrixFMath.getNormalMatrix(mv));
         loader.setUniformMatrix("PMatrix", p);
 
-        HDRTexture2D textureLT = null;
+        HDRTexture2D textureLT = null, legendLT = null;
         HDRTexture2D textureRT = null;
         HDRTexture2D textureLB = null;
         HDRTexture2D textureRB = null;
@@ -188,6 +192,7 @@ public class ImauWindow extends CommonWindow {
                     || settings.getLTState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
                 textureLT = frame1.getImage(gl, GL3.GL_TEXTURE11,
                         settings.getLTState());
+                // legendLT = frame1.get
             }
             if (textureRT == null
                     || settings.getRTState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
@@ -478,6 +483,10 @@ public class ImauWindow extends CommonWindow {
         } catch (CompilationFailedException e) {
             e.printStackTrace();
         }
+
+        if (settings.isIMAGE_STREAM_OUTPUT()) {
+            sage = new SageInterface(canvasWidth, canvasHeight, 10);
+        }
     }
 
     @Override
@@ -538,7 +547,7 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private BufferedImage knitImages() {
+    private int[] knitImages() {
         BufferedImage frame = ImauApp.getFrameImage();
         Point p = ImauApp.getCanvaslocation();
 
@@ -565,11 +574,15 @@ public class ImauWindow extends CommonWindow {
             }
         }
 
-        BufferedImage result = new BufferedImage(frame.getWidth(),
-                frame.getHeight(), BufferedImage.TYPE_INT_RGB);
+        return rgb;
+    }
 
-        result.setRGB(0, 0, result.getWidth(), result.getHeight(), rgb, 0,
-                result.getWidth());
+    private BufferedImage produceBufferedImage(int[] input, int width,
+            int height) {
+        BufferedImage result = new BufferedImage(width, height,
+                BufferedImage.TYPE_INT_RGB);
+
+        result.setRGB(0, 0, width, height, input, 0, width);
 
         return result;
     }

@@ -26,21 +26,19 @@ public class ImauSettings extends Settings {
     private static GlobeState globeStateLT          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
                                                             GlobeState.Variable.SALT,
-                                                            0, "default");
+                                                            0, 0, "default");
     private static GlobeState globeStateRT          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
                                                             GlobeState.Variable.TEMP,
-                                                            0, "default");
+                                                            0, 0, "default");
     private static GlobeState globeStateLB          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
                                                             GlobeState.Variable.SSH,
-                                                            0, "default");
+                                                            0, 0, "default");
     private static GlobeState globeStateRB          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
                                                             GlobeState.Variable.SFWF,
-                                                            0, "default");
-
-    private static int        MAX_GLOBES_ON_SCREEN  = 4;
+                                                            0, 0, "default");
 
     private static long       WAITTIME_FOR_RETRY    = 10000;
     private static long       WAITTIME_FOR_MOVIE    = 100;
@@ -75,15 +73,15 @@ public class ImauSettings extends Settings {
 
     private static int        WINDOW_SELECTION      = 0;
 
-    private static boolean    DYNAMIC_DIMENSIONS    = true;
+    private static boolean    DYNAMIC_DIMENSIONS    = false;
 
     private static boolean    IMAGE_STREAM_OUTPUT   = false;
+
+    private static String     SAGE_DIRECTORY        = "/home/maarten/sage-code/sage3.0";
 
     public static ImauSettings getInstance() {
         return SingletonHolder.instance;
     }
-
-    private String ltColorMap;
 
     private ImauSettings() {
         super();
@@ -296,25 +294,49 @@ public class ImauSettings extends Settings {
         return DEPTH_DEF;
     }
 
-    public void setDepth(int value) {
+    public void setFrameNumber(int value) {
         GlobeState state = globeStateLT;
         GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), value, state.getColorMap());
+                state.getVariable(), value, state.getDepth(),
+                state.getColorMap());
         globeStateLT = result;
 
         state = globeStateRT;
         result = new GlobeState(state.getDataMode(), state.getVariable(),
-                value, state.getColorMap());
+                value, state.getDepth(), state.getColorMap());
         globeStateRT = result;
 
         state = globeStateLB;
         result = new GlobeState(state.getDataMode(), state.getVariable(),
-                value, state.getColorMap());
+                value, state.getDepth(), state.getColorMap());
         globeStateLB = result;
 
         state = globeStateRB;
         result = new GlobeState(state.getDataMode(), state.getVariable(),
-                value, state.getColorMap());
+                value, state.getDepth(), state.getColorMap());
+        globeStateRB = result;
+    }
+
+    public void setDepth(int value) {
+        GlobeState state = globeStateLT;
+        GlobeState result = new GlobeState(state.getDataMode(),
+                state.getVariable(), state.getFrameNumber(), value,
+                state.getColorMap());
+        globeStateLT = result;
+
+        state = globeStateRT;
+        result = new GlobeState(state.getDataMode(), state.getVariable(),
+                state.getFrameNumber(), value, state.getColorMap());
+        globeStateRT = result;
+
+        state = globeStateLB;
+        result = new GlobeState(state.getDataMode(), state.getVariable(),
+                state.getFrameNumber(), value, state.getColorMap());
+        globeStateLB = result;
+
+        state = globeStateRB;
+        result = new GlobeState(state.getDataMode(), state.getVariable(),
+                state.getFrameNumber(), value, state.getColorMap());
         globeStateRB = result;
 
         DEPTH_DEF = value;
@@ -371,56 +393,56 @@ public class ImauSettings extends Settings {
     public synchronized void setLTDataMode(GlobeState.DataMode dataMode) {
         GlobeState state = globeStateLT;
         GlobeState result = new GlobeState(dataMode, state.getVariable(),
-                state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateLT = result;
     }
 
     public synchronized void setRTDataMode(GlobeState.DataMode dataMode) {
         GlobeState state = globeStateRT;
         GlobeState result = new GlobeState(dataMode, state.getVariable(),
-                state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateRT = result;
     }
 
     public synchronized void setLBDataMode(GlobeState.DataMode dataMode) {
         GlobeState state = globeStateLB;
         GlobeState result = new GlobeState(dataMode, state.getVariable(),
-                state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateLB = result;
     }
 
     public synchronized void setRBDataMode(GlobeState.DataMode dataMode) {
         GlobeState state = globeStateRB;
         GlobeState result = new GlobeState(dataMode, state.getVariable(),
-                state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateRB = result;
     }
 
     public synchronized void setLTVariable(GlobeState.Variable variable) {
         GlobeState state = globeStateLT;
         GlobeState result = new GlobeState(state.getDataMode(), variable,
-                state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateLT = result;
     }
 
     public synchronized void setRTVariable(GlobeState.Variable variable) {
         GlobeState state = globeStateRT;
         GlobeState result = new GlobeState(state.getDataMode(), variable,
-                state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateRT = result;
     }
 
     public synchronized void setLBVariable(GlobeState.Variable variable) {
         GlobeState state = globeStateLB;
         GlobeState result = new GlobeState(state.getDataMode(), variable,
-                state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateLB = result;
     }
 
     public synchronized void setRBVariable(GlobeState.Variable variable) {
         GlobeState state = globeStateRB;
         GlobeState result = new GlobeState(state.getDataMode(), variable,
-                state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateRB = result;
     }
 
@@ -443,28 +465,32 @@ public class ImauSettings extends Settings {
     public synchronized void setLTColorMap(String selectedColorMap) {
         GlobeState state = globeStateLT;
         GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), state.getDepth(), selectedColorMap);
+                state.getVariable(), state.getFrameNumber(), state.getDepth(),
+                selectedColorMap);
         globeStateLT = result;
     }
 
     public synchronized void setRTColorMap(String selectedColorMap) {
         GlobeState state = globeStateRT;
         GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), state.getDepth(), selectedColorMap);
+                state.getVariable(), state.getFrameNumber(), state.getDepth(),
+                selectedColorMap);
         globeStateRT = result;
     }
 
     public synchronized void setLBColorMap(String selectedColorMap) {
         GlobeState state = globeStateLB;
         GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), state.getDepth(), selectedColorMap);
+                state.getVariable(), state.getFrameNumber(), state.getDepth(),
+                selectedColorMap);
         globeStateLB = result;
     }
 
     public synchronized void setRBColorMap(String selectedColorMap) {
         GlobeState state = globeStateRB;
         GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), state.getDepth(), selectedColorMap);
+                state.getVariable(), state.getFrameNumber(), state.getDepth(),
+                selectedColorMap);
         globeStateRB = result;
     }
 
@@ -478,5 +504,13 @@ public class ImauSettings extends Settings {
 
     public void setIMAGE_STREAM_OUTPUT(boolean iMAGE_STREAM_OUTPUT) {
         IMAGE_STREAM_OUTPUT = iMAGE_STREAM_OUTPUT;
+    }
+
+    public static String getSAGE_DIRECTORY() {
+        return SAGE_DIRECTORY;
+    }
+
+    public static void setSAGE_DIRECTORY(String sAGE_DIRECTORY) {
+        SAGE_DIRECTORY = sAGE_DIRECTORY;
     }
 }
