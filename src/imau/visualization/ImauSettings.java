@@ -26,19 +26,19 @@ public class ImauSettings extends Settings {
     private static GlobeState globeStateLT          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
                                                             GlobeState.Variable.SALT,
-                                                            0, 0, "default");
+                                                            75, 0, "default");
     private static GlobeState globeStateRT          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
                                                             GlobeState.Variable.TEMP,
-                                                            0, 0, "default");
+                                                            75, 0, "default");
     private static GlobeState globeStateLB          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
                                                             GlobeState.Variable.SSH,
-                                                            0, 0, "default");
+                                                            75, 0, "default");
     private static GlobeState globeStateRB          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
                                                             GlobeState.Variable.SFWF,
-                                                            0, 0, "default");
+                                                            75, 0, "default");
 
     private static long       WAITTIME_FOR_RETRY    = 10000;
     private static long       WAITTIME_FOR_MOVIE    = 100;

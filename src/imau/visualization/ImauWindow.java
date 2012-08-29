@@ -44,11 +44,11 @@ public class ImauWindow extends CommonWindow {
     private final ImauSettings settings     = ImauSettings.getInstance();
 
     private Quad               fsq;
-    private Program            fsqProgram, texturedSphereProgram, atmProgram,
-            gaussianBlurShader, postprocessShader;
+    private Program            fsqProgram, texturedSphereProgram,
+            legendProgram, atmProgram, gaussianBlurShader, postprocessShader;
     // private Texture2D worldTex;
 
-    private Model              testModel, atmModel;
+    private Model              testModel, legendModel, atmModel;
 
     private HDRFBO             sphereHDRFBO00, sphereHDRFBO01, sphereHDRFBO10,
             sphereHDRFBO11, atmHDRFBO;
@@ -173,10 +173,32 @@ public class ImauWindow extends CommonWindow {
             textureLB.init(gl);
             textureRB.init(gl);
 
-            drawSphere(gl, mv, textureLT, texturedSphereProgram, sphereHDRFBOLT);
-            drawSphere(gl, mv, textureRT, texturedSphereProgram, sphereHDRFBORT);
-            drawSphere(gl, mv, textureLB, texturedSphereProgram, sphereHDRFBOLB);
-            drawSphere(gl, mv, textureRB, texturedSphereProgram, sphereHDRFBORB);
+            // drawSphere(gl, mv, textureLT, texturedSphereProgram,
+            // sphereHDRFBOLT);
+            // drawSphere(gl, mv, textureRT, texturedSphereProgram,
+            // sphereHDRFBORT);
+            // drawSphere(gl, mv, textureLB, texturedSphereProgram,
+            // sphereHDRFBOLB);
+            // drawSphere(gl, mv, textureRB, texturedSphereProgram,
+            // sphereHDRFBORB);
+
+            if (legendLT != null && legendRT != null && legendLB != null
+                    && legendRB != null) {
+                legendLT.init(gl);
+                legendRT.init(gl);
+                legendLB.init(gl);
+                legendRB.init(gl);
+                drawSphere(gl, mv, textureLT, legendLT, texturedSphereProgram,
+                        legendProgram, sphereHDRFBOLT);
+                drawSphere(gl, mv, textureRT, legendRT, texturedSphereProgram,
+                        legendProgram, sphereHDRFBORT);
+                drawSphere(gl, mv, textureLB, legendLB, texturedSphereProgram,
+                        legendProgram, sphereHDRFBOLB);
+                drawSphere(gl, mv, textureRB, legendRB, texturedSphereProgram,
+                        legendProgram, sphereHDRFBORB);
+            } else {
+                System.err.println("err legends?");
+            }
 
             drawAtmosphere(gl, mv, atmProgram, atmHDRFBO);
 
@@ -187,6 +209,8 @@ public class ImauWindow extends CommonWindow {
                         sphereHDRFBORT, sphereHDRFBOLB, sphereHDRFBORB,
                         atmHDRFBO);
             }
+        } else {
+            System.err.println("err spheres?");
         }
     }
 
@@ -214,15 +238,15 @@ public class ImauWindow extends CommonWindow {
         HDRTexture2D legendTex = null;
         if (state.getDataMode() == GlobeState.DataMode.DIFF) {
             if (frame1 != null && frame2 != null) {
-                legendTex = frame1.getImage(gl, frame2, glTexUnit, state);
+                legendTex = frame1.getLegendImage(gl, frame2, glTexUnit, state);
             }
         } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
             if (frame1 != null) {
-                legendTex = frame1.getImage(gl, glTexUnit, state);
+                legendTex = frame1.getLegendImage(gl, glTexUnit, state);
             }
         } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
             if (frame1 != null) {
-                legendTex = frame2.getImage(gl, glTexUnit, state);
+                legendTex = frame2.getLegendImage(gl, glTexUnit, state);
             }
         }
         return legendTex;
@@ -248,7 +272,40 @@ public class ImauWindow extends CommonWindow {
                 target.unBind(gl);
             }
         } catch (UninitializedException e) {
-            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    private void drawSphere(GL3 gl, MatF4 mv, HDRTexture2D globeTexture,
+            HDRTexture2D legendTexture, Program globeProgram,
+            Program legendProgram, HDRFBO target) {
+        try {
+            if (post_process) {
+                target.bind(gl);
+                gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
+            }
+
+            // TODO: DEBUG, should be globeTexture
+            globeProgram.setUniform("texture_map",
+                    globeTexture.getMultitexNumber());
+            globeProgram
+                    .setUniformVector("LightPos", new VecF3(100f, 100f, 0f));
+            globeProgram.setUniform("Shininess", 100f);
+            globeProgram.setUniformVector("lDiffuse", new VecF4(1, 1, 1, 1));
+            globeProgram.setUniformVector("lAmbient", new VecF4(1, 1, 1, 1));
+
+            testModel.draw(gl, globeProgram, mv);
+
+            // legendProgram.setUniform("texture_map",
+            // legendTexture.getMultitexNumber());
+            // legendProgram.setUniformMatrix("PMatrix", new MatF4());
+            //
+            // legendModel.draw(gl, legendProgram, new MatF4());
+
+            if (post_process) {
+                target.unBind(gl);
+            }
+        } catch (UninitializedException e) {
             e.printStackTrace();
         }
     }
@@ -268,7 +325,6 @@ public class ImauWindow extends CommonWindow {
                 target.unBind(gl);
             }
         } catch (UninitializedException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -336,6 +392,8 @@ public class ImauWindow extends CommonWindow {
         gaussianBlurShader.setUniform("Alpha", 1f);
 
         gaussianBlurShader.setUniform("blurDirection", 0);
+        gaussianBlurShader.setUniform("NumPixelsPerSide", 0f);
+        gaussianBlurShader.setUniform("Sigma", 0f);
 
         try {
             // gaussianBlurShader.use(gl);
@@ -431,6 +489,9 @@ public class ImauWindow extends CommonWindow {
         testModel = new GeoSphere(Material.random(), 60, 90, 50f, false);
         testModel.init(gl);
 
+        legendModel = new Quad(Material.random(), 2, 2, new VecF3(0, 0, 0.1f));
+        legendModel.init(gl);
+
         Color4 atmosphereColor = new Color4(0.0f, 1.0f, 1.0f, 0.005f);
 
         atmModel = new Sphere(new Material(atmosphereColor, atmosphereColor,
@@ -459,6 +520,11 @@ public class ImauWindow extends CommonWindow {
             texturedSphereProgram = loader.createProgram(gl,
                     "texturedSphereProgram", new File("shaders/vs_pplTex2.vp"),
                     new File("shaders/fs_pplTex2.fp"));
+
+            legendProgram = loader
+                    .createProgram(gl, "legendProgram", new File(
+                            "shaders/vs_texture.vp"), new File(
+                            "shaders/fs_texture.fp"));
 
             atmProgram = loader.createProgram(gl, "atmProgram", new File(
                     "shaders/vs_atmosphere.vp"), new File(

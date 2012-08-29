@@ -106,21 +106,20 @@ public class ImageMaker {
 
         FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
 
+        Dimensions dims;
+
+        if (settings.isDynamicDimensions()) {
+            dims = getDimensions(tGridPoints, state);
+        } else {
+            dims = getDimensions(variable);
+        }
+
         if (verticalOriented) {
             for (int row = 0; row < height; row++) {
-                Color c = null;
+                float index = (float) row / (float) height;
+                float var = (index * dims.getDiff()) + dims.min;
 
-                Dimensions dims;
-
-                if (settings.isDynamicDimensions()) {
-                    dims = getDimensions(tGridPoints, state);
-                } else {
-                    dims = getDimensions(variable);
-                }
-
-                float var = (row / height) * dims.getDiff();
-
-                c = getColor(colorMapName, dims, var);
+                Color c = getColor(colorMapName, dims, var);
 
                 for (int col = 0; col < width; col++) {
                     outBuf.put(c.red);
@@ -131,19 +130,65 @@ public class ImageMaker {
             }
         } else {
             for (int col = 0; col < width; col++) {
-                Color c = null;
+                float index = (float) col / (float) width;
+                float var = (index * dims.getDiff()) + dims.min;
 
-                Dimensions dims;
+                Color c = getColor(colorMapName, dims, var);
 
-                if (settings.isDynamicDimensions()) {
-                    dims = getDimensions(tGridPoints, state);
-                } else {
-                    dims = getDimensions(variable);
+                for (int row = 0; row < height; row++) {
+                    outBuf.put(c.red);
+                    outBuf.put(c.green);
+                    outBuf.put(c.blue);
+                    outBuf.put(0f);
                 }
+            }
+        }
 
-                float var = (col / width) * dims.getDiff();
+        outBuf.flip();
 
-                c = getColor(colorMapName, dims, var);
+        return new NetCDFTexture(glMultitexUnit, outBuf, width, height);
+    }
+
+    public static HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
+            TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
+            GlobeState state, int width, int height, boolean verticalOriented) {
+
+        // TODO: Faulty dimensions in getColor
+
+        Variable variable = state.getVariable();
+        String colorMapName = state.getColorMap();
+
+        int pixels = height * width;
+
+        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+
+        Dimensions dims;
+        if (settings.isDynamicDimensions()) {
+            dims = getDimensions(tGridPoints1, tGridPoints2, state);
+        } else {
+            dims = getDimensions(variable);
+        }
+
+        if (verticalOriented) {
+            for (int row = 0; row < height; row++) {
+                float index = (float) row / (float) height;
+                float var = (index * dims.getDiff()) + dims.min;
+
+                Color c = getColor(colorMapName, dims, var);
+
+                for (int col = 0; col < width; col++) {
+                    outBuf.put(c.red);
+                    outBuf.put(c.green);
+                    outBuf.put(c.blue);
+                    outBuf.put(0f);
+                }
+            }
+        } else {
+            for (int col = 0; col < width; col++) {
+                float index = (float) col / (float) width;
+                float var = (index * dims.getDiff()) + dims.min;
+
+                Color c = getColor(colorMapName, dims, var);
 
                 for (int row = 0; row < height; row++) {
                     outBuf.put(c.red);
@@ -180,20 +225,19 @@ public class ImageMaker {
             }
         }
 
+        Dimensions dims;
+
+        if (settings.isDynamicDimensions()) {
+            dims = getDimensions(tGridPoints, state);
+        } else {
+            dims = getDimensions(variable);
+        }
+
         for (int row = dsHeight - 1; row >= 0; row--) {
             for (int col = 0; col < dsWidth; col++) {
                 int i = (row * dsWidth + col);
 
                 Color c = null;
-
-                Dimensions dims;
-
-                if (settings.isDynamicDimensions()) {
-                    dims = getDimensions(tGridPoints, state);
-                } else {
-                    dims = getDimensions(variable);
-                }
-
                 if (variable == GlobeState.Variable.SSH) {
                     c = getColor(colorMapName, dims, tGridPoints[i].ssh);
                 } else if (variable == GlobeState.Variable.SHF) {
@@ -253,16 +297,13 @@ public class ImageMaker {
             }
         }
 
+        Dimensions dims = getDimensions(tGridPoints1, tGridPoints2, state);
+
         for (int row = dsHeight - 1; row >= 0; row--) {
             for (int col = 0; col < dsWidth; col++) {
                 int i = (row * dsWidth + col);
 
                 Color c = null;
-
-                Dimensions dims;
-
-                dims = getDimensions(tGridPoints1, tGridPoints2, state);
-
                 if (variable == GlobeState.Variable.SSH) {
                     c = getColor(colorMapName, dims, tGridPoints1[i].ssh,
                             tGridPoints2[i].ssh);
@@ -304,59 +345,6 @@ public class ImageMaker {
         outBuf.flip();
 
         return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgHeight);
-    }
-
-    public synchronized static Color getLegendColor(String colorMapName,
-            Dimensions dim, float var) {
-        HashMap<Integer, Color> colorMap = colorMapMaps.get(colorMapName);
-
-        int cmEntries = colorMap.size();
-
-        Color color = null;
-
-        float result = (var - dim.min) / dim.getDiff();
-        float rawIndex = result * cmEntries;
-
-        if (var < dim.min) {
-            color = Color.WHITE;
-        } else if (var > dim.max) {
-            color = Color.WHITE;
-        } else {
-            float red = 0;
-            float green = 0;
-            float blue = 0;
-
-            int iLow = (int) Math.floor(rawIndex);
-            int iHigh = (int) Math.ceil(rawIndex);
-
-            Color cLow;
-            if (iLow == cmEntries) {
-                cLow = colorMap.get(cmEntries - 1);
-            } else if (iLow < 0) {
-                cLow = colorMap.get(0);
-            } else {
-                cLow = colorMap.get(iLow);
-            }
-
-            Color cHigh;
-            if (iHigh == cmEntries) {
-                cHigh = colorMap.get(cmEntries - 1);
-            } else if (iHigh < 0) {
-                cHigh = colorMap.get(0);
-            } else {
-                cHigh = colorMap.get(iHigh);
-            }
-
-            float colorInterval = (float) (rawIndex - Math.floor(rawIndex));
-
-            red = getInterpolatedColor(cHigh.red, cLow.red, colorInterval);
-            green = getInterpolatedColor(cHigh.green, cLow.green, colorInterval);
-            blue = getInterpolatedColor(cHigh.blue, cLow.blue, colorInterval);
-
-            color = new Color(red, green, blue);
-        }
-
-        return color;
     }
 
     public synchronized static Color getColor(String colorMapName,
@@ -406,7 +394,7 @@ public class ImageMaker {
                 cHigh = colorMap.get(iHigh);
             }
 
-            float colorInterval = (float) (rawIndex - Math.floor(rawIndex));
+            float colorInterval = rawIndex - iLow;
 
             red = getInterpolatedColor(cHigh.red, cLow.red, colorInterval);
             green = getInterpolatedColor(cHigh.green, cLow.green, colorInterval);
@@ -464,7 +452,7 @@ public class ImageMaker {
                 cHigh = colorMap.get(iHigh);
             }
 
-            float colorInterval = (float) (rawIndex - Math.floor(rawIndex));
+            float colorInterval = rawIndex - iLow;
 
             red = getInterpolatedColor(cHigh.red, cLow.red, colorInterval);
             green = getInterpolatedColor(cHigh.green, cLow.green, colorInterval);

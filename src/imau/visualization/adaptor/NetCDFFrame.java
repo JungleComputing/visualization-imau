@@ -179,16 +179,16 @@ public class NetCDFFrame implements Runnable {
 
     public HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
             GlobeState state) {
-        // if (state.getFrameNumber() != frameNumber) {
-        // System.err
-        // .println("ERROR: Request for frame nr "
-        // + state.getFrameNumber() + " to NetCDFFrame "
-        // + frameNumber);
-        // System.exit(1);
-        // }
+        if (state.getFrameNumber() != frameNumber) {
+            System.err
+                    .println("ERROR: Request for frame nr "
+                            + state.getFrameNumber() + " to NetCDFFrame "
+                            + frameNumber);
+            System.exit(1);
+        }
 
         if (settings.getDepthDef() != selectedDepth) {
-            selectedDepth = settings.getDepthDef();
+            selectedDepth = state.getDepth();
             initialized = false;
         }
 
@@ -202,27 +202,66 @@ public class NetCDFFrame implements Runnable {
             return storedLegends.get(glMultitexUnit);
         }
 
-        HDRTexture2D image;
+        HDRTexture2D image = ImageMaker.getLegendImage(gl, glMultitexUnit,
+                tGridPoints, state, 1, 500, true);
 
-        image = ImageMaker.getLegendImage(gl, glMultitexUnit, tGridPoints,
-                state, width, height, true);
+        // Either the state has changed, or the glMultitexUnit was not used
+        // before, so change the image.
 
         storedLegends.put(glMultitexUnit, image);
+        storedStates.put(glMultitexUnit, state);
+
+        return image;
+    }
+
+    public HDRTexture2D getLegendImage(GL3 gl, NetCDFFrame otherFrame,
+            int glMultitexUnit, GlobeState state) {
+        if (state.getFrameNumber() != frameNumber) {
+            System.err
+                    .println("ERROR: Request for frame nr "
+                            + state.getFrameNumber() + " to NetCDFFrame "
+                            + frameNumber);
+            System.exit(1);
+        }
+
+        if (settings.getDepthDef() != selectedDepth) {
+            selectedDepth = state.getDepth();
+            initialized = false;
+        }
+
+        if (!initialized) {
+            init();
+        }
+
+        // If the state was used already, retrieve the image for re-use
+        if (storedStates.containsKey(glMultitexUnit)
+                && storedStates.get(glMultitexUnit).equals(state)) {
+            return storedLegends.get(glMultitexUnit);
+        }
+
+        // Either the state has changed, or the glMultitexUnit was not used
+        // before, so change the image.
+
+        HDRTexture2D image = ImageMaker.getLegendImage(gl, glMultitexUnit,
+                tGridPoints, otherFrame.getGridPoints(), state, 1, 500, true);
+
+        storedLegends.put(glMultitexUnit, image);
+        storedStates.put(glMultitexUnit, state);
 
         return image;
     }
 
     public HDRTexture2D getImage(GL3 gl, int glMultitexUnit, GlobeState state) {
-        // if (state.getFrameNumber() != frameNumber) {
-        // System.err
-        // .println("ERROR: Request for frame nr "
-        // + state.getFrameNumber() + " to NetCDFFrame "
-        // + frameNumber);
-        // System.exit(1);
-        // }
+        if (state.getFrameNumber() != frameNumber) {
+            System.err
+                    .println("ERROR: Request for frame nr "
+                            + state.getFrameNumber() + " to NetCDFFrame "
+                            + frameNumber);
+            System.exit(1);
+        }
 
         if (settings.getDepthDef() != selectedDepth) {
-            selectedDepth = settings.getDepthDef();
+            selectedDepth = state.getDepth();
             initialized = false;
         }
 
@@ -232,8 +271,6 @@ public class NetCDFFrame implements Runnable {
 
         int newHeight = (int) Math.floor((180f / (latMax - latMin)) * height);
         int blankRows = (int) Math.floor(180f / latMax);
-
-        HDRTexture2D image;
 
         // If the state was used already, retrieve the image for re-use
         if (storedStates.containsKey(glMultitexUnit)
@@ -244,8 +281,8 @@ public class NetCDFFrame implements Runnable {
         // Either the state has changed, or the glMultitexUnit was not used yet,
         // so change the image.
 
-        image = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints, state,
-                width, height, newHeight, blankRows);
+        HDRTexture2D image = ImageMaker.getImage(gl, glMultitexUnit,
+                tGridPoints, state, width, height, newHeight, blankRows);
         storedTextures.put(glMultitexUnit, image);
         storedStates.put(glMultitexUnit, state);
 
@@ -254,16 +291,16 @@ public class NetCDFFrame implements Runnable {
 
     public HDRTexture2D getImage(GL3 gl, NetCDFFrame otherFrame,
             int glMultitexUnit, GlobeState state) {
-        // if (state.getFrameNumber() != frameNumber) {
-        // System.err
-        // .println("ERROR: Request for frame nr "
-        // + state.getFrameNumber() + " to NetCDFFrame "
-        // + frameNumber);
-        // System.exit(1);
-        // }
+        if (state.getFrameNumber() != frameNumber) {
+            System.err
+                    .println("ERROR: Request for frame nr "
+                            + state.getFrameNumber() + " to NetCDFFrame "
+                            + frameNumber);
+            System.exit(1);
+        }
 
         if (settings.getDepthDef() != selectedDepth) {
-            selectedDepth = settings.getDepthDef();
+            selectedDepth = state.getDepth();
             initialized = false;
         }
 
@@ -274,20 +311,18 @@ public class NetCDFFrame implements Runnable {
         int newHeight = (int) Math.floor((180f / (latMax - latMin)) * height);
         int blankRows = (int) Math.floor(180f / latMax);
 
-        HDRTexture2D image;
-
-        // If the combo was used already, retrieve the image for re-use
+        // If the state was used already, retrieve the image for re-use
         if (storedStates.containsKey(glMultitexUnit)
                 && storedStates.get(glMultitexUnit).equals(state)) {
             return storedTextures.get(glMultitexUnit);
         }
 
-        // Either the combo has changed, or the glMultitexUnit was not used
+        // Either the state has changed, or the glMultitexUnit was not used
         // before, so change the image.
 
-        image = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints,
-                otherFrame.getGridPoints(), state, width, height, newHeight,
-                blankRows);
+        HDRTexture2D image = ImageMaker.getImage(gl, glMultitexUnit,
+                tGridPoints, otherFrame.getGridPoints(), state, width, height,
+                newHeight, blankRows);
         storedTextures.put(glMultitexUnit, image);
         storedStates.put(glMultitexUnit, state);
 
