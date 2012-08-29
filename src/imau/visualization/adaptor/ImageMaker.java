@@ -97,21 +97,40 @@ public class ImageMaker {
     }
 
     public static HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
-            TGridPoint[] tGridPoints, GlobeState state, int width, int height) {
-
+            TGridPoint[] tGridPoints, GlobeState state, int width, int height,
+            boolean verticalOriented) {
         Variable variable = state.getVariable();
         String colorMapName = state.getColorMap();
 
         int pixels = height * width;
 
         FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
-        outBuf.clear();
-        outBuf.rewind();
 
-        for (int col = 0; col < width; col++) {
-            for (int row = height - 1; row >= 0; row--) {
-                int i = (row * width + col);
+        if (verticalOriented) {
+            for (int row = 0; row < height; row++) {
+                Color c = null;
 
+                Dimensions dims;
+
+                if (settings.isDynamicDimensions()) {
+                    dims = getDimensions(tGridPoints, state);
+                } else {
+                    dims = getDimensions(variable);
+                }
+
+                float var = (row / height) * dims.getDiff();
+
+                c = getColor(colorMapName, dims, var);
+
+                for (int col = 0; col < width; col++) {
+                    outBuf.put(c.red);
+                    outBuf.put(c.green);
+                    outBuf.put(c.blue);
+                    outBuf.put(0f);
+                }
+            }
+        } else {
+            for (int col = 0; col < width; col++) {
                 Color c = null;
 
                 Dimensions dims;
@@ -126,16 +145,13 @@ public class ImageMaker {
 
                 c = getColor(colorMapName, dims, var);
 
-                outBuf.put(c.red);
-                outBuf.put(c.green);
-                outBuf.put(c.blue);
-                outBuf.put(0f);
-
+                for (int row = 0; row < height; row++) {
+                    outBuf.put(c.red);
+                    outBuf.put(c.green);
+                    outBuf.put(c.blue);
+                    outBuf.put(0f);
+                }
             }
-        }
-
-        while (outBuf.hasRemaining()) {
-            outBuf.put(0f);
         }
 
         outBuf.flip();

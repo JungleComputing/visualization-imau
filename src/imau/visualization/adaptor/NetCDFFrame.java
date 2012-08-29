@@ -205,7 +205,7 @@ public class NetCDFFrame implements Runnable {
         HDRTexture2D image;
 
         image = ImageMaker.getLegendImage(gl, glMultitexUnit, tGridPoints,
-                state, width, height);
+                state, width, height, true);
 
         storedLegends.put(glMultitexUnit, image);
 

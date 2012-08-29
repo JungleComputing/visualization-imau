@@ -144,73 +144,27 @@ public class ImauWindow extends CommonWindow {
         loader.setUniformMatrix("PMatrix", p);
 
         HDRTexture2D textureLT = null, legendLT = null;
-        HDRTexture2D textureRT = null;
-        HDRTexture2D textureLB = null;
-        HDRTexture2D textureRB = null;
+        HDRTexture2D textureRT = null, legendRT = null;
+        HDRTexture2D textureLB = null, legendLB = null;
+        HDRTexture2D textureRB = null, legendRB = null;
 
-        if (frame1 != null && frame2 != null) {
-            if (settings.getLTState().getDataMode() == GlobeState.DataMode.DIFF) {
-                textureLT = frame1.getImage(gl, frame2, GL3.GL_TEXTURE11,
-                        settings.getLTState());
-            }
-            if (settings.getRTState().getDataMode() == GlobeState.DataMode.DIFF) {
-                textureRT = frame1.getImage(gl, frame2, GL3.GL_TEXTURE12,
-                        settings.getRTState());
-            }
-            if (settings.getLBState().getDataMode() == GlobeState.DataMode.DIFF) {
-                textureLB = frame1.getImage(gl, frame2, GL3.GL_TEXTURE13,
-                        settings.getLBState());
-            }
-            if (settings.getRBState().getDataMode() == GlobeState.DataMode.DIFF) {
-                textureRB = frame1.getImage(gl, frame2, GL3.GL_TEXTURE14,
-                        settings.getRBState());
-            }
-        }
+        GlobeState state;
 
-        if (frame2 != null) {
-            if (settings.getLTState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-                textureLT = frame2.getImage(gl, GL3.GL_TEXTURE11,
-                        settings.getLTState());
-            } else {
+        state = settings.getLTState();
+        textureLT = getGlobeTexture(frame1, frame2, gl, GL3.GL_TEXTURE11, state);
+        legendLT = getLegendTexture(frame1, frame2, gl, GL3.GL_TEXTURE0, state);
 
-            }
-            if (settings.getRTState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-                textureRT = frame2.getImage(gl, GL3.GL_TEXTURE12,
-                        settings.getRTState());
-            }
-            if (settings.getLBState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-                textureLB = frame2.getImage(gl, GL3.GL_TEXTURE13,
-                        settings.getLBState());
-            }
-            if (settings.getRBState().getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-                textureRB = frame2.getImage(gl, GL3.GL_TEXTURE14,
-                        settings.getRBState());
-            }
-        }
+        state = settings.getRTState();
+        textureRT = getGlobeTexture(frame1, frame2, gl, GL3.GL_TEXTURE12, state);
+        legendRT = getLegendTexture(frame1, frame2, gl, GL3.GL_TEXTURE1, state);
 
-        if (frame1 != null) {
-            if (textureLT == null
-                    || settings.getLTState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-                textureLT = frame1.getImage(gl, GL3.GL_TEXTURE11,
-                        settings.getLTState());
-                // legendLT = frame1.get
-            }
-            if (textureRT == null
-                    || settings.getRTState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-                textureRT = frame1.getImage(gl, GL3.GL_TEXTURE12,
-                        settings.getRTState());
-            }
-            if (textureLB == null
-                    || settings.getLBState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-                textureLB = frame1.getImage(gl, GL3.GL_TEXTURE13,
-                        settings.getLBState());
-            }
-            if (textureRB == null
-                    || settings.getRBState().getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-                textureRB = frame1.getImage(gl, GL3.GL_TEXTURE14,
-                        settings.getRBState());
-            }
-        }
+        state = settings.getLBState();
+        textureLB = getGlobeTexture(frame1, frame2, gl, GL3.GL_TEXTURE13, state);
+        legendLB = getLegendTexture(frame1, frame2, gl, GL3.GL_TEXTURE2, state);
+
+        state = settings.getRBState();
+        textureRB = getGlobeTexture(frame1, frame2, gl, GL3.GL_TEXTURE14, state);
+        legendRB = getLegendTexture(frame1, frame2, gl, GL3.GL_TEXTURE3, state);
 
         if (textureLT != null && textureRT != null && textureLB != null
                 && textureRB != null) {
@@ -234,6 +188,44 @@ public class ImauWindow extends CommonWindow {
                         atmHDRFBO);
             }
         }
+    }
+
+    private HDRTexture2D getGlobeTexture(NetCDFFrame frame1,
+            NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state) {
+        HDRTexture2D globeTex = null;
+        if (state.getDataMode() == GlobeState.DataMode.DIFF) {
+            if (frame1 != null && frame2 != null) {
+                globeTex = frame1.getImage(gl, frame2, glTexUnit, state);
+            }
+        } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
+            if (frame1 != null) {
+                globeTex = frame1.getImage(gl, glTexUnit, state);
+            }
+        } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
+            if (frame1 != null) {
+                globeTex = frame2.getImage(gl, glTexUnit, state);
+            }
+        }
+        return globeTex;
+    }
+
+    private HDRTexture2D getLegendTexture(NetCDFFrame frame1,
+            NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state) {
+        HDRTexture2D legendTex = null;
+        if (state.getDataMode() == GlobeState.DataMode.DIFF) {
+            if (frame1 != null && frame2 != null) {
+                legendTex = frame1.getImage(gl, frame2, glTexUnit, state);
+            }
+        } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
+            if (frame1 != null) {
+                legendTex = frame1.getImage(gl, glTexUnit, state);
+            }
+        } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
+            if (frame1 != null) {
+                legendTex = frame2.getImage(gl, glTexUnit, state);
+            }
+        }
+        return legendTex;
     }
 
     private void drawSphere(GL3 gl, MatF4 mv, HDRTexture2D texture,
@@ -487,7 +479,12 @@ public class ImauWindow extends CommonWindow {
 
         if (settings.isIMAGE_STREAM_OUTPUT()) {
             Dimension frameDim = ImauApp.getFrameSize();
-            sage = new SageInterface(frameDim.width, frameDim.height, 10);
+
+            if (settings.isIMAGE_STREAM_GL_ONLY()) {
+                frameDim = new Dimension(canvasWidth, canvasHeight);
+            }
+
+            sage = new SageInterface(frameDim.width, frameDim.height, 60);
         }
     }
 
@@ -550,43 +547,35 @@ public class ImauWindow extends CommonWindow {
     }
 
     private int[] knitImages() {
-        BufferedImage frame = ImauApp.getFrameImage();
-        Point p = ImauApp.getCanvaslocation();
+        int[] frameRGB = null;
 
-        int[] rgb = new int[frame.getWidth() * frame.getHeight()];
-        int[] frameRGB = new int[frame.getWidth() * frame.getHeight()];
-        frame.getRGB(0, 0, frame.getWidth(), frame.getHeight(), frameRGB, 0,
-                frame.getWidth());
+        int glWidth = currentImage.getWidth();
+        int glHeight = currentImage.getHeight();
 
-        int[] canvasRGB = new int[currentImage.getWidth()
-                * currentImage.getHeight()];
-        currentImage
-                .getRGB(0, 0, currentImage.getWidth(),
-                        currentImage.getHeight(), canvasRGB, 0,
-                        currentImage.getWidth());
+        int[] glRGB = new int[glWidth * glHeight];
+        currentImage.getRGB(0, 0, glWidth, glHeight, glRGB, 0, glWidth);
 
-        for (int y = 0; y < frame.getHeight(); y++) {
-            int glCanvasY = y - p.y;
+        if (settings.isIMAGE_STREAM_GL_ONLY()) {
+            frameRGB = glRGB;
+        } else {
+            BufferedImage frame = ImauApp.getFrameImage();
 
-            if (glCanvasY >= 0 && glCanvasY < currentImage.getHeight()) {
-                for (int x = 0; x < frame.getWidth(); x++) {
-                    int glCanvasX = x - p.x;
+            int frameWidth = frame.getWidth();
+            int frameHeight = frame.getHeight();
 
-                    if (glCanvasX >= 0 && glCanvasX < currentImage.getWidth()) {
-                        rgb[y * frame.getWidth() + x] = currentImage.getRGB(
-                                glCanvasX, glCanvasY);
-                    } else {
-                        rgb[y * frame.getWidth() + x] = frame.getRGB(x, y);
-                    }
-                }
-            } else {
-                for (int x = 0; x < frame.getWidth(); x++) {
-                    rgb[y * frame.getWidth() + x] = frame.getRGB(x, y);
-                }
+            frameRGB = new int[frameWidth * frameHeight];
+            frame.getRGB(0, 0, frameWidth, frameHeight, frameRGB, 0, frameWidth);
+
+            Point p = ImauApp.getCanvaslocation();
+
+            for (int y = p.y; y < p.y + glHeight; y++) {
+                int offset = (y - p.y) * glWidth;
+                System.arraycopy(glRGB, offset, frameRGB, y * frameWidth + p.x,
+                        glWidth);
             }
         }
 
-        return rgb;
+        return frameRGB;
     }
 
     private BufferedImage produceBufferedImage(int[] input, int width,
@@ -601,35 +590,31 @@ public class ImauWindow extends CommonWindow {
 
     public BufferedImage getScreenshot() {
         BufferedImage frame = ImauApp.getFrameImage();
+
+        int frameWidth = frame.getWidth();
+        int frameHeight = frame.getHeight();
+
+        int[] frameRGB = new int[frameWidth * frameHeight];
+        frame.getRGB(0, 0, frameWidth, frameHeight, frameRGB, 0, frameWidth);
+
+        int glWidth = currentImage.getWidth();
+        int glHeight = currentImage.getHeight();
+
+        int[] glRGB = new int[glWidth * glHeight];
+        currentImage.getRGB(0, 0, glWidth, glHeight, glRGB, 0, glWidth);
+
         Point p = ImauApp.getCanvaslocation();
 
-        int[] rgb = new int[frame.getWidth() * frame.getHeight()];
-
-        for (int y = 0; y < frame.getHeight(); y++) {
-            int glCanvasY = y - p.y;
-
-            if (glCanvasY >= 0 && glCanvasY < currentImage.getHeight()) {
-                for (int x = 0; x < frame.getWidth(); x++) {
-                    int glCanvasX = x - p.x;
-
-                    if (glCanvasX >= 0 && glCanvasX < currentImage.getWidth()) {
-                        rgb[y * frame.getWidth() + x] = currentImage.getRGB(
-                                glCanvasX, glCanvasY);
-                    } else {
-                        rgb[y * frame.getWidth() + x] = frame.getRGB(x, y);
-                    }
-                }
-            } else {
-                for (int x = 0; x < frame.getWidth(); x++) {
-                    rgb[y * frame.getWidth() + x] = frame.getRGB(x, y);
-                }
-            }
+        for (int y = p.y; y < p.y + glHeight; y++) {
+            int offset = (y - p.y) * glWidth;
+            System.arraycopy(glRGB, offset, frameRGB, y * frameWidth + p.x,
+                    glWidth);
         }
 
         BufferedImage result = new BufferedImage(frame.getWidth(),
                 frame.getHeight(), BufferedImage.TYPE_INT_RGB);
 
-        result.setRGB(0, 0, result.getWidth(), result.getHeight(), rgb, 0,
+        result.setRGB(0, 0, result.getWidth(), result.getHeight(), frameRGB, 0,
                 result.getWidth());
 
         return result;

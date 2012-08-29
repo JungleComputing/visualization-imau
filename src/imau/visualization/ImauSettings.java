@@ -75,7 +75,8 @@ public class ImauSettings extends Settings {
 
     private static boolean    DYNAMIC_DIMENSIONS    = false;
 
-    private static boolean    IMAGE_STREAM_OUTPUT   = true;
+    private static boolean    IMAGE_STREAM_OUTPUT   = false;
+    private static boolean    IMAGE_STREAM_GL_ONLY  = false;
 
     private static String     SAGE_DIRECTORY        = "/home/maarten/sage-code/sage3.0";
 
@@ -506,11 +507,19 @@ public class ImauSettings extends Settings {
         IMAGE_STREAM_OUTPUT = iMAGE_STREAM_OUTPUT;
     }
 
-    public static String getSAGE_DIRECTORY() {
+    public String getSAGE_DIRECTORY() {
         return SAGE_DIRECTORY;
     }
 
-    public static void setSAGE_DIRECTORY(String sAGE_DIRECTORY) {
+    public void setSAGE_DIRECTORY(String sAGE_DIRECTORY) {
         SAGE_DIRECTORY = sAGE_DIRECTORY;
+    }
+
+    public boolean isIMAGE_STREAM_GL_ONLY() {
+        return IMAGE_STREAM_GL_ONLY;
+    }
+
+    public void setIMAGE_STREAM_GL_ONLY(boolean iMAGE_STREAM_GL_ONLY) {
+        IMAGE_STREAM_GL_ONLY = iMAGE_STREAM_GL_ONLY;
     }
 }
