@@ -296,11 +296,11 @@ public class ImauWindow extends CommonWindow {
 
             testModel.draw(gl, globeProgram, mv);
 
-            // legendProgram.setUniform("texture_map",
-            // legendTexture.getMultitexNumber());
-            // legendProgram.setUniformMatrix("PMatrix", new MatF4());
-            //
-            // legendModel.draw(gl, legendProgram, new MatF4());
+            legendProgram.setUniform("texture_map",
+                    legendTexture.getMultitexNumber());
+            legendProgram.setUniformMatrix("PMatrix", new MatF4());
+
+            legendModel.draw(gl, legendProgram, new MatF4());
 
             if (post_process) {
                 target.unBind(gl);
@@ -489,7 +489,7 @@ public class ImauWindow extends CommonWindow {
         testModel = new GeoSphere(Material.random(), 60, 90, 50f, false);
         testModel.init(gl);
 
-        legendModel = new Quad(Material.random(), 2, 2, new VecF3(0, 0, 0.1f));
+        legendModel = new Quad(Material.random(), 2, .2f, new VecF3(1, 0, 0.1f));
         legendModel.init(gl);
 
         Color4 atmosphereColor = new Color4(0.0f, 1.0f, 1.0f, 0.005f);
