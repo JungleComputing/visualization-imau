@@ -32,6 +32,8 @@ import openglCommon.math.VecF3;
 import openglCommon.math.VecF4;
 import openglCommon.models.GeoSphere;
 import openglCommon.models.Model;
+import openglCommon.models.MultiColorText;
+import openglCommon.models.Text;
 import openglCommon.models.base.Quad;
 import openglCommon.models.base.Sphere;
 import openglCommon.shaders.Program;
@@ -41,23 +43,25 @@ import util.ImauInputHandler;
 import com.jogamp.opengl.util.awt.Screenshot;
 
 public class ImauWindow extends CommonWindow {
-    private final ImauSettings settings     = ImauSettings.getInstance();
+    private final ImauSettings settings = ImauSettings.getInstance();
 
-    private Quad               fsq;
-    private Program            fsqProgram, texturedSphereProgram,
-            legendProgram, atmProgram, gaussianBlurShader, postprocessShader;
+    private Quad fsq;
+    private Program fsqProgram, texturedSphereProgram, legendProgram, atmProgram, gaussianBlurShader,
+            postprocessShader, textShader;
     // private Texture2D worldTex;
 
-    private Model              testModel, legendModel, atmModel;
+    private Model testModel, legendModel, atmModel;
 
-    private HDRFBO             sphereHDRFBO00, sphereHDRFBO01, sphereHDRFBO10,
-            sphereHDRFBO11, atmHDRFBO;
+    private HDRFBO sphereHDRFBO00, sphereHDRFBO01, sphereHDRFBO10, sphereHDRFBO11, atmHDRFBO;
 
-    private NetCDFFrame        currentFrame1, currentFrame2;
+    private NetCDFFrame currentFrame1, currentFrame2;
 
-    private BufferedImage      currentImage = null;
+    private BufferedImage currentImage = null;
 
-    private SageInterface      sage;
+    private SageInterface sage;
+
+    private final int fontSize = 20;
+    private MultiColorText myText;
 
     public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
@@ -67,8 +71,7 @@ public class ImauWindow extends CommonWindow {
     public void display(GLAutoDrawable drawable) {
         try {
             final int status = drawable.getContext().makeCurrent();
-            if ((status != GLContext.CONTEXT_CURRENT)
-                    && (status != GLContext.CONTEXT_CURRENT_NEW)) {
+            if ((status != GLContext.CONTEXT_CURRENT) && (status != GLContext.CONTEXT_CURRENT_NEW)) {
                 System.err.println("Error swapping context to onscreen.");
             }
         } catch (final GLException e) {
@@ -89,21 +92,18 @@ public class ImauWindow extends CommonWindow {
 
             if (!timer.isTwoSourced()) {
                 currentFrame2 = null;
-                displayContext(currentFrame1, null, sphereHDRFBO00,
-                        sphereHDRFBO01, sphereHDRFBO10, sphereHDRFBO11,
+                displayContext(currentFrame1, null, sphereHDRFBO00, sphereHDRFBO01, sphereHDRFBO10, sphereHDRFBO11,
                         atmHDRFBO);
             } else {
                 currentFrame2 = timer.getFrame2();
-                displayContext(currentFrame1, currentFrame2, sphereHDRFBO00,
-                        sphereHDRFBO01, sphereHDRFBO10, sphereHDRFBO11,
-                        atmHDRFBO);
+                displayContext(currentFrame1, currentFrame2, sphereHDRFBO00, sphereHDRFBO01, sphereHDRFBO10,
+                        sphereHDRFBO11, atmHDRFBO);
             }
         }
 
         try {
             if (settings.isIMAGE_STREAM_OUTPUT()) {
-                currentImage = Screenshot.readToBufferedImage(canvasWidth,
-                        canvasHeight);
+                currentImage = Screenshot.readToBufferedImage(canvasWidth, canvasHeight);
 
                 int[] rgb = knitImages();
                 sage.display(rgb);
@@ -114,8 +114,7 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void displayContext(NetCDFFrame frame1, NetCDFFrame frame2,
-            HDRFBO sphereHDRFBOLT, HDRFBO sphereHDRFBORT,
+    private void displayContext(NetCDFFrame frame1, NetCDFFrame frame2, HDRFBO sphereHDRFBOLT, HDRFBO sphereHDRFBORT,
             HDRFBO sphereHDRFBOLB, HDRFBO sphereHDRFBORB, HDRFBO atmHDRFBO) {
         final int width = GLContext.getCurrent().getGLDrawable().getWidth();
         final int height = GLContext.getCurrent().getGLDrawable().getHeight();
@@ -127,16 +126,13 @@ public class ImauWindow extends CommonWindow {
 
         final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
 
-        final Point4 eye = new Point4(
-                (float) (radius * Math.sin(ftheta) * Math.cos(phi)),
-                (float) (radius * Math.sin(ftheta) * Math.sin(phi)),
-                (float) (radius * Math.cos(ftheta)), 1.0f);
+        final Point4 eye = new Point4((float) (radius * Math.sin(ftheta) * Math.cos(phi)), (float) (radius
+                * Math.sin(ftheta) * Math.sin(phi)), (float) (radius * Math.cos(ftheta)), 1.0f);
         final Point4 at = new Point4(0.0f, 0.0f, 0.0f, 1.0f);
         final VecF4 up = new VecF4(0.0f, 1.0f, 0.0f, 0.0f);
 
         MatF4 mv = MatrixFMath.lookAt(eye, at, up);
-        mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler
-                .getViewDist())));
+        mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler.getViewDist())));
         mv = mv.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
         mv = mv.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
 
@@ -166,8 +162,7 @@ public class ImauWindow extends CommonWindow {
         textureRB = getGlobeTexture(frame1, frame2, gl, GL3.GL_TEXTURE14, state);
         legendRB = getLegendTexture(frame1, frame2, gl, GL3.GL_TEXTURE3, state);
 
-        if (textureLT != null && textureRT != null && textureLB != null
-                && textureRB != null) {
+        if (textureLT != null && textureRT != null && textureLB != null && textureRB != null) {
             textureLT.init(gl);
             textureRT.init(gl);
             textureLB.init(gl);
@@ -182,20 +177,15 @@ public class ImauWindow extends CommonWindow {
             // drawSphere(gl, mv, textureRB, texturedSphereProgram,
             // sphereHDRFBORB);
 
-            if (legendLT != null && legendRT != null && legendLB != null
-                    && legendRB != null) {
+            if (legendLT != null && legendRT != null && legendLB != null && legendRB != null) {
                 legendLT.init(gl);
                 legendRT.init(gl);
                 legendLB.init(gl);
                 legendRB.init(gl);
-                drawSphere(gl, mv, textureLT, legendLT, texturedSphereProgram,
-                        legendProgram, sphereHDRFBOLT);
-                drawSphere(gl, mv, textureRT, legendRT, texturedSphereProgram,
-                        legendProgram, sphereHDRFBORT);
-                drawSphere(gl, mv, textureLB, legendLB, texturedSphereProgram,
-                        legendProgram, sphereHDRFBOLB);
-                drawSphere(gl, mv, textureRB, legendRB, texturedSphereProgram,
-                        legendProgram, sphereHDRFBORB);
+                drawSphere(gl, mv, textureLT, legendLT, texturedSphereProgram, legendProgram, sphereHDRFBOLT);
+                drawSphere(gl, mv, textureRT, legendRT, texturedSphereProgram, legendProgram, sphereHDRFBORT);
+                drawSphere(gl, mv, textureLB, legendLB, texturedSphereProgram, legendProgram, sphereHDRFBOLB);
+                drawSphere(gl, mv, textureRB, legendRB, texturedSphereProgram, legendProgram, sphereHDRFBORB);
             } else {
                 System.err.println("err legends?");
             }
@@ -205,17 +195,16 @@ public class ImauWindow extends CommonWindow {
             blur(gl, atmHDRFBO, fsq, 1, 2, 4);
 
             if (post_process) {
-                renderTexturesToScreen(gl, width, height, sphereHDRFBOLT,
-                        sphereHDRFBORT, sphereHDRFBOLB, sphereHDRFBORB,
-                        atmHDRFBO);
+                renderTexturesToScreen(gl, width, height, sphereHDRFBOLT, sphereHDRFBORT, sphereHDRFBOLB,
+                        sphereHDRFBORB, atmHDRFBO);
             }
         } else {
             System.err.println("err spheres?");
         }
     }
 
-    private HDRTexture2D getGlobeTexture(NetCDFFrame frame1,
-            NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state) {
+    private HDRTexture2D getGlobeTexture(NetCDFFrame frame1, NetCDFFrame frame2, final GL3 gl, int glTexUnit,
+            GlobeState state) {
         HDRTexture2D globeTex = null;
         if (state.getDataMode() == GlobeState.DataMode.DIFF) {
             if (frame1 != null && frame2 != null) {
@@ -233,8 +222,8 @@ public class ImauWindow extends CommonWindow {
         return globeTex;
     }
 
-    private HDRTexture2D getLegendTexture(NetCDFFrame frame1,
-            NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state) {
+    private HDRTexture2D getLegendTexture(NetCDFFrame frame1, NetCDFFrame frame2, final GL3 gl, int glTexUnit,
+            GlobeState state) {
         HDRTexture2D legendTex = null;
         if (state.getDataMode() == GlobeState.DataMode.DIFF) {
             if (frame1 != null && frame2 != null) {
@@ -252,8 +241,42 @@ public class ImauWindow extends CommonWindow {
         return legendTex;
     }
 
-    private void drawSphere(GL3 gl, MatF4 mv, HDRTexture2D texture,
-            Program program, HDRFBO target) {
+    private void renderHUD(GL3 gl, MatF4 mv, HDRTexture2D legendTexture, Program legendProgram, Program textProgram,
+            HDRFBO target) throws UninitializedException {
+        if (post_process) {
+            target.bind(gl);
+            gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
+        }
+
+        legendProgram.setUniform("texture_map", legendTexture.getMultitexNumber());
+        legendProgram.setUniformMatrix("PMatrix", new MatF4());
+
+        legendModel.draw(gl, legendProgram, new MatF4());
+
+        // Draw
+        myText.draw(gl, textProgram, Text.getPMVForHUD(canvasWidth, canvasHeight, 30f, 2 * canvasHeight - 40));
+
+        if (post_process) {
+            target.unBind(gl);
+        }
+    }
+
+    private void setText(GL3 gl, Color4 baseColor) {
+        ShaderTestInputHandler myInputHandler = (ShaderTestInputHandler) inputHandler;
+        final String text = myInputHandler.getScreenText();
+
+        // Set text
+        myText.setString(gl, textShader, font, text, baseColor, fontSize);
+
+        // Add colors
+        String selection = myInputHandler.getSelectedText();
+        int selectionIndex = myInputHandler.getSelectedTextIndex();
+        myText.setSubstringColors(gl, ((ShaderTestInputHandler) inputHandler).getSyntaxColors());
+        myText.setSubstringAtIndexColor(gl, selectionIndex, selection, Color4.cyan);
+        myText.finalizeColorScheme(gl);
+    }
+
+    private void drawSphere(GL3 gl, MatF4 mv, HDRTexture2D texture, Program program, HDRFBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -276,9 +299,8 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void drawSphere(GL3 gl, MatF4 mv, HDRTexture2D globeTexture,
-            HDRTexture2D legendTexture, Program globeProgram,
-            Program legendProgram, HDRFBO target) {
+    private void drawSphere(GL3 gl, MatF4 mv, HDRTexture2D globeTexture, HDRTexture2D legendTexture,
+            Program globeProgram, Program legendProgram, HDRFBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -286,18 +308,15 @@ public class ImauWindow extends CommonWindow {
             }
 
             // TODO: DEBUG, should be globeTexture
-            globeProgram.setUniform("texture_map",
-                    globeTexture.getMultitexNumber());
-            globeProgram
-                    .setUniformVector("LightPos", new VecF3(100f, 100f, 0f));
+            globeProgram.setUniform("texture_map", globeTexture.getMultitexNumber());
+            globeProgram.setUniformVector("LightPos", new VecF3(100f, 100f, 0f));
             globeProgram.setUniform("Shininess", 100f);
             globeProgram.setUniformVector("lDiffuse", new VecF4(1, 1, 1, 1));
             globeProgram.setUniformVector("lAmbient", new VecF4(1, 1, 1, 1));
 
             testModel.draw(gl, globeProgram, mv);
 
-            legendProgram.setUniform("texture_map",
-                    legendTexture.getMultitexNumber());
+            legendProgram.setUniform("texture_map", legendTexture.getMultitexNumber());
             legendProgram.setUniformMatrix("PMatrix", new MatF4());
 
             legendModel.draw(gl, legendProgram, new MatF4());
@@ -317,8 +336,7 @@ public class ImauWindow extends CommonWindow {
                 gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
             }
 
-            program.setUniformMatrix("NormalMatrix",
-                    MatrixFMath.getNormalMatrix(mv));
+            program.setUniformMatrix("NormalMatrix", MatrixFMath.getNormalMatrix(mv));
             atmModel.draw(gl, program, mv);
 
             if (post_process) {
@@ -329,20 +347,14 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void renderTexturesToScreen(GL3 gl, int width, int height,
-            HDRFBO sphereHDRFBOLT, HDRFBO sphereHDRFBORT,
+    private void renderTexturesToScreen(GL3 gl, int width, int height, HDRFBO sphereHDRFBOLT, HDRFBO sphereHDRFBORT,
             HDRFBO sphereHDRFBOLB, HDRFBO sphereHDRFBORB, HDRFBO atmHDRFBO) {
-        postprocessShader.setUniform("sphereTextureLT", sphereHDRFBOLT
-                .getTexture().getMultitexNumber());
-        postprocessShader.setUniform("sphereTextureRT", sphereHDRFBORT
-                .getTexture().getMultitexNumber());
-        postprocessShader.setUniform("sphereTextureLB", sphereHDRFBOLB
-                .getTexture().getMultitexNumber());
-        postprocessShader.setUniform("sphereTextureRB", sphereHDRFBORB
-                .getTexture().getMultitexNumber());
+        postprocessShader.setUniform("sphereTextureLT", sphereHDRFBOLT.getTexture().getMultitexNumber());
+        postprocessShader.setUniform("sphereTextureRT", sphereHDRFBORT.getTexture().getMultitexNumber());
+        postprocessShader.setUniform("sphereTextureLB", sphereHDRFBOLB.getTexture().getMultitexNumber());
+        postprocessShader.setUniform("sphereTextureRB", sphereHDRFBORB.getTexture().getMultitexNumber());
 
-        postprocessShader.setUniform("atmTexture", atmHDRFBO.getTexture()
-                .getMultitexNumber());
+        postprocessShader.setUniform("atmTexture", atmHDRFBO.getTexture().getMultitexNumber());
 
         postprocessShader.setUniform("sphereBrightness", 1f);
         postprocessShader.setUniform("atmBrightness", 1f);
@@ -375,20 +387,16 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void blur(GL3 gl, HDRFBO target, Quad fullScreenQuad, int passes,
-            int blurType, float blurSize) {
-        gaussianBlurShader.setUniform("Texture", target.getTexture()
-                .getMultitexNumber());
+    private void blur(GL3 gl, HDRFBO target, Quad fullScreenQuad, int passes, int blurType, float blurSize) {
+        gaussianBlurShader.setUniform("Texture", target.getTexture().getMultitexNumber());
 
         gaussianBlurShader.setUniformMatrix("PMatrix", new MatF4());
         gaussianBlurShader.setUniformMatrix("MVMatrix", new MatF4());
 
         gaussianBlurShader.setUniform("blurType", blurType);
         gaussianBlurShader.setUniform("blurSize", blurSize);
-        gaussianBlurShader.setUniform("scrWidth", target.getTexture()
-                .getWidth());
-        gaussianBlurShader.setUniform("scrHeight", target.getTexture()
-                .getHeight());
+        gaussianBlurShader.setUniform("scrWidth", target.getTexture().getWidth());
+        gaussianBlurShader.setUniform("scrHeight", target.getTexture().getHeight());
         gaussianBlurShader.setUniform("Alpha", 1f);
 
         gaussianBlurShader.setUniform("blurDirection", 0);
@@ -489,13 +497,13 @@ public class ImauWindow extends CommonWindow {
         testModel = new GeoSphere(Material.random(), 60, 90, 50f, false);
         testModel.init(gl);
 
-        legendModel = new Quad(Material.random(), 2, .2f, new VecF3(1, 0, 0.1f));
+        legendModel = new Quad(Material.random(), 1.5f, .1f, new VecF3(1, 0, 0.1f));
         legendModel.init(gl);
 
         Color4 atmosphereColor = new Color4(0.0f, 1.0f, 1.0f, 0.005f);
 
-        atmModel = new Sphere(new Material(atmosphereColor, atmosphereColor,
-                atmosphereColor), 5, 53f, new VecF3(), false);
+        atmModel = new Sphere(new Material(atmosphereColor, atmosphereColor, atmosphereColor), 5, 53f, new VecF3(),
+                false);
 
         // worldTex = new ImageTexture("textures/4_no_ice_clouds_mts_8k.jpg",
         // 4096, 0, GL3.GL_TEXTURE2);
@@ -512,31 +520,23 @@ public class ImauWindow extends CommonWindow {
         inputHandler.setViewDist(-130f);
 
         try {
-            fsqProgram = loader
-                    .createProgram(gl, "fsqProgram", new File(
-                            "shaders/vs_texture.vp"), new File(
-                            "shaders/fs_texture.fp"));
+            fsqProgram = loader.createProgram(gl, "fsqProgram", new File("shaders/vs_texture.vp"), new File(
+                    "shaders/fs_texture.fp"));
 
-            texturedSphereProgram = loader.createProgram(gl,
-                    "texturedSphereProgram", new File("shaders/vs_pplTex2.vp"),
-                    new File("shaders/fs_pplTex2.fp"));
+            texturedSphereProgram = loader.createProgram(gl, "texturedSphereProgram",
+                    new File("shaders/vs_pplTex2.vp"), new File("shaders/fs_pplTex2.fp"));
 
-            legendProgram = loader
-                    .createProgram(gl, "legendProgram", new File(
-                            "shaders/vs_texture.vp"), new File(
-                            "shaders/fs_texture.fp"));
+            legendProgram = loader.createProgram(gl, "legendProgram", new File("shaders/vs_texture.vp"), new File(
+                    "shaders/fs_texture.fp"));
 
-            atmProgram = loader.createProgram(gl, "atmProgram", new File(
-                    "shaders/vs_atmosphere.vp"), new File(
+            atmProgram = loader.createProgram(gl, "atmProgram", new File("shaders/vs_atmosphere.vp"), new File(
                     "shaders/fs_atmosphere.fp"));
 
-            gaussianBlurShader = loader.createProgram(gl, "gaussianBlur",
-                    new File("shaders/vs_postprocess.vp"), new File(
-                            "shaders/fs_gaussian_blur.fp"));
+            gaussianBlurShader = loader.createProgram(gl, "gaussianBlur", new File("shaders/vs_postprocess.vp"),
+                    new File("shaders/fs_gaussian_blur.fp"));
 
-            postprocessShader = loader.createProgram(gl, "postprocess",
-                    new File("shaders/vs_postprocess.vp"), new File(
-                            "shaders/fs_eSalsaPostprocess.fp"));
+            postprocessShader = loader.createProgram(gl, "postprocess", new File("shaders/vs_postprocess.vp"),
+                    new File("shaders/fs_eSalsaPostprocess.fp"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (CompilationFailedException e) {
@@ -558,13 +558,11 @@ public class ImauWindow extends CommonWindow {
     public void makeSnapshot(String fileName) {
         try {
             final int status = offScreenContext.makeCurrent();
-            if ((status != GLContext.CONTEXT_CURRENT)
-                    && (status != GLContext.CONTEXT_CURRENT_NEW)) {
+            if ((status != GLContext.CONTEXT_CURRENT) && (status != GLContext.CONTEXT_CURRENT_NEW)) {
                 System.err.println("Error swapping context to offscreen.");
             }
         } catch (final GLException e) {
-            System.err
-                    .println("Exception while swapping context to offscreen.");
+            System.err.println("Exception while swapping context to offscreen.");
             e.printStackTrace();
         }
 
@@ -596,8 +594,8 @@ public class ImauWindow extends CommonWindow {
 
         gl.glClearColor(0f, 0f, 0f, 0f);
 
-        displayContext(currentFrame1, currentFrame2, sphereHDRFBO00,
-                sphereHDRFBO01, sphereHDRFBO10, sphereHDRFBO11, atmHDRFBO);
+        displayContext(currentFrame1, currentFrame2, sphereHDRFBO00, sphereHDRFBO01, sphereHDRFBO10, sphereHDRFBO11,
+                atmHDRFBO);
 
         final Picture p = new Picture(width, height);
 
@@ -636,18 +634,15 @@ public class ImauWindow extends CommonWindow {
 
             for (int y = p.y; y < p.y + glHeight; y++) {
                 int offset = (y - p.y) * glWidth;
-                System.arraycopy(glRGB, offset, frameRGB, y * frameWidth + p.x,
-                        glWidth);
+                System.arraycopy(glRGB, offset, frameRGB, y * frameWidth + p.x, glWidth);
             }
         }
 
         return frameRGB;
     }
 
-    private BufferedImage produceBufferedImage(int[] input, int width,
-            int height) {
-        BufferedImage result = new BufferedImage(width, height,
-                BufferedImage.TYPE_INT_RGB);
+    private BufferedImage produceBufferedImage(int[] input, int width, int height) {
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         result.setRGB(0, 0, width, height, input, 0, width);
 
@@ -673,15 +668,12 @@ public class ImauWindow extends CommonWindow {
 
         for (int y = p.y; y < p.y + glHeight; y++) {
             int offset = (y - p.y) * glWidth;
-            System.arraycopy(glRGB, offset, frameRGB, y * frameWidth + p.x,
-                    glWidth);
+            System.arraycopy(glRGB, offset, frameRGB, y * frameWidth + p.x, glWidth);
         }
 
-        BufferedImage result = new BufferedImage(frame.getWidth(),
-                frame.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_INT_RGB);
 
-        result.setRGB(0, 0, result.getWidth(), result.getHeight(), frameRGB, 0,
-                result.getWidth());
+        result.setRGB(0, 0, result.getWidth(), result.getHeight(), frameRGB, 0, result.getWidth());
 
         return result;
     }
