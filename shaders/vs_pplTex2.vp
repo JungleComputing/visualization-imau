@@ -11,40 +11,46 @@ uniform mat4 PMatrix;
 
 uniform sampler2D texture_map; 
 
+uniform int height_distortion_enabled;
+
 const float sample_dist = 0.02;
 const float height_distortion_intensity = 0.01;
 
 void main() {
 	tCoord = MCtexCoord.xy;
 	
-	float xmin = tCoord.x - sample_dist;
-	if (xmin < 0) {
-		xmin += 1.0;
-	}
-	
-	float xplus = tCoord.x + sample_dist;
-	if (xplus > 1) {
-		xplus -= 1.0;
-	}
-	
-	float ymin = tCoord.y - sample_dist;
-	if (ymin < 0) {
-		ymin += 1.0;
-	}
-	
-	float yplus = tCoord.y + sample_dist;
-	if (yplus > 1) {
-		yplus -= 1.0;
-	}
-	
-	float xn = 1.5 * height_distortion_intensity * length(texture(texture_map, vec2(xmin, tCoord.y)).rgb);
-	float xp = 1.5 * height_distortion_intensity * length(texture(texture_map, vec2(xplus, tCoord.y)).rgb);
-	float yn = 1.5 * height_distortion_intensity * length(texture(texture_map, vec2(tCoord.x, ymin)).rgb);
-	float yp = 1.5 * height_distortion_intensity * length(texture(texture_map, vec2(tCoord.x, yplus)).rgb);
-	
-	float self = 4 * height_distortion_intensity * length(texture(texture_map, tCoord).rgb);
+	if (height_distortion_enabled != 0) {
+		float xmin = tCoord.x - sample_dist;
+		if (xmin < 0) {
+			xmin += 1.0;
+		}
 		
-	float offset = 1.0 + (self + xn + xp + yn + yp);
+		float xplus = tCoord.x + sample_dist;
+		if (xplus > 1) {
+			xplus -= 1.0;
+		}
 		
-	gl_Position = PMatrix * MVMatrix * vec4(MCvertex.xyz * offset, MCvertex.w);
+		float ymin = tCoord.y - sample_dist;
+		if (ymin < 0) {
+			ymin += 1.0;
+		}
+		
+		float yplus = tCoord.y + sample_dist;
+		if (yplus > 1) {
+			yplus -= 1.0;
+		}
+		
+		float xn = 1.5 * height_distortion_intensity * length(texture(texture_map, vec2(xmin, tCoord.y)).rgb);
+		float xp = 1.5 * height_distortion_intensity * length(texture(texture_map, vec2(xplus, tCoord.y)).rgb);
+		float yn = 1.5 * height_distortion_intensity * length(texture(texture_map, vec2(tCoord.x, ymin)).rgb);
+		float yp = 1.5 * height_distortion_intensity * length(texture(texture_map, vec2(tCoord.x, yplus)).rgb);
+		
+		float self = 4 * height_distortion_intensity * length(texture(texture_map, tCoord).rgb);
+			
+		float offset = 1.0 + (self + xn + xp + yn + yp);
+		
+		gl_Position = PMatrix * MVMatrix * vec4(MCvertex.xyz * offset, MCvertex.w);
+	} else {
+		gl_Position = PMatrix * MVMatrix * MCvertex;
+	}
 } 

@@ -63,8 +63,9 @@ public class ImauWindow extends CommonWindow {
     private SageInterface      sage;
 
     private MultiColorText     varNameTextLT, varNameTextRT, varNameTextLB,
-            varNameTextRB, legendTextLT, legendTextRT, legendTextLB,
-            legendTextRB;
+            varNameTextRB, legendTextLTmin, legendTextRTmin, legendTextLBmin,
+            legendTextRBmin, legendTextLTmax, legendTextRTmax, legendTextLBmax,
+            legendTextRBmax;
 
     private final int          fontSize     = 40;
 
@@ -198,22 +199,26 @@ public class ImauWindow extends CommonWindow {
                 // LEFT TOP
                 drawSingleWindow(atmHDRFBO, tempHDRFBO1, tempHDRFBO2,
                         tempHDRFBO3, width, height, gl, mv, legendLT,
-                        textureLT, varNameTextLT, legendTextLT, sphereHDRFBOLT);
+                        textureLT, varNameTextLT, legendTextLTmin,
+                        legendTextLTmax, sphereHDRFBOLT);
 
                 // RIGHT TOP
                 drawSingleWindow(atmHDRFBO, tempHDRFBO1, tempHDRFBO2,
                         tempHDRFBO3, width, height, gl, mv, legendRT,
-                        textureRT, varNameTextRT, legendTextRT, sphereHDRFBORT);
+                        textureRT, varNameTextRT, legendTextRTmin,
+                        legendTextRTmax, sphereHDRFBORT);
 
                 // LEFT BOTTOM
                 drawSingleWindow(atmHDRFBO, tempHDRFBO1, tempHDRFBO2,
                         tempHDRFBO3, width, height, gl, mv, legendLB,
-                        textureLB, varNameTextLB, legendTextLB, sphereHDRFBOLB);
+                        textureLB, varNameTextLB, legendTextLBmin,
+                        legendTextLBmax, sphereHDRFBOLB);
 
                 // RIGHT BOTTOM
                 drawSingleWindow(atmHDRFBO, tempHDRFBO1, tempHDRFBO2,
                         tempHDRFBO3, width, height, gl, mv, legendRB,
-                        textureRB, varNameTextRB, legendTextRB, sphereHDRFBORB);
+                        textureRB, varNameTextRB, legendTextRBmin,
+                        legendTextRBmax, sphereHDRFBORB);
 
             } else {
                 System.err.println("err legends?");
@@ -232,9 +237,10 @@ public class ImauWindow extends CommonWindow {
             HDRFBO tempHDRFBO2, HDRFBO tempHDRFBO3, final int width,
             final int height, final GL3 gl, MatF4 mv, HDRTexture2D legend,
             HDRTexture2D globe, MultiColorText varNameText,
-            MultiColorText legendText, HDRFBO target) {
-        drawHUDText(gl, width, height, varNameText, legendText, textProgram,
-                tempHDRFBO1);
+            MultiColorText legendTextMin, MultiColorText legendTextMax,
+            HDRFBO target) {
+        drawHUDText(gl, width, height, varNameText, legendTextMin,
+                legendTextMax, textProgram, tempHDRFBO1);
         drawHUDLegend(gl, width, height, legend, legendProgram, tempHDRFBO2);
         drawSphere(gl, mv, globe, texturedSphereProgram, tempHDRFBO3);
 
@@ -281,8 +287,8 @@ public class ImauWindow extends CommonWindow {
     }
 
     private void drawHUDText(GL3 gl, int width, int height,
-            MultiColorText varNameText, MultiColorText legendText,
-            Program textProgram, HDRFBO target) {
+            MultiColorText varNameText, MultiColorText legendTextMin,
+            MultiColorText legendTextMax, Program textProgram, HDRFBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -297,8 +303,10 @@ public class ImauWindow extends CommonWindow {
                     Text.getPMVForHUD(width, height, 2 * width - textLength
                             - 150, 40));
 
-            legendText.draw(gl, textProgram, Text.getPMVForHUD(width, height,
-                    2 * width - 240, 2 * height - 195));
+            legendTextMin.draw(gl, textProgram, Text.getPMVForHUD(width,
+                    height, 2 * width - 240, 2 * height - 195));
+            legendTextMax.draw(gl, textProgram,
+                    Text.getPMVForHUD(width, height, 2 * width - 240, 195));
 
             if (post_process) {
                 target.unBind(gl);
@@ -339,11 +347,9 @@ public class ImauWindow extends CommonWindow {
                 gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
             }
 
+            program.setUniform("height_distortion_enabled",
+                    settings.isHeightDistortionEnabled());
             program.setUniform("texture_map", texture.getMultitexNumber());
-            program.setUniformVector("LightPos", new VecF3(100f, 100f, 0f));
-            program.setUniform("Shininess", 100f);
-            program.setUniformVector("lDiffuse", new VecF4(1, 1, 1, 1));
-            program.setUniformVector("lAmbient", new VecF4(1, 1, 1, 1));
 
             testModel.draw(gl, program, mv);
 
@@ -594,13 +600,22 @@ public class ImauWindow extends CommonWindow {
         varNameTextRB = new MultiColorText(new Material(Color4.white,
                 Color4.white, Color4.white));
 
-        legendTextLT = new MultiColorText(new Material(Color4.white,
+        legendTextLTmin = new MultiColorText(new Material(Color4.white,
                 Color4.white, Color4.white));
-        legendTextRT = new MultiColorText(new Material(Color4.white,
+        legendTextRTmin = new MultiColorText(new Material(Color4.white,
                 Color4.white, Color4.white));
-        legendTextLB = new MultiColorText(new Material(Color4.white,
+        legendTextLBmin = new MultiColorText(new Material(Color4.white,
                 Color4.white, Color4.white));
-        legendTextRB = new MultiColorText(new Material(Color4.white,
+        legendTextRBmin = new MultiColorText(new Material(Color4.white,
+                Color4.white, Color4.white));
+
+        legendTextLTmax = new MultiColorText(new Material(Color4.white,
+                Color4.white, Color4.white));
+        legendTextRTmax = new MultiColorText(new Material(Color4.white,
+                Color4.white, Color4.white));
+        legendTextLBmax = new MultiColorText(new Material(Color4.white,
+                Color4.white, Color4.white));
+        legendTextRBmax = new MultiColorText(new Material(Color4.white,
                 Color4.white, Color4.white));
 
         varNameTextLT.init(gl);
@@ -608,10 +623,15 @@ public class ImauWindow extends CommonWindow {
         varNameTextLB.init(gl);
         varNameTextRB.init(gl);
 
-        legendTextLT.init(gl);
-        legendTextRT.init(gl);
-        legendTextLB.init(gl);
-        legendTextRB.init(gl);
+        legendTextLTmin.init(gl);
+        legendTextRTmin.init(gl);
+        legendTextLBmin.init(gl);
+        legendTextRBmin.init(gl);
+
+        legendTextLTmax.init(gl);
+        legendTextRTmax.init(gl);
+        legendTextLBmax.init(gl);
+        legendTextRBmax.init(gl);
 
         setHUDVarNames(gl);
 
@@ -690,8 +710,9 @@ public class ImauWindow extends CommonWindow {
         max = settings.verbalizeMax(state);
         varNameTextLT.setString(gl, textProgram, font, variableName,
                 Color4.white, fontSize);
-        legendTextLT.setString(gl, textProgram, font, min
-                + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" + max, Color4.white,
+        legendTextLTmin.setString(gl, textProgram, font, min, Color4.white,
+                fontSize);
+        legendTextLTmax.setString(gl, textProgram, font, max, Color4.white,
                 fontSize);
 
         state = settings.getRTState();
@@ -702,8 +723,9 @@ public class ImauWindow extends CommonWindow {
         max = settings.verbalizeMax(state);
         varNameTextRT.setString(gl, textProgram, font, variableName,
                 Color4.white, fontSize);
-        legendTextRT.setString(gl, textProgram, font, min
-                + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" + max, Color4.white,
+        legendTextRTmin.setString(gl, textProgram, font, min, Color4.white,
+                fontSize);
+        legendTextRTmax.setString(gl, textProgram, font, max, Color4.white,
                 fontSize);
 
         state = settings.getLBState();
@@ -714,8 +736,9 @@ public class ImauWindow extends CommonWindow {
         max = settings.verbalizeMax(state);
         varNameTextLB.setString(gl, textProgram, font, variableName,
                 Color4.white, fontSize);
-        legendTextLB.setString(gl, textProgram, font, min
-                + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" + max, Color4.white,
+        legendTextLBmin.setString(gl, textProgram, font, min, Color4.white,
+                fontSize);
+        legendTextLBmax.setString(gl, textProgram, font, max, Color4.white,
                 fontSize);
 
         state = settings.getRBState();
@@ -726,8 +749,9 @@ public class ImauWindow extends CommonWindow {
         max = settings.verbalizeMax(state);
         varNameTextRB.setString(gl, textProgram, font, variableName,
                 Color4.white, fontSize);
-        legendTextRB.setString(gl, textProgram, font, min
-                + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" + max, Color4.white,
+        legendTextRBmin.setString(gl, textProgram, font, min, Color4.white,
+                fontSize);
+        legendTextRBmax.setString(gl, textProgram, font, max, Color4.white,
                 fontSize);
     }
 

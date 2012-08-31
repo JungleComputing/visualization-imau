@@ -78,6 +78,7 @@ public class ImauSettings extends Settings {
 
     private static boolean    IMAGE_STREAM_OUTPUT   = false;
     private static boolean    IMAGE_STREAM_GL_ONLY  = false;
+    private static boolean    HEIGHT_DISTORION      = true;
 
     private static String     SAGE_DIRECTORY        = "/home/maarten/sage-code/sage3.0";
 
@@ -584,5 +585,9 @@ public class ImauSettings extends Settings {
 
     public void setIMAGE_STREAM_GL_ONLY(boolean iMAGE_STREAM_GL_ONLY) {
         IMAGE_STREAM_GL_ONLY = iMAGE_STREAM_GL_ONLY;
+    }
+
+    public boolean isHeightDistortionEnabled() {
+        return HEIGHT_DISTORION;
     }
 }
