@@ -169,7 +169,6 @@ public class NetCDFFrame implements Runnable {
                 error = true;
                 errMessage = e.getMessage();
             } catch (InvalidRangeException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
 
@@ -184,6 +183,7 @@ public class NetCDFFrame implements Runnable {
                     .println("ERROR: Request for frame nr "
                             + state.getFrameNumber() + " to NetCDFFrame "
                             + frameNumber);
+            new Exception().printStackTrace(System.err);
             System.exit(1);
         }
 
@@ -221,6 +221,7 @@ public class NetCDFFrame implements Runnable {
                     .println("ERROR: Request for frame nr "
                             + state.getFrameNumber() + " to NetCDFFrame "
                             + frameNumber);
+            new Exception().printStackTrace(System.err);
             System.exit(1);
         }
 
@@ -257,6 +258,7 @@ public class NetCDFFrame implements Runnable {
                     .println("ERROR: Request for frame nr "
                             + state.getFrameNumber() + " to NetCDFFrame "
                             + frameNumber);
+            new Exception().printStackTrace(System.err);
             System.exit(1);
         }
 
@@ -296,6 +298,7 @@ public class NetCDFFrame implements Runnable {
                     .println("ERROR: Request for frame nr "
                             + state.getFrameNumber() + " to NetCDFFrame "
                             + frameNumber);
+            new Exception().printStackTrace(System.err);
             System.exit(1);
         }
 

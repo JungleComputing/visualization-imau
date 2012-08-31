@@ -281,6 +281,8 @@ public class NetCDFTimedPlayer implements Runnable {
     private synchronized void updateFrame(int newFrameNumber,
             boolean overrideUpdate) {
 
+        settings.setFrameNumber(newFrameNumber);
+
         if (!twosources) {
             if (currentFrameDS1 == null || newFrameNumber != frameNumber
                     || overrideUpdate) {

@@ -1,6 +1,7 @@
 package imau.visualization;
 
 import imau.visualization.adaptor.GlobeState;
+import imau.visualization.adaptor.GlobeState.Variable;
 import openglCommon.util.Settings;
 import openglCommon.util.TypedProperties;
 
@@ -287,6 +288,48 @@ public class ImauSettings extends Settings {
         return DEPTH_MIN;
     }
 
+    public String verbalizeMax(GlobeState state) {
+        Variable var = state.getVariable();
+        String result = "";
+
+        if (var == Variable.SSH) {
+            result = Float.toString(getMaxSsh());
+        } else if (var == Variable.SHF) {
+            result = Float.toString(getMaxShf());
+        } else if (var == Variable.SFWF) {
+            result = Float.toString(getMaxSfwf());
+        } else if (var == Variable.HMXL) {
+            result = Float.toString(getMaxHmxl());
+        } else if (var == Variable.SALT) {
+            result = Float.toString(getMaxSalt());
+        } else if (var == Variable.TEMP) {
+            result = Float.toString(getMaxTemp());
+        }
+
+        return result;
+    }
+
+    public String verbalizeMin(GlobeState state) {
+        Variable var = state.getVariable();
+        String result = "";
+
+        if (var == Variable.SSH) {
+            result = Float.toString(getMinSsh());
+        } else if (var == Variable.SHF) {
+            result = Float.toString(getMinShf());
+        } else if (var == Variable.SFWF) {
+            result = Float.toString(getMinSfwf());
+        } else if (var == Variable.HMXL) {
+            result = Float.toString(getMinHmxl());
+        } else if (var == Variable.SALT) {
+            result = Float.toString(getMinSalt());
+        } else if (var == Variable.TEMP) {
+            result = Float.toString(getMinTemp());
+        }
+
+        return result;
+    }
+
     public void setDepthMin(int value) {
         DEPTH_MIN = value;
     }
@@ -296,49 +339,69 @@ public class ImauSettings extends Settings {
     }
 
     public void setFrameNumber(int value) {
-        GlobeState state = globeStateLT;
-        GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), value, state.getDepth(),
-                state.getColorMap());
-        globeStateLT = result;
+        GlobeState result;
+        GlobeState state;
+
+        state = globeStateLT;
+        if (state.getFrameNumber() != value) {
+            result = new GlobeState(state.getDataMode(), state.getVariable(),
+                    value, state.getDepth(), state.getColorMap());
+            globeStateLT = result;
+        }
 
         state = globeStateRT;
-        result = new GlobeState(state.getDataMode(), state.getVariable(),
-                value, state.getDepth(), state.getColorMap());
-        globeStateRT = result;
+        if (state.getFrameNumber() != value) {
+            result = new GlobeState(state.getDataMode(), state.getVariable(),
+                    value, state.getDepth(), state.getColorMap());
+            globeStateRT = result;
+        }
 
         state = globeStateLB;
-        result = new GlobeState(state.getDataMode(), state.getVariable(),
-                value, state.getDepth(), state.getColorMap());
-        globeStateLB = result;
+        if (state.getFrameNumber() != value) {
+            result = new GlobeState(state.getDataMode(), state.getVariable(),
+                    value, state.getDepth(), state.getColorMap());
+            globeStateLB = result;
+        }
 
         state = globeStateRB;
-        result = new GlobeState(state.getDataMode(), state.getVariable(),
-                value, state.getDepth(), state.getColorMap());
-        globeStateRB = result;
+        if (state.getFrameNumber() != value) {
+            result = new GlobeState(state.getDataMode(), state.getVariable(),
+                    value, state.getDepth(), state.getColorMap());
+            globeStateRB = result;
+        }
     }
 
     public void setDepth(int value) {
-        GlobeState state = globeStateLT;
-        GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), state.getFrameNumber(), value,
-                state.getColorMap());
-        globeStateLT = result;
+        GlobeState result;
+        GlobeState state;
+
+        state = globeStateLT;
+        if (state.getDepth() != value) {
+            result = new GlobeState(state.getDataMode(), state.getVariable(),
+                    state.getFrameNumber(), value, state.getColorMap());
+            globeStateLT = result;
+        }
 
         state = globeStateRT;
-        result = new GlobeState(state.getDataMode(), state.getVariable(),
-                state.getFrameNumber(), value, state.getColorMap());
-        globeStateRT = result;
+        if (state.getDepth() != value) {
+            result = new GlobeState(state.getDataMode(), state.getVariable(),
+                    state.getFrameNumber(), value, state.getColorMap());
+            globeStateRT = result;
+        }
 
         state = globeStateLB;
-        result = new GlobeState(state.getDataMode(), state.getVariable(),
-                state.getFrameNumber(), value, state.getColorMap());
-        globeStateLB = result;
+        if (state.getDepth() != value) {
+            result = new GlobeState(state.getDataMode(), state.getVariable(),
+                    state.getFrameNumber(), value, state.getColorMap());
+            globeStateLB = result;
+        }
 
         state = globeStateRB;
-        result = new GlobeState(state.getDataMode(), state.getVariable(),
-                state.getFrameNumber(), value, state.getColorMap());
-        globeStateRB = result;
+        if (state.getDepth() != value) {
+            result = new GlobeState(state.getDataMode(), state.getVariable(),
+                    state.getFrameNumber(), value, state.getColorMap());
+            globeStateRB = result;
+        }
 
         DEPTH_DEF = value;
     }

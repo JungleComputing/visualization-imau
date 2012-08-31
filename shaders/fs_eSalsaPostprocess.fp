@@ -5,10 +5,7 @@ uniform sampler2D sphereTextureRT;
 uniform sampler2D sphereTextureLB;
 uniform sampler2D sphereTextureRB;
 
-uniform sampler2D atmTexture;
-
 uniform float sphereBrightness;
-uniform float atmBrightness;
 
 uniform int scrWidth;
 uniform int scrHeight;
@@ -50,7 +47,6 @@ void main() {
 	float y = gl_FragCoord.y/height;
 	
 	vec4 sphereColor;
-  	vec4 atmColor;
 	if (divs == 3) {
 		x = getDiv3(x);
 		y = getDiv3(y);
@@ -76,8 +72,6 @@ void main() {
 				sphereColor = vec4(texture(sphereTextureRT, tCoord).rgb, 1.0);
 			}
 		}
-		
-		atmColor  = vec4(texture(atmTexture, tCoord).rgb, 1.0);
 	} else {
 		vec2 tCoord = vec2(x,y);
 		if (selection == 1) {
@@ -89,11 +83,9 @@ void main() {
 		} else if (selection == 4) {
 			sphereColor = vec4(texture(sphereTextureRB, tCoord).rgb, 1.0);
 		}
-		
-		atmColor  = vec4(texture(atmTexture, tCoord).rgb, 1.0);
 	}
     
-    vec4 color = mix(sphereColor * sphereBrightness, atmColor * atmBrightness, 0.5); 
+    vec4 color = sphereColor; 
     
-    fragColor = vec4(color.rgb * overallBrightness, 1.0);
+    fragColor = vec4(color.rgb, 1.0);
 }

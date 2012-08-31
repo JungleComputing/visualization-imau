@@ -1,6 +1,10 @@
 package imau.visualization.adaptor;
 
+import imau.visualization.ImauSettings;
+
 public class GlobeState {
+    private final ImauSettings settings = ImauSettings.getInstance();
+
     public static enum DataMode {
         FIRST_DATASET, SECOND_DATASET, DIFF
     };
@@ -119,6 +123,26 @@ public class GlobeState {
             result = "Salinity";
         } else if (index == 5) {
             result = "Potential Temperature";
+        }
+
+        return result;
+    }
+
+    public static String verbalizeUnits(int index) {
+        String result = "";
+
+        if (index == 0) {
+            result = "cm";
+        } else if (index == 1) {
+            result = "W/m\u00b2";
+        } else if (index == 2) {
+            result = "kg/m\u00b2/s";
+        } else if (index == 3) {
+            result = "cm";
+        } else if (index == 4) {
+            result = "g/g";
+        } else if (index == 5) {
+            result = "degC";
         }
 
         return result;
