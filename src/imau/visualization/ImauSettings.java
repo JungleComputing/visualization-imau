@@ -106,19 +106,19 @@ public class ImauSettings extends Settings {
     private static float      MAX_DIFF_PD           = 1.04f;
 
     private static float      MIN_TAUX              = -1f;
-    private static float      MAX_TAUX              = 0.5f;
+    private static float      MAX_TAUX              = 1f;
     private static float      MIN_DIFF_TAUX         = -1f;
-    private static float      MAX_DIFF_TAUX         = 0.5f;
+    private static float      MAX_DIFF_TAUX         = 1f;
 
     private static float      MIN_TAUY              = -1f;
-    private static float      MAX_TAUY              = 0.5f;
+    private static float      MAX_TAUY              = 1f;
     private static float      MIN_DIFF_TAUY         = -1f;
-    private static float      MAX_DIFF_TAUY         = 0.5f;
+    private static float      MAX_DIFF_TAUY         = 1f;
 
     private static float      MIN_H2                = 0f;
-    private static float      MAX_H2                = 6000f;
+    private static float      MAX_H2                = 8000f;
     private static float      MIN_DIFF_H2           = 0f;
-    private static float      MAX_DIFF_H2           = 6000f;
+    private static float      MAX_DIFF_H2           = 8000f;
 
     private static int        DEPTH_MIN             = 0;
     private static int        DEPTH_DEF             = 0;
@@ -281,6 +281,20 @@ public class ImauSettings extends Settings {
             MAX_SALT = value;
         } else if (var == Variable.TEMP) {
             MAX_TEMP = value;
+        } else if (var == Variable.UVEL) {
+            MAX_UVEL = value;
+        } else if (var == Variable.VVEL) {
+            MAX_VVEL = value;
+        } else if (var == Variable.KE) {
+            MAX_KE = value;
+        } else if (var == Variable.PD) {
+            MAX_PD = value;
+        } else if (var == Variable.TAUX) {
+            MAX_TAUX = value;
+        } else if (var == Variable.TAUY) {
+            MAX_TAUY = value;
+        } else if (var == Variable.H2) {
+            MAX_H2 = value;
         }
     }
 
@@ -297,6 +311,20 @@ public class ImauSettings extends Settings {
             MAX_DIFF_SALT = value;
         } else if (var == Variable.TEMP) {
             MAX_DIFF_TEMP = value;
+        } else if (var == Variable.UVEL) {
+            MAX_DIFF_UVEL = value;
+        } else if (var == Variable.VVEL) {
+            MAX_DIFF_VVEL = value;
+        } else if (var == Variable.KE) {
+            MAX_DIFF_KE = value;
+        } else if (var == Variable.PD) {
+            MAX_DIFF_PD = value;
+        } else if (var == Variable.TAUX) {
+            MAX_DIFF_TAUX = value;
+        } else if (var == Variable.TAUY) {
+            MAX_DIFF_TAUY = value;
+        } else if (var == Variable.H2) {
+            MAX_DIFF_H2 = value;
         }
     }
 
@@ -313,6 +341,20 @@ public class ImauSettings extends Settings {
             MIN_SALT = value;
         } else if (var == Variable.TEMP) {
             MIN_TEMP = value;
+        } else if (var == Variable.UVEL) {
+            MIN_UVEL = value;
+        } else if (var == Variable.VVEL) {
+            MIN_VVEL = value;
+        } else if (var == Variable.KE) {
+            MIN_KE = value;
+        } else if (var == Variable.PD) {
+            MIN_PD = value;
+        } else if (var == Variable.TAUX) {
+            MIN_TAUX = value;
+        } else if (var == Variable.TAUY) {
+            MIN_TAUY = value;
+        } else if (var == Variable.H2) {
+            MIN_H2 = value;
         }
     }
 
@@ -329,6 +371,20 @@ public class ImauSettings extends Settings {
             MIN_DIFF_SALT = value;
         } else if (var == Variable.TEMP) {
             MIN_DIFF_TEMP = value;
+        } else if (var == Variable.UVEL) {
+            MIN_DIFF_UVEL = value;
+        } else if (var == Variable.VVEL) {
+            MIN_DIFF_VVEL = value;
+        } else if (var == Variable.KE) {
+            MIN_DIFF_KE = value;
+        } else if (var == Variable.PD) {
+            MIN_DIFF_PD = value;
+        } else if (var == Variable.TAUX) {
+            MIN_DIFF_TAUX = value;
+        } else if (var == Variable.TAUY) {
+            MIN_DIFF_TAUY = value;
+        } else if (var == Variable.H2) {
+            MIN_DIFF_H2 = value;
         }
     }
 
@@ -346,6 +402,20 @@ public class ImauSettings extends Settings {
             result = MAX_SALT;
         } else if (var == Variable.TEMP) {
             result = MAX_TEMP;
+        } else if (var == Variable.UVEL) {
+            result = MAX_UVEL;
+        } else if (var == Variable.VVEL) {
+            result = MAX_VVEL;
+        } else if (var == Variable.KE) {
+            result = MAX_KE;
+        } else if (var == Variable.PD) {
+            result = MAX_PD;
+        } else if (var == Variable.TAUX) {
+            result = MAX_TAUX;
+        } else if (var == Variable.TAUY) {
+            result = MAX_TAUY;
+        } else if (var == Variable.H2) {
+            result = MAX_H2;
         }
         return result;
     }
@@ -364,6 +434,20 @@ public class ImauSettings extends Settings {
             result = MAX_DIFF_SALT;
         } else if (var == Variable.TEMP) {
             result = MAX_DIFF_TEMP;
+        } else if (var == Variable.UVEL) {
+            result = MAX_DIFF_UVEL;
+        } else if (var == Variable.VVEL) {
+            result = MAX_DIFF_VVEL;
+        } else if (var == Variable.KE) {
+            result = MAX_DIFF_KE;
+        } else if (var == Variable.PD) {
+            result = MAX_DIFF_PD;
+        } else if (var == Variable.TAUX) {
+            result = MAX_DIFF_TAUX;
+        } else if (var == Variable.TAUY) {
+            result = MAX_DIFF_TAUY;
+        } else if (var == Variable.H2) {
+            result = MAX_DIFF_H2;
         }
         return result;
     }
@@ -382,6 +466,20 @@ public class ImauSettings extends Settings {
             result = MIN_SALT;
         } else if (var == Variable.TEMP) {
             result = MIN_TEMP;
+        } else if (var == Variable.UVEL) {
+            result = MIN_UVEL;
+        } else if (var == Variable.VVEL) {
+            result = MIN_VVEL;
+        } else if (var == Variable.KE) {
+            result = MIN_KE;
+        } else if (var == Variable.PD) {
+            result = MIN_PD;
+        } else if (var == Variable.TAUX) {
+            result = MIN_TAUX;
+        } else if (var == Variable.TAUY) {
+            result = MIN_TAUY;
+        } else if (var == Variable.H2) {
+            result = MIN_H2;
         }
         return result;
     }
@@ -400,6 +498,20 @@ public class ImauSettings extends Settings {
             result = MIN_DIFF_SALT;
         } else if (var == Variable.TEMP) {
             result = MIN_DIFF_TEMP;
+        } else if (var == Variable.UVEL) {
+            result = MIN_DIFF_UVEL;
+        } else if (var == Variable.VVEL) {
+            result = MIN_DIFF_VVEL;
+        } else if (var == Variable.KE) {
+            result = MIN_DIFF_KE;
+        } else if (var == Variable.PD) {
+            result = MIN_DIFF_PD;
+        } else if (var == Variable.TAUX) {
+            result = MIN_DIFF_TAUX;
+        } else if (var == Variable.TAUY) {
+            result = MIN_DIFF_TAUY;
+        } else if (var == Variable.H2) {
+            result = MIN_DIFF_H2;
         }
         return result;
     }

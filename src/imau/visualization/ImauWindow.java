@@ -51,7 +51,7 @@ public class ImauWindow extends CommonWindow {
             textProgram;
     // private Texture2D worldTex;
 
-    private Model              testModel, legendModel, atmModel;
+    private Model              sphereModel, legendModel, atmModel;
 
     private HDRFBO             ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO,
             hudTextFBO, legendTextureFBO, sphereTextureFBO;
@@ -367,7 +367,7 @@ public class ImauWindow extends CommonWindow {
             program.setUniform("texture_map", texture.getMultitexNumber());
             program.setUniform("height_map", texture.getMultitexNumber());
 
-            testModel.draw(gl, program, mv);
+            sphereModel.draw(gl, program, mv);
 
             if (post_process) {
                 target.unBind(gl);
@@ -555,7 +555,7 @@ public class ImauWindow extends CommonWindow {
         final GL3 gl = drawable.getGL().getGL3();
 
         loader.cleanup(gl);
-        testModel.delete(gl);
+        sphereModel.delete(gl);
         atmModel.delete(gl);
 
         ltFBO.delete(gl);
@@ -597,8 +597,8 @@ public class ImauWindow extends CommonWindow {
         fsq = new Quad(Material.random(), 2, 2, new VecF3(0, 0, 0.1f));
         fsq.init(gl);
 
-        testModel = new GeoSphere(Material.random(), 120, 90, 50f, false);
-        testModel.init(gl);
+        sphereModel = new GeoSphere(Material.random(), 120, 120, 50f, false);
+        sphereModel.init(gl);
 
         legendModel = new Quad(Material.random(), 1.5f, .1f, new VecF3(1, 0,
                 0.1f));

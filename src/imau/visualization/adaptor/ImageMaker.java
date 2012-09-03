@@ -342,6 +342,20 @@ public class ImageMaker {
                     c = getColor(colorMapName, dims, tGridPoints[i].salinity);
                 } else if (variable == GlobeState.Variable.TEMP) {
                     c = getColor(colorMapName, dims, tGridPoints[i].temp);
+                } else if (variable == GlobeState.Variable.UVEL) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].uvel);
+                } else if (variable == GlobeState.Variable.VVEL) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].vvel);
+                } else if (variable == GlobeState.Variable.KE) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].ke);
+                } else if (variable == GlobeState.Variable.PD) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].pd);
+                } else if (variable == GlobeState.Variable.TAUX) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].taux);
+                } else if (variable == GlobeState.Variable.TAUY) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].tauy);
+                } else if (variable == GlobeState.Variable.H2) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].h2);
                 }
 
                 if (c != null) {
@@ -419,6 +433,27 @@ public class ImageMaker {
                 } else if (variable == GlobeState.Variable.TEMP) {
                     c = getColor(colorMapName, dims, tGridPoints1[i].temp,
                             tGridPoints2[i].temp);
+                } else if (variable == GlobeState.Variable.UVEL) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].uvel,
+                            tGridPoints2[i].uvel);
+                } else if (variable == GlobeState.Variable.VVEL) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].vvel,
+                            tGridPoints2[i].vvel);
+                } else if (variable == GlobeState.Variable.KE) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].ke,
+                            tGridPoints2[i].ke);
+                } else if (variable == GlobeState.Variable.PD) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].pd,
+                            tGridPoints2[i].pd);
+                } else if (variable == GlobeState.Variable.TAUX) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].taux,
+                            tGridPoints2[i].taux);
+                } else if (variable == GlobeState.Variable.TAUY) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].tauy,
+                            tGridPoints2[i].tauy);
+                } else if (variable == GlobeState.Variable.H2) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].h2,
+                            tGridPoints2[i].h2);
                 }
 
                 if (c != null) {
@@ -650,6 +685,76 @@ public class ImageMaker {
                     min = val;
                 }
             }
+        } else if (state.getVariable() == GlobeState.Variable.UVEL) {
+            for (int i = 0; i < pixels; i++) {
+                float val = tGridPoints[i].uvel;
+                if (val > max) {
+                    max = val;
+                }
+                if (val < min && val > -1E33) {
+                    min = val;
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.VVEL) {
+            for (int i = 0; i < pixels; i++) {
+                float val = tGridPoints[i].vvel;
+                if (val > max) {
+                    max = val;
+                }
+                if (val < min && val > -1E33) {
+                    min = val;
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.KE) {
+            for (int i = 0; i < pixels; i++) {
+                float val = tGridPoints[i].ke;
+                if (val > max) {
+                    max = val;
+                }
+                if (val < min && val > -1E33) {
+                    min = val;
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.PD) {
+            for (int i = 0; i < pixels; i++) {
+                float val = tGridPoints[i].pd;
+                if (val > max) {
+                    max = val;
+                }
+                if (val < min && val > -1E33) {
+                    min = val;
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.TAUX) {
+            for (int i = 0; i < pixels; i++) {
+                float val = tGridPoints[i].taux;
+                if (val > max) {
+                    max = val;
+                }
+                if (val < min && val > -1E33) {
+                    min = val;
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.TAUY) {
+            for (int i = 0; i < pixels; i++) {
+                float val = tGridPoints[i].tauy;
+                if (val > max) {
+                    max = val;
+                }
+                if (val < min && val > -1E33) {
+                    min = val;
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.H2) {
+            for (int i = 0; i < pixels; i++) {
+                float val = tGridPoints[i].h2;
+                if (val > max) {
+                    max = val;
+                }
+                if (val < min && val > -1E33) {
+                    min = val;
+                }
+            }
         }
 
         Dimensions dim = new Dimensions(min, max);
@@ -758,15 +863,115 @@ public class ImageMaker {
                     }
                 }
             }
+        } else if (state.getVariable() == GlobeState.Variable.UVEL) {
+            for (int i = 0; i < pixels; i++) {
+                float val1 = tGridPoints1[i].uvel;
+                float val2 = tGridPoints2[i].uvel;
+                float val = val1 - val2;
+
+                if (val1 > -1E33 && val2 > -1E33) {
+                    if (val > max) {
+                        max = val;
+                    }
+                    if (val < min) {
+                        min = val;
+                    }
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.VVEL) {
+            for (int i = 0; i < pixels; i++) {
+                float val1 = tGridPoints1[i].vvel;
+                float val2 = tGridPoints2[i].vvel;
+                float val = val1 - val2;
+
+                if (val1 > -1E33 && val2 > -1E33) {
+                    if (val > max) {
+                        max = val;
+                    }
+                    if (val < min) {
+                        min = val;
+                    }
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.KE) {
+            for (int i = 0; i < pixels; i++) {
+                float val1 = tGridPoints1[i].ke;
+                float val2 = tGridPoints2[i].ke;
+                float val = val1 - val2;
+
+                if (val1 > -1E33 && val2 > -1E33) {
+                    if (val > max) {
+                        max = val;
+                    }
+                    if (val < min) {
+                        min = val;
+                    }
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.PD) {
+            for (int i = 0; i < pixels; i++) {
+                float val1 = tGridPoints1[i].pd;
+                float val2 = tGridPoints2[i].pd;
+                float val = val1 - val2;
+
+                if (val1 > -1E33 && val2 > -1E33) {
+                    if (val > max) {
+                        max = val;
+                    }
+                    if (val < min) {
+                        min = val;
+                    }
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.TAUX) {
+            for (int i = 0; i < pixels; i++) {
+                float val1 = tGridPoints1[i].taux;
+                float val2 = tGridPoints2[i].taux;
+                float val = val1 - val2;
+
+                if (val1 > -1E33 && val2 > -1E33) {
+                    if (val > max) {
+                        max = val;
+                    }
+                    if (val < min) {
+                        min = val;
+                    }
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.TAUY) {
+            for (int i = 0; i < pixels; i++) {
+                float val1 = tGridPoints1[i].tauy;
+                float val2 = tGridPoints2[i].tauy;
+                float val = val1 - val2;
+
+                if (val1 > -1E33 && val2 > -1E33) {
+                    if (val > max) {
+                        max = val;
+                    }
+                    if (val < min) {
+                        min = val;
+                    }
+                }
+            }
+        } else if (state.getVariable() == GlobeState.Variable.H2) {
+            for (int i = 0; i < pixels; i++) {
+                float val1 = tGridPoints1[i].h2;
+                float val2 = tGridPoints2[i].h2;
+                float val = val1 - val2;
+
+                if (val1 > -1E33 && val2 > -1E33) {
+                    if (val > max) {
+                        max = val;
+                    }
+                    if (val < min) {
+                        min = val;
+                    }
+                }
+            }
         }
 
         Dimensions dim = new Dimensions(min, max);
         doubleDimensionMap.put(state, dim);
-
-        System.out.println("var: "
-                + GlobeState.verbalizeVariable(state.getVariableIndex()));
-        System.out.println("max: " + max);
-        System.out.println("min: " + min + "\n");
 
         return dim;
     }
