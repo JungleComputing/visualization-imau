@@ -48,7 +48,7 @@ import util.ImauInputHandler;
 
 public class ImauPanel extends CommonPanel {
     public static enum TweakState {
-        NONE, VISUAL, MOVIE
+        NONE, DATA, VISUAL, MOVIE
     }
 
     private final ImauSettings       settings           = ImauSettings
@@ -65,7 +65,7 @@ public class ImauPanel extends CommonPanel {
 
     private final JPanel             configPanel;
 
-    private final JPanel             visualConfig, movieConfig;
+    private final JPanel             dataConfig, visualConfig, movieConfig;
 
     private final ImauWindow         imauWindow;
     private static NetCDFTimedPlayer timer;
@@ -122,15 +122,25 @@ public class ImauPanel extends CommonPanel {
         });
         options.add(makeMovie);
 
-        final JMenuItem showTweakPanel = new JMenuItem(
-                "Show configuration panel.");
-        showTweakPanel.addActionListener(new ActionListener() {
+        final JMenuItem showDataTweakPanel = new JMenuItem(
+                "Show data configuration panel.");
+        showDataTweakPanel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                setTweakState(TweakState.DATA);
+            }
+        });
+        options.add(showDataTweakPanel);
+
+        final JMenuItem showVisualTweakPanel = new JMenuItem(
+                "Show visual configuration panel.");
+        showVisualTweakPanel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 setTweakState(TweakState.VISUAL);
             }
         });
-        options.add(showTweakPanel);
+        options.add(showVisualTweakPanel);
         menuBar.add(options);
 
         add(menuBar, BorderLayout.NORTH);
@@ -145,9 +155,14 @@ public class ImauPanel extends CommonPanel {
         configPanel.setPreferredSize(new Dimension(200, 0));
         configPanel.setVisible(false);
 
+        dataConfig = new JPanel();
+        dataConfig.setLayout(new BoxLayout(dataConfig, BoxLayout.Y_AXIS));
+        dataConfig.setMinimumSize(configPanel.getPreferredSize());
+        createDataTweakPanel();
+
         visualConfig = new JPanel();
         visualConfig.setLayout(new BoxLayout(visualConfig, BoxLayout.Y_AXIS));
-        visualConfig.setMinimumSize(configPanel.getPreferredSize());
+        visualConfig.setMinimumSize(visualConfig.getPreferredSize());
         createVisualTweakPanel();
 
         movieConfig = new JPanel();
@@ -373,14 +388,14 @@ public class ImauPanel extends CommonPanel {
                 } }));
     }
 
-    private void createVisualTweakPanel() {
+    private void createDataTweakPanel() {
         final ItemListener listener = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent arg0) {
                 setTweakState(TweakState.NONE);
             }
         };
-        visualConfig.add(GoggleSwing.titleBox("Configuration", listener));
+        dataConfig.add(GoggleSwing.titleBox("Configuration", listener));
 
         final JLabel depthSetting = new JLabel("" + settings.getDepthDef());
         final ChangeListener depthListener = new ChangeListener() {
@@ -393,7 +408,7 @@ public class ImauPanel extends CommonPanel {
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Depth setting", depthListener,
+        dataConfig.add(GoggleSwing.sliderBox("Depth setting", depthListener,
                 settings.getDepthMin(), settings.getDepthMax(), 1,
                 settings.getDepthDef(), depthSetting));
 
@@ -418,7 +433,7 @@ public class ImauPanel extends CommonPanel {
         vcomponents.add(comboBox);
         vcomponents.add(GoggleSwing.verticalStrut(5));
 
-        visualConfig.add(GoggleSwing.vBoxedComponents(vcomponents, true));
+        dataConfig.add(GoggleSwing.vBoxedComponents(vcomponents, true));
 
         String[] dataModes = { GlobeState.verbalizeDataMode(0),
                 GlobeState.verbalizeDataMode(1),
@@ -428,7 +443,14 @@ public class ImauPanel extends CommonPanel {
                 GlobeState.verbalizeVariable(2),
                 GlobeState.verbalizeVariable(3),
                 GlobeState.verbalizeVariable(4),
-                GlobeState.verbalizeVariable(5) };
+                GlobeState.verbalizeVariable(5),
+                GlobeState.verbalizeVariable(6),
+                GlobeState.verbalizeVariable(7),
+                GlobeState.verbalizeVariable(8),
+                GlobeState.verbalizeVariable(9),
+                GlobeState.verbalizeVariable(10),
+                GlobeState.verbalizeVariable(11),
+                GlobeState.verbalizeVariable(12) };
         final String[] colorMaps = NetCDFUtil.getColorMaps();
 
         final JComboBox dataModeComboBoxLT = new JComboBox(dataModes);
@@ -637,10 +659,48 @@ public class ImauPanel extends CommonPanel {
         vcomponentsLB.add(GoggleSwing.verticalStrut(5));
         vcomponentsRB.add(GoggleSwing.verticalStrut(5));
 
-        visualConfig.add(GoggleSwing.vBoxedComponents(vcomponentsLT, true));
-        visualConfig.add(GoggleSwing.vBoxedComponents(vcomponentsRT, true));
-        visualConfig.add(GoggleSwing.vBoxedComponents(vcomponentsLB, true));
-        visualConfig.add(GoggleSwing.vBoxedComponents(vcomponentsRB, true));
+        dataConfig.add(GoggleSwing.vBoxedComponents(vcomponentsLT, true));
+        dataConfig.add(GoggleSwing.vBoxedComponents(vcomponentsRT, true));
+        dataConfig.add(GoggleSwing.vBoxedComponents(vcomponentsLB, true));
+        dataConfig.add(GoggleSwing.vBoxedComponents(vcomponentsRB, true));
+    }
+
+    private void createVisualTweakPanel() {
+        final float heightDistortionSpacing = 0.001f;
+        final JLabel heightDistortionSetting = new JLabel(""
+                + settings.getHeightDistortion());
+        final ChangeListener heightDistortionListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                final JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    settings.setHeightDistortion(source.getValue()
+                            * heightDistortionSpacing);
+                    heightDistortionSetting.setText(""
+                            + settings.getHeightDistortion());
+                }
+            }
+        };
+        visualConfig.add(GoggleSwing.sliderBox("Height Distortion",
+                heightDistortionListener, settings.getHeightDistortionMin(),
+                settings.getHeightDistortionMax(), heightDistortionSpacing,
+                settings.getHeightDistortion(), heightDistortionSetting));
+
+        final ItemListener checkBoxListener = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    settings.setDynamicDimensions(true);
+                } else {
+                    settings.setDynamicDimensions(false);
+                }
+                timer.redraw();
+            }
+        };
+        visualConfig.add(GoggleSwing.checkboxBox(
+                "",
+                new GoggleSwing.CheckBoxItem("Dynamic dimensions", settings
+                        .isDynamicDimensions(), checkBoxListener)));
     }
 
     protected void handleFile(File file) {
@@ -712,12 +772,16 @@ public class ImauPanel extends CommonPanel {
     // Callback methods for the various ui actions and listeners
     public void setTweakState(TweakState newState) {
         configPanel.setVisible(false);
+        configPanel.remove(dataConfig);
         configPanel.remove(visualConfig);
         configPanel.remove(movieConfig);
 
         currentConfigState = newState;
 
         if (currentConfigState == TweakState.NONE) {
+        } else if (currentConfigState == TweakState.DATA) {
+            configPanel.setVisible(true);
+            configPanel.add(dataConfig, BorderLayout.WEST);
         } else if (currentConfigState == TweakState.VISUAL) {
             configPanel.setVisible(true);
             configPanel.add(visualConfig, BorderLayout.WEST);

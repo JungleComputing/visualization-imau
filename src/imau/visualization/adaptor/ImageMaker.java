@@ -1,6 +1,7 @@
 package imau.visualization.adaptor;
 
 import imau.visualization.ImauSettings;
+import imau.visualization.adaptor.GlobeState.DataMode;
 import imau.visualization.adaptor.GlobeState.Variable;
 import imau.visualization.netcdf.NetCDFUtil;
 
@@ -22,7 +23,7 @@ public class ImageMaker {
     private final static Logger       logger   = LoggerFactory
                                                        .getLogger(ImageMaker.class);
 
-    private static class Dimensions {
+    public static class Dimensions {
         public float min, max;
 
         public Dimensions(float min, float max) {
@@ -56,6 +57,10 @@ public class ImageMaker {
     private static HashMap<GlobeState, Dimensions>          dimensionMap;
     private static HashMap<GlobeState, Dimensions>          doubleDimensionMap;
 
+    private static HashMap<Integer, GlobeState>             storedStates;
+    private static HashMap<Integer, HDRTexture2D>           storedTextures;
+    private static HashMap<Integer, HDRTexture2D>           storedLegends;
+
     static {
         rebuild();
     }
@@ -64,6 +69,9 @@ public class ImageMaker {
         colorMapMaps = new HashMap<String, HashMap<Integer, Color>>();
         dimensionMap = new HashMap<GlobeState, ImageMaker.Dimensions>();
         doubleDimensionMap = new HashMap<GlobeState, ImageMaker.Dimensions>();
+        storedStates = new HashMap<Integer, GlobeState>();
+        storedTextures = new HashMap<Integer, HDRTexture2D>();
+        storedLegends = new HashMap<Integer, HDRTexture2D>();
 
         try {
             String[] colorMapFileNames = NetCDFUtil.getColorMaps();
@@ -96,6 +104,92 @@ public class ImageMaker {
         }
     }
 
+    public static HDRTexture2D efficientGetLegendImage(GL3 gl,
+            int glMultitexUnit, TGridPoint[] tGridPoints, GlobeState state,
+            int width, int height, boolean verticalOriented) {
+        // If the state was used already, retrieve the image for re-use
+        if (storedStates.containsKey(glMultitexUnit)
+                && storedStates.get(glMultitexUnit).equals(state)) {
+            return storedLegends.get(glMultitexUnit);
+        }
+
+        HDRTexture2D image = getLegendImage(gl, glMultitexUnit, tGridPoints,
+                state, 1, 500, true);
+
+        // Either the state has changed, or the glMultitexUnit was not used
+        // before, so change the image.
+
+        storedLegends.put(glMultitexUnit, image);
+        storedStates.put(glMultitexUnit, state);
+
+        return image;
+
+    }
+
+    public static HDRTexture2D efficientGetLegendImage(GL3 gl,
+            int glMultitexUnit, TGridPoint[] tGridPoints1,
+            TGridPoint[] tGridPoints2, GlobeState state, int width, int height,
+            boolean verticalOriented) {
+        // If the state was used already, retrieve the image for re-use
+        if (storedStates.containsKey(glMultitexUnit)
+                && storedStates.get(glMultitexUnit).equals(state)) {
+            return storedLegends.get(glMultitexUnit);
+        }
+
+        // Either the state has changed, or the glMultitexUnit was not used
+        // before, so change the image.
+
+        HDRTexture2D image = getLegendImage(gl, glMultitexUnit, tGridPoints1,
+                tGridPoints2, state, 1, 500, true);
+
+        storedLegends.put(glMultitexUnit, image);
+        storedStates.put(glMultitexUnit, state);
+
+        return image;
+    }
+
+    public static HDRTexture2D efficientGetImage(GL3 gl, int glMultitexUnit,
+            TGridPoint[] tGridPoints, GlobeState state, int dsWidth,
+            int dsHeight, int imgHeight, int blankStartRows) {
+        // If the state was used already, retrieve the image for re-use
+        if (storedStates.containsKey(glMultitexUnit)
+                && storedStates.get(glMultitexUnit).equals(state)) {
+            return storedTextures.get(glMultitexUnit);
+        }
+
+        // Either the state has changed, or the glMultitexUnit was not used yet,
+        // so change the image.
+
+        HDRTexture2D image = getImage(gl, glMultitexUnit, tGridPoints, state,
+                dsWidth, dsHeight, imgHeight, blankStartRows);
+        storedTextures.put(glMultitexUnit, image);
+        storedStates.put(glMultitexUnit, state);
+
+        return image;
+    }
+
+    public static HDRTexture2D efficientGetImage(GL3 gl, int glMultitexUnit,
+            TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
+            GlobeState state, int dsWidth, int dsHeight, int imgHeight,
+            int blankStartRows) {
+        // If the state was used already, retrieve the image for re-use
+        if (storedStates.containsKey(glMultitexUnit)
+                && storedStates.get(glMultitexUnit).equals(state)) {
+            return storedTextures.get(glMultitexUnit);
+        }
+
+        // Either the state has changed, or the glMultitexUnit was not used
+        // before, so change the image.
+
+        HDRTexture2D image = ImageMaker.getImage(gl, glMultitexUnit,
+                tGridPoints1, tGridPoints2, state, dsWidth, dsHeight,
+                imgHeight, blankStartRows);
+        storedTextures.put(glMultitexUnit, image);
+        storedStates.put(glMultitexUnit, state);
+
+        return image;
+    }
+
     public static HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
             TGridPoint[] tGridPoints, GlobeState state, int width, int height,
             boolean verticalOriented) {
@@ -109,9 +203,9 @@ public class ImageMaker {
         Dimensions dims;
 
         if (settings.isDynamicDimensions()) {
-            dims = getDimensions(tGridPoints, state);
+            dims = getDynamicDimensions(tGridPoints, state);
         } else {
-            dims = getDimensions(variable);
+            dims = getDimensions(state);
         }
 
         if (verticalOriented) {
@@ -153,8 +247,6 @@ public class ImageMaker {
             TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
             GlobeState state, int width, int height, boolean verticalOriented) {
 
-        // TODO: Faulty dimensions in getColor
-
         Variable variable = state.getVariable();
         String colorMapName = state.getColorMap();
 
@@ -164,9 +256,9 @@ public class ImageMaker {
 
         Dimensions dims;
         if (settings.isDynamicDimensions()) {
-            dims = getDimensions(tGridPoints1, tGridPoints2, state);
+            dims = getDynamicDimensions(tGridPoints1, tGridPoints2, state);
         } else {
-            dims = getDimensions(variable);
+            dims = getDimensions(state);
         }
 
         if (verticalOriented) {
@@ -228,9 +320,9 @@ public class ImageMaker {
         Dimensions dims;
 
         if (settings.isDynamicDimensions()) {
-            dims = getDimensions(tGridPoints, state);
+            dims = getDynamicDimensions(tGridPoints, state);
         } else {
-            dims = getDimensions(variable);
+            dims = getDimensions(state);
         }
 
         for (int row = dsHeight - 1; row >= 0; row--) {
@@ -297,7 +389,12 @@ public class ImageMaker {
             }
         }
 
-        Dimensions dims = getDimensions(tGridPoints1, tGridPoints2, state);
+        Dimensions dims;
+        if (settings.isDynamicDimensions()) {
+            dims = getDynamicDimensions(tGridPoints1, tGridPoints2, state);
+        } else {
+            dims = getDimensions(state);
+        }
 
         for (int row = dsHeight - 1; row >= 0; row--) {
             for (int col = 0; col < dsWidth; col++) {
@@ -483,7 +580,7 @@ public class ImageMaker {
         return result;
     }
 
-    private static Dimensions getDimensions(TGridPoint[] tGridPoints,
+    private static Dimensions getDynamicDimensions(TGridPoint[] tGridPoints,
             GlobeState state) {
         int pixels = tGridPoints.length;
         float max = Float.MIN_VALUE;
@@ -491,8 +588,6 @@ public class ImageMaker {
 
         if (dimensionMap.containsKey(state)) {
             return dimensionMap.get(state);
-        } else {
-            dimensionMap.clear();
         }
 
         if (state.getVariable() == GlobeState.Variable.SSH) {
@@ -563,7 +658,7 @@ public class ImageMaker {
         return dim;
     }
 
-    private static Dimensions getDimensions(TGridPoint[] tGridPoints1,
+    private static Dimensions getDynamicDimensions(TGridPoint[] tGridPoints1,
             TGridPoint[] tGridPoints2, GlobeState state) {
         int pixels = tGridPoints1.length;
         float max = Float.MIN_VALUE;
@@ -571,8 +666,6 @@ public class ImageMaker {
 
         if (doubleDimensionMap.containsKey(state)) {
             return doubleDimensionMap.get(state);
-        } else {
-            doubleDimensionMap.clear();
         }
 
         if (state.getVariable() == GlobeState.Variable.SSH) {
@@ -670,31 +763,37 @@ public class ImageMaker {
         Dimensions dim = new Dimensions(min, max);
         doubleDimensionMap.put(state, dim);
 
+        System.out.println("var: "
+                + GlobeState.verbalizeVariable(state.getVariableIndex()));
+        System.out.println("max: " + max);
+        System.out.println("min: " + min + "\n");
+
         return dim;
     }
 
-    private static Dimensions getDimensions(GlobeState.Variable variable) {
-        float max = Float.MIN_VALUE;
-        float min = Float.MAX_VALUE;
-
-        if (variable == GlobeState.Variable.SSH) {
-            max = settings.getMaxSsh();
-            min = settings.getMinSsh();
-        } else if (variable == GlobeState.Variable.SHF) {
-            max = settings.getMaxShf();
-            min = settings.getMinShf();
-        } else if (variable == GlobeState.Variable.SFWF) {
-            max = settings.getMaxSfwf();
-            min = settings.getMinSfwf();
-        } else if (variable == GlobeState.Variable.HMXL) {
-            max = settings.getMaxHmxl();
-            min = settings.getMinHmxl();
-        } else if (variable == GlobeState.Variable.SALT) {
-            max = settings.getMaxSalt();
-            min = settings.getMinSalt();
-        } else if (variable == GlobeState.Variable.TEMP) {
-            max = settings.getMaxTemp();
-            min = settings.getMinTemp();
+    public static Dimensions getDimensions(GlobeState state) {
+        Variable var = state.getVariable();
+        float max = 0;
+        float min = 0;
+        if (state.getDataMode() == DataMode.DIFF) {
+            if (state.isDynamicDimensions()
+                    && doubleDimensionMap.containsKey(state)) {
+                Dimensions dims = doubleDimensionMap.get(state);
+                max = dims.max;
+                min = dims.min;
+            } else {
+                max = settings.getVarDiffMax(var);
+                min = settings.getVarDiffMin(var);
+            }
+        } else {
+            if (state.isDynamicDimensions() && dimensionMap.containsKey(state)) {
+                Dimensions dims = dimensionMap.get(state);
+                max = dims.max;
+                min = dims.min;
+            } else {
+                max = settings.getVarMax(var);
+                min = settings.getVarMin(var);
+            }
         }
 
         return new Dimensions(min, max);

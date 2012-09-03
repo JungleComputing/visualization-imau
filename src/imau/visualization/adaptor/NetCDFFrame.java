@@ -5,7 +5,6 @@ import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.media.opengl.GL3;
@@ -19,48 +18,32 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 public class NetCDFFrame implements Runnable {
-    private final ImauSettings                   settings      = ImauSettings
-                                                                       .getInstance();
+    private final ImauSettings settings      = ImauSettings.getInstance();
 
-    private int                                  selectedDepth = settings
-                                                                       .getDepthDef();
+    private int                selectedDepth = settings.getDepthDef();
 
-    private final int                            frameNumber;
+    private final int          frameNumber;
 
-    private boolean                              initialized;
+    private boolean            initialized;
 
-    private final boolean                        doneProcessing;
+    private boolean            error;
+    private String             errMessage;
 
-    private boolean                              error;
-    private String                               errMessage;
+    private int                pixels, width, height;
+    private TGridPoint[]       tGridPoints;
 
-    private int                                  pixels, width, height;
-    private TGridPoint[]                         tGridPoints;
+    private final File         initialFile;
 
-    private final File                           initialFile;
-
-    private final float                          epsilon       = settings
-                                                                       .getEpsilon();
-
-    float                                        latMin, latMax;
-
-    private final HashMap<Integer, GlobeState>   storedStates;
-    private final HashMap<Integer, HDRTexture2D> storedTextures;
-    private final HashMap<Integer, HDRTexture2D> storedLegends;
+    float                      latMin, latMax;
 
     public NetCDFFrame(int frameNumber, File initialFile) {
         this.frameNumber = frameNumber;
         this.initialFile = initialFile;
 
         this.initialized = false;
-        this.doneProcessing = false;
 
         this.error = false;
         this.errMessage = "";
-
-        storedStates = new HashMap<Integer, GlobeState>();
-        storedTextures = new HashMap<Integer, HDRTexture2D>();
-        storedLegends = new HashMap<Integer, HDRTexture2D>();
     }
 
     public int getNumber() {
@@ -81,7 +64,6 @@ public class NetCDFFrame implements Runnable {
                 int tlon_dim = 0;
 
                 Array t_depth = NetCDFUtil.getData(ncfile, "depth_t");
-                int tdepth_dim = 0;
 
                 List<Dimension> dims = ncfile.getDimensions();
                 for (Dimension d : dims) {
@@ -89,8 +71,6 @@ public class NetCDFFrame implements Runnable {
                         tlat_dim = d.getLength();
                     } else if (d.getName().compareTo("t_lon") == 0) {
                         tlon_dim = d.getLength();
-                    } else if (d.getName().compareTo("depth_t") == 0) {
-                        tdepth_dim = d.getLength();
                     }
                 }
 
@@ -108,10 +88,23 @@ public class NetCDFFrame implements Runnable {
                 Variable vsalt = ncfile.findVariable("SALT");
                 Variable vtemp = ncfile.findVariable("TEMP");
 
+                Variable vuvel = ncfile.findVariable("UVEL");
+                Variable vvvel = ncfile.findVariable("VVEL");
+                Variable vke = ncfile.findVariable("KE");
+
+                Variable vpd = ncfile.findVariable("PD");
+                Variable vtaux = ncfile.findVariable("TAUX");
+                Variable vtauy = ncfile.findVariable("TAUY");
+                Variable vh2 = ncfile.findVariable("H2");
+
                 Array ssh = vssh.read();
                 Array shf = vshf.read();
                 Array sfwf = vsfwf.read();
                 Array hmxl = vhmxl.read();
+
+                Array taux = vtaux.read();
+                Array tauy = vtauy.read();
+                Array h2 = vh2.read();
 
                 this.pixels = tlat_dim * tlon_dim;
 
@@ -127,6 +120,11 @@ public class NetCDFFrame implements Runnable {
                 Array salt = vsalt.read(origin, size).reduce(0);
                 Array temp = vtemp.read(origin, size).reduce(0);
 
+                Array pd = vpd.read(origin, size).reduce(0);
+                Array uvel = vuvel.read(origin, size).reduce(0);
+                Array vvel = vvvel.read(origin, size).reduce(0);
+                Array ke = vke.read(origin, size).reduce(0);
+
                 Index ssh_index = ssh.getIndex();
                 Index shf_index = shf.getIndex();
                 Index sfwf_index = sfwf.getIndex();
@@ -134,6 +132,15 @@ public class NetCDFFrame implements Runnable {
 
                 Index salt_index = salt.getIndex();
                 Index temp_index = temp.getIndex();
+
+                Index taux_index = taux.getIndex();
+                Index tauy_index = tauy.getIndex();
+                Index h2_index = h2.getIndex();
+
+                Index pd_index = pd.getIndex();
+                Index uvel_index = uvel.getIndex();
+                Index vvel_index = vvel.getIndex();
+                Index ke_index = ke.getIndex();
 
                 for (int tlon_i = 0; tlon_i < tlon_dim; tlon_i++) {
                     float tlon = t_lon.getFloat(tlon_i);
@@ -149,6 +156,15 @@ public class NetCDFFrame implements Runnable {
                         salt_index.set(tlat_i, tlon_i);
                         temp_index.set(tlat_i, tlon_i);
 
+                        taux_index.set(tlat_i, tlon_i);
+                        tauy_index.set(tlat_i, tlon_i);
+                        h2_index.set(tlat_i, tlon_i);
+
+                        pd_index.set(tlat_i, tlon_i);
+                        uvel_index.set(tlat_i, tlon_i);
+                        vvel_index.set(tlat_i, tlon_i);
+                        ke_index.set(tlat_i, tlon_i);
+
                         float seaHeight = ssh.getFloat(ssh_index);
                         float surfHeatFlux = shf.getFloat(shf_index);
                         float saltFlux = sfwf.getFloat(sfwf_index);
@@ -157,10 +173,21 @@ public class NetCDFFrame implements Runnable {
                         float salinity = salt.getFloat(salt_index);
                         float temperature = temp.getFloat(temp_index);
 
+                        float windstressX = taux.getFloat(taux_index);
+                        float windstressY = tauy.getFloat(tauy_index);
+                        float seaHeight2 = h2.getFloat(h2_index);
+
+                        float potentialDensity = pd.getFloat(pd_index);
+                        float velocityX = uvel.getFloat(uvel_index);
+                        float velocityY = vvel.getFloat(vvel_index);
+                        float horzKineticEnergy = ke.getFloat(ke_index);
+
                         tGridPoints[(tlat_i * tlon_dim) + tlon_i] = new TGridPoint(
                                 tlat, tlon, tdepth, seaHeight, surfHeatFlux,
                                 saltFlux, mixedLayerDepth, salinity,
-                                temperature);
+                                temperature, velocityX, velocityY,
+                                horzKineticEnergy, potentialDensity,
+                                windstressX, windstressY, seaHeight2);
                     }
                 }
 
@@ -196,22 +223,8 @@ public class NetCDFFrame implements Runnable {
             init();
         }
 
-        // If the state was used already, retrieve the image for re-use
-        if (storedStates.containsKey(glMultitexUnit)
-                && storedStates.get(glMultitexUnit).equals(state)) {
-            return storedLegends.get(glMultitexUnit);
-        }
-
-        HDRTexture2D image = ImageMaker.getLegendImage(gl, glMultitexUnit,
+        return ImageMaker.efficientGetLegendImage(gl, glMultitexUnit,
                 tGridPoints, state, 1, 500, true);
-
-        // Either the state has changed, or the glMultitexUnit was not used
-        // before, so change the image.
-
-        storedLegends.put(glMultitexUnit, image);
-        storedStates.put(glMultitexUnit, state);
-
-        return image;
     }
 
     public HDRTexture2D getLegendImage(GL3 gl, NetCDFFrame otherFrame,
@@ -234,22 +247,8 @@ public class NetCDFFrame implements Runnable {
             init();
         }
 
-        // If the state was used already, retrieve the image for re-use
-        if (storedStates.containsKey(glMultitexUnit)
-                && storedStates.get(glMultitexUnit).equals(state)) {
-            return storedLegends.get(glMultitexUnit);
-        }
-
-        // Either the state has changed, or the glMultitexUnit was not used
-        // before, so change the image.
-
-        HDRTexture2D image = ImageMaker.getLegendImage(gl, glMultitexUnit,
+        return ImageMaker.efficientGetLegendImage(gl, glMultitexUnit,
                 tGridPoints, otherFrame.getGridPoints(), state, 1, 500, true);
-
-        storedLegends.put(glMultitexUnit, image);
-        storedStates.put(glMultitexUnit, state);
-
-        return image;
     }
 
     public HDRTexture2D getImage(GL3 gl, int glMultitexUnit, GlobeState state) {
@@ -274,21 +273,8 @@ public class NetCDFFrame implements Runnable {
         int newHeight = (int) Math.floor((180f / (latMax - latMin)) * height);
         int blankRows = (int) Math.floor(180f / latMax);
 
-        // If the state was used already, retrieve the image for re-use
-        if (storedStates.containsKey(glMultitexUnit)
-                && storedStates.get(glMultitexUnit).equals(state)) {
-            return storedTextures.get(glMultitexUnit);
-        }
-
-        // Either the state has changed, or the glMultitexUnit was not used yet,
-        // so change the image.
-
-        HDRTexture2D image = ImageMaker.getImage(gl, glMultitexUnit,
-                tGridPoints, state, width, height, newHeight, blankRows);
-        storedTextures.put(glMultitexUnit, image);
-        storedStates.put(glMultitexUnit, state);
-
-        return image;
+        return ImageMaker.efficientGetImage(gl, glMultitexUnit, tGridPoints,
+                state, width, height, newHeight, blankRows);
     }
 
     public HDRTexture2D getImage(GL3 gl, NetCDFFrame otherFrame,
@@ -314,22 +300,9 @@ public class NetCDFFrame implements Runnable {
         int newHeight = (int) Math.floor((180f / (latMax - latMin)) * height);
         int blankRows = (int) Math.floor(180f / latMax);
 
-        // If the state was used already, retrieve the image for re-use
-        if (storedStates.containsKey(glMultitexUnit)
-                && storedStates.get(glMultitexUnit).equals(state)) {
-            return storedTextures.get(glMultitexUnit);
-        }
-
-        // Either the state has changed, or the glMultitexUnit was not used
-        // before, so change the image.
-
-        HDRTexture2D image = ImageMaker.getImage(gl, glMultitexUnit,
-                tGridPoints, otherFrame.getGridPoints(), state, width, height,
-                newHeight, blankRows);
-        storedTextures.put(glMultitexUnit, image);
-        storedStates.put(glMultitexUnit, state);
-
-        return image;
+        return ImageMaker.efficientGetImage(gl, glMultitexUnit, tGridPoints,
+                otherFrame.getGridPoints(), state, width, height, newHeight,
+                blankRows);
     }
 
     private TGridPoint[] getGridPoints() {

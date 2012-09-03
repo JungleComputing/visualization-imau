@@ -2,6 +2,7 @@ package imau.visualization;
 
 import imau.visualization.adaptor.GlobeState;
 import imau.visualization.adaptor.GlobeState.Variable;
+import imau.visualization.adaptor.ImageMaker;
 import openglCommon.util.Settings;
 import openglCommon.util.TypedProperties;
 
@@ -16,28 +17,28 @@ public class ImauSettings extends Settings {
         public final static ImauSettings instance = new ImauSettings();
     }
 
-    public static enum VarNames {
-        SSH, SHF, SFWF, HMXL, SALT, TEMP
-    };
-
     public static enum GlobeMode {
         FIRST_DATASET, SECOND_DATASET, DIFF
     };
 
     private static GlobeState globeStateLT          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
+                                                            false,
                                                             GlobeState.Variable.SALT,
                                                             75, 0, "default");
     private static GlobeState globeStateRT          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
+                                                            false,
                                                             GlobeState.Variable.TEMP,
                                                             75, 0, "default");
     private static GlobeState globeStateLB          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
+                                                            false,
                                                             GlobeState.Variable.SSH,
                                                             75, 0, "default");
     private static GlobeState globeStateRB          = new GlobeState(
                                                             GlobeState.DataMode.FIRST_DATASET,
+                                                            false,
                                                             GlobeState.Variable.SFWF,
                                                             75, 0, "default");
 
@@ -56,17 +57,68 @@ public class ImauSettings extends Settings {
 
     private static float      MIN_SSH               = -200f;
     private static float      MAX_SSH               = 200f;
+    private static float      MIN_DIFF_SSH          = -125f;
+    private static float      MAX_DIFF_SSH          = 125f;
+
     private static float      MIN_SHF               = -400f;
     private static float      MAX_SHF               = 250f;
+    private static float      MIN_DIFF_SHF          = -400f;
+    private static float      MAX_DIFF_SHF          = 250f;
+
     private static float      MIN_SFWF              = -3E-4f;
     private static float      MAX_SFWF              = 3E-4f;
+    private static float      MIN_DIFF_SFWF         = -5E-5f;
+    private static float      MAX_DIFF_SFWF         = 3.5E-4f;
+
     private static float      MIN_HMXL              = 750f;
     private static float      MAX_HMXL              = 70000f;
+    private static float      MIN_DIFF_HMXL         = 750f;
+    private static float      MAX_DIFF_HMXL         = 70000f;
 
     private static float      MIN_SALT              = 0.00f;
     private static float      MAX_SALT              = 0.05f;
+    private static float      MIN_DIFF_SALT         = 0.00f;
+    private static float      MAX_DIFF_SALT         = 0.05f;
+
     private static float      MIN_TEMP              = -7.5f;
     private static float      MAX_TEMP              = 35f;
+    private static float      MIN_DIFF_TEMP         = -7.5f;
+    private static float      MAX_DIFF_TEMP         = 35f;
+
+    private static float      MIN_UVEL              = -200f;
+    private static float      MAX_UVEL              = 200f;
+    private static float      MIN_DIFF_UVEL         = -200f;
+    private static float      MAX_DIFF_UVEL         = 200f;
+
+    private static float      MIN_VVEL              = -200f;
+    private static float      MAX_VVEL              = 200f;
+    private static float      MIN_DIFF_VVEL         = -200f;
+    private static float      MAX_DIFF_VVEL         = 200f;
+
+    private static float      MIN_KE                = 0f;
+    private static float      MAX_KE                = 17000f;
+    private static float      MIN_DIFF_KE           = 0f;
+    private static float      MAX_DIFF_KE           = 17000f;
+
+    private static float      MIN_PD                = 1f;
+    private static float      MAX_PD                = 1.04f;
+    private static float      MIN_DIFF_PD           = 1f;
+    private static float      MAX_DIFF_PD           = 1.04f;
+
+    private static float      MIN_TAUX              = -1f;
+    private static float      MAX_TAUX              = 0.5f;
+    private static float      MIN_DIFF_TAUX         = -1f;
+    private static float      MAX_DIFF_TAUX         = 0.5f;
+
+    private static float      MIN_TAUY              = -1f;
+    private static float      MAX_TAUY              = 0.5f;
+    private static float      MIN_DIFF_TAUY         = -1f;
+    private static float      MAX_DIFF_TAUY         = 0.5f;
+
+    private static float      MIN_H2                = 0f;
+    private static float      MAX_H2                = 6000f;
+    private static float      MIN_DIFF_H2           = 0f;
+    private static float      MAX_DIFF_H2           = 6000f;
 
     private static int        DEPTH_MIN             = 0;
     private static int        DEPTH_DEF             = 0;
@@ -78,7 +130,10 @@ public class ImauSettings extends Settings {
 
     private static boolean    IMAGE_STREAM_OUTPUT   = false;
     private static boolean    IMAGE_STREAM_GL_ONLY  = false;
-    private static boolean    HEIGHT_DISTORION      = true;
+
+    private static float      HEIGHT_DISTORION      = 0f;
+    private static float      HEIGHT_DISTORION_MIN  = 0f;
+    private static float      HEIGHT_DISTORION_MAX  = .01f;
 
     private static String     SAGE_DIRECTORY        = "/home/maarten/sage-code/sage3.0";
 
@@ -109,17 +164,41 @@ public class ImauSettings extends Settings {
 
             ImauSettings.MAX_SSH = props.getFloatProperty("MAX_SSH");
             ImauSettings.MIN_SSH = props.getFloatProperty("MIN_SSH");
+            ImauSettings.MAX_DIFF_SSH = props.getFloatProperty("MAX_DIFF_SSH");
+            ImauSettings.MIN_DIFF_SSH = props.getFloatProperty("MIN_DIFF_SSH");
+
             ImauSettings.MAX_SHF = props.getFloatProperty("MAX_SHF");
             ImauSettings.MIN_SHF = props.getFloatProperty("MIN_SHF");
+            ImauSettings.MAX_DIFF_SHF = props.getFloatProperty("MAX_DIFF_SHF");
+            ImauSettings.MIN_DIFF_SHF = props.getFloatProperty("MIN_DIFF_SHF");
+
             ImauSettings.MAX_SFWF = props.getFloatProperty("MAX_SFWF");
             ImauSettings.MIN_SFWF = props.getFloatProperty("MIN_SFWF");
+            ImauSettings.MAX_DIFF_SFWF = props
+                    .getFloatProperty("MAX_DIFF_SFWF");
+            ImauSettings.MIN_DIFF_SFWF = props
+                    .getFloatProperty("MIN_DIFF_SFWF");
+
             ImauSettings.MAX_HMXL = props.getFloatProperty("MAX_HMXL");
             ImauSettings.MIN_HMXL = props.getFloatProperty("MIN_HMXL");
+            ImauSettings.MAX_DIFF_HMXL = props
+                    .getFloatProperty("MAX_DIFF_HMXL");
+            ImauSettings.MIN_DIFF_HMXL = props
+                    .getFloatProperty("MIN_DIFF_HMXL");
 
             ImauSettings.MAX_SALT = props.getFloatProperty("MAX_SALT");
             ImauSettings.MIN_SALT = props.getFloatProperty("MIN_SALT");
+            ImauSettings.MAX_DIFF_SALT = props
+                    .getFloatProperty("MAX_DIFF_SALT");
+            ImauSettings.MIN_DIFF_SALT = props
+                    .getFloatProperty("MIN_DIFF_SALT");
+
             ImauSettings.MAX_TEMP = props.getFloatProperty("MAX_TEMP");
             ImauSettings.MIN_TEMP = props.getFloatProperty("MIN_TEMP");
+            ImauSettings.MAX_DIFF_TEMP = props
+                    .getFloatProperty("MAX_DIFF_TEMP");
+            ImauSettings.MIN_DIFF_TEMP = props
+                    .getFloatProperty("MIN_DIFF_TEMP");
 
             ImauSettings.DEPTH_MIN = props.getIntProperty("DEPTH_MIN");
             ImauSettings.DEPTH_DEF = props.getIntProperty("DEPTH_DEF");
@@ -189,100 +268,140 @@ public class ImauSettings extends Settings {
         PREPROCESSING_AMOUNT = value;
     }
 
-    public void setMaxSalt(float value) {
-        MAX_SALT = value;
+    public void setVarMax(Variable var, float value) {
+        if (var == Variable.SSH) {
+            MAX_SSH = value;
+        } else if (var == Variable.SHF) {
+            MAX_SHF = value;
+        } else if (var == Variable.SFWF) {
+            MAX_SFWF = value;
+        } else if (var == Variable.HMXL) {
+            MAX_HMXL = value;
+        } else if (var == Variable.SALT) {
+            MAX_SALT = value;
+        } else if (var == Variable.TEMP) {
+            MAX_TEMP = value;
+        }
     }
 
-    public void setMinSalt(float value) {
-        MIN_SALT = value;
+    public void setVarDiffMax(Variable var, float value) {
+        if (var == Variable.SSH) {
+            MAX_DIFF_SSH = value;
+        } else if (var == Variable.SHF) {
+            MAX_DIFF_SHF = value;
+        } else if (var == Variable.SFWF) {
+            MAX_DIFF_SFWF = value;
+        } else if (var == Variable.HMXL) {
+            MAX_DIFF_HMXL = value;
+        } else if (var == Variable.SALT) {
+            MAX_DIFF_SALT = value;
+        } else if (var == Variable.TEMP) {
+            MAX_DIFF_TEMP = value;
+        }
     }
 
-    public void setMaxTemp(float value) {
-        MAX_TEMP = value;
+    public void setVarMin(Variable var, float value) {
+        if (var == Variable.SSH) {
+            MIN_SSH = value;
+        } else if (var == Variable.SHF) {
+            MIN_SHF = value;
+        } else if (var == Variable.SFWF) {
+            MIN_SFWF = value;
+        } else if (var == Variable.HMXL) {
+            MIN_HMXL = value;
+        } else if (var == Variable.SALT) {
+            MIN_SALT = value;
+        } else if (var == Variable.TEMP) {
+            MIN_TEMP = value;
+        }
     }
 
-    public void setMinTemp(float value) {
-        MIN_TEMP = value;
+    public void setVarDiffMin(Variable var, float value) {
+        if (var == Variable.SSH) {
+            MIN_DIFF_SSH = value;
+        } else if (var == Variable.SHF) {
+            MIN_DIFF_SHF = value;
+        } else if (var == Variable.SFWF) {
+            MIN_DIFF_SFWF = value;
+        } else if (var == Variable.HMXL) {
+            MIN_DIFF_HMXL = value;
+        } else if (var == Variable.SALT) {
+            MIN_DIFF_SALT = value;
+        } else if (var == Variable.TEMP) {
+            MIN_DIFF_TEMP = value;
+        }
     }
 
-    public void setMaxSsh(float value) {
-        MAX_SSH = value;
+    public float getVarMax(Variable var) {
+        float result = 0f;
+        if (var == Variable.SSH) {
+            result = MAX_SSH;
+        } else if (var == Variable.SHF) {
+            result = MAX_SHF;
+        } else if (var == Variable.SFWF) {
+            result = MAX_SFWF;
+        } else if (var == Variable.HMXL) {
+            result = MAX_HMXL;
+        } else if (var == Variable.SALT) {
+            result = MAX_SALT;
+        } else if (var == Variable.TEMP) {
+            result = MAX_TEMP;
+        }
+        return result;
     }
 
-    public void setMinSsh(float value) {
-        MIN_SSH = value;
+    public float getVarDiffMax(Variable var) {
+        float result = 0f;
+        if (var == Variable.SSH) {
+            result = MAX_DIFF_SSH;
+        } else if (var == Variable.SHF) {
+            result = MAX_DIFF_SHF;
+        } else if (var == Variable.SFWF) {
+            result = MAX_DIFF_SFWF;
+        } else if (var == Variable.HMXL) {
+            result = MAX_DIFF_HMXL;
+        } else if (var == Variable.SALT) {
+            result = MAX_DIFF_SALT;
+        } else if (var == Variable.TEMP) {
+            result = MAX_DIFF_TEMP;
+        }
+        return result;
     }
 
-    public void setMaxShf(float value) {
-        MAX_SHF = value;
+    public float getVarMin(Variable var) {
+        float result = 0f;
+        if (var == Variable.SSH) {
+            result = MIN_SSH;
+        } else if (var == Variable.SHF) {
+            result = MIN_SHF;
+        } else if (var == Variable.SFWF) {
+            result = MIN_SFWF;
+        } else if (var == Variable.HMXL) {
+            result = MIN_HMXL;
+        } else if (var == Variable.SALT) {
+            result = MIN_SALT;
+        } else if (var == Variable.TEMP) {
+            result = MIN_TEMP;
+        }
+        return result;
     }
 
-    public void setMinShf(float value) {
-        MIN_SHF = value;
-    }
-
-    public void setMaxSfwf(float value) {
-        MAX_SFWF = value;
-    }
-
-    public void setMinSfwf(float value) {
-        MIN_SFWF = value;
-    }
-
-    public void setMaxHmxl(float value) {
-        MAX_HMXL = value;
-    }
-
-    public void setMinHmxl(float value) {
-        MIN_HMXL = value;
-    }
-
-    public float getMaxSsh() {
-        return MAX_SSH;
-    }
-
-    public float getMinSsh() {
-        return MIN_SSH;
-    }
-
-    public float getMaxShf() {
-        return MAX_SHF;
-    }
-
-    public float getMinShf() {
-        return MIN_SHF;
-    }
-
-    public float getMaxSfwf() {
-        return MAX_SFWF;
-    }
-
-    public float getMinSfwf() {
-        return MIN_SFWF;
-    }
-
-    public float getMaxHmxl() {
-        return MAX_HMXL;
-    }
-
-    public float getMinHmxl() {
-        return MIN_HMXL;
-    }
-
-    public float getMaxSalt() {
-        return MAX_SALT;
-    }
-
-    public float getMinSalt() {
-        return MIN_SALT;
-    }
-
-    public float getMaxTemp() {
-        return MAX_TEMP;
-    }
-
-    public float getMinTemp() {
-        return MIN_TEMP;
+    public float getVarDiffMin(Variable var) {
+        float result = 0f;
+        if (var == Variable.SSH) {
+            result = MIN_DIFF_SSH;
+        } else if (var == Variable.SHF) {
+            result = MIN_DIFF_SHF;
+        } else if (var == Variable.SFWF) {
+            result = MIN_DIFF_SFWF;
+        } else if (var == Variable.HMXL) {
+            result = MIN_DIFF_HMXL;
+        } else if (var == Variable.SALT) {
+            result = MIN_DIFF_SALT;
+        } else if (var == Variable.TEMP) {
+            result = MIN_DIFF_TEMP;
+        }
+        return result;
     }
 
     public int getDepthMin() {
@@ -293,18 +412,10 @@ public class ImauSettings extends Settings {
         Variable var = state.getVariable();
         String result = "";
 
-        if (var == Variable.SSH) {
-            result = Float.toString(getMaxSsh());
-        } else if (var == Variable.SHF) {
-            result = Float.toString(getMaxShf());
-        } else if (var == Variable.SFWF) {
-            result = Float.toString(getMaxSfwf());
-        } else if (var == Variable.HMXL) {
-            result = Float.toString(getMaxHmxl());
-        } else if (var == Variable.SALT) {
-            result = Float.toString(getMaxSalt());
-        } else if (var == Variable.TEMP) {
-            result = Float.toString(getMaxTemp());
+        if (state.isDynamicDimensions()) {
+            result = Float.toString(ImageMaker.getDimensions(state).max);
+        } else {
+            result = Float.toString(getVarMax(var));
         }
 
         return result;
@@ -314,18 +425,10 @@ public class ImauSettings extends Settings {
         Variable var = state.getVariable();
         String result = "";
 
-        if (var == Variable.SSH) {
-            result = Float.toString(getMinSsh());
-        } else if (var == Variable.SHF) {
-            result = Float.toString(getMinShf());
-        } else if (var == Variable.SFWF) {
-            result = Float.toString(getMinSfwf());
-        } else if (var == Variable.HMXL) {
-            result = Float.toString(getMinHmxl());
-        } else if (var == Variable.SALT) {
-            result = Float.toString(getMinSalt());
-        } else if (var == Variable.TEMP) {
-            result = Float.toString(getMinTemp());
+        if (state.isDynamicDimensions()) {
+            result = Float.toString(ImageMaker.getDimensions(state).min);
+        } else {
+            result = Float.toString(getVarMin(var));
         }
 
         return result;
@@ -345,29 +448,33 @@ public class ImauSettings extends Settings {
 
         state = globeStateLT;
         if (state.getFrameNumber() != value) {
-            result = new GlobeState(state.getDataMode(), state.getVariable(),
-                    value, state.getDepth(), state.getColorMap());
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(), value,
+                    state.getDepth(), state.getColorMap());
             globeStateLT = result;
         }
 
         state = globeStateRT;
         if (state.getFrameNumber() != value) {
-            result = new GlobeState(state.getDataMode(), state.getVariable(),
-                    value, state.getDepth(), state.getColorMap());
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(), value,
+                    state.getDepth(), state.getColorMap());
             globeStateRT = result;
         }
 
         state = globeStateLB;
         if (state.getFrameNumber() != value) {
-            result = new GlobeState(state.getDataMode(), state.getVariable(),
-                    value, state.getDepth(), state.getColorMap());
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(), value,
+                    state.getDepth(), state.getColorMap());
             globeStateLB = result;
         }
 
         state = globeStateRB;
         if (state.getFrameNumber() != value) {
-            result = new GlobeState(state.getDataMode(), state.getVariable(),
-                    value, state.getDepth(), state.getColorMap());
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(), value,
+                    state.getDepth(), state.getColorMap());
             globeStateRB = result;
         }
     }
@@ -378,28 +485,32 @@ public class ImauSettings extends Settings {
 
         state = globeStateLT;
         if (state.getDepth() != value) {
-            result = new GlobeState(state.getDataMode(), state.getVariable(),
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(),
                     state.getFrameNumber(), value, state.getColorMap());
             globeStateLT = result;
         }
 
         state = globeStateRT;
         if (state.getDepth() != value) {
-            result = new GlobeState(state.getDataMode(), state.getVariable(),
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(),
                     state.getFrameNumber(), value, state.getColorMap());
             globeStateRT = result;
         }
 
         state = globeStateLB;
         if (state.getDepth() != value) {
-            result = new GlobeState(state.getDataMode(), state.getVariable(),
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(),
                     state.getFrameNumber(), value, state.getColorMap());
             globeStateLB = result;
         }
 
         state = globeStateRB;
         if (state.getDepth() != value) {
-            result = new GlobeState(state.getDataMode(), state.getVariable(),
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(),
                     state.getFrameNumber(), value, state.getColorMap());
             globeStateRB = result;
         }
@@ -415,22 +526,36 @@ public class ImauSettings extends Settings {
         DEPTH_MAX = value;
     }
 
-    public String bandNameToString(VarNames var) {
-        if (var == VarNames.SSH) {
+    public String bandNameToString(Variable var) {
+        if (var == Variable.SSH) {
             return "Sea Surface Height";
-        } else if (var == VarNames.SHF) {
+        } else if (var == Variable.SHF) {
             return "Total Surface Heat Flux";
-        } else if (var == VarNames.SFWF) {
+        } else if (var == Variable.SFWF) {
             return "Virtual Salt Flux ";
-        } else if (var == VarNames.HMXL) {
+        } else if (var == Variable.HMXL) {
             return "Mixed Layer Depth";
-        } else if (var == VarNames.SALT) {
+        } else if (var == Variable.SALT) {
             return "Salinity";
-        } else if (var == VarNames.TEMP) {
+        } else if (var == Variable.TEMP) {
             return "Potential Temperature";
-        } else {
-            return "";
+        } else if (var == Variable.UVEL) {
+            return "Velocity in grid-x dir.";
+        } else if (var == Variable.VVEL) {
+            return "Velocity in grid-y dir.";
+        } else if (var == Variable.KE) {
+            return "Horizontal Kinetic Energy";
+        } else if (var == Variable.PD) {
+            return "Potential Density";
+        } else if (var == Variable.TAUX) {
+            return "Windstress in grid-x dir.";
+        } else if (var == Variable.TAUY) {
+            return "Windstress in grid-y dir.";
+        } else if (var == Variable.H2) {
+            return "Sea surface height ^2";
         }
+
+        return "";
     }
 
     public void setWindowSelection(int i) {
@@ -457,57 +582,65 @@ public class ImauSettings extends Settings {
 
     public synchronized void setLTDataMode(GlobeState.DataMode dataMode) {
         GlobeState state = globeStateLT;
-        GlobeState result = new GlobeState(dataMode, state.getVariable(),
+        GlobeState result = new GlobeState(dataMode,
+                state.isDynamicDimensions(), state.getVariable(),
                 state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateLT = result;
     }
 
     public synchronized void setRTDataMode(GlobeState.DataMode dataMode) {
         GlobeState state = globeStateRT;
-        GlobeState result = new GlobeState(dataMode, state.getVariable(),
+        GlobeState result = new GlobeState(dataMode,
+                state.isDynamicDimensions(), state.getVariable(),
                 state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateRT = result;
     }
 
     public synchronized void setLBDataMode(GlobeState.DataMode dataMode) {
         GlobeState state = globeStateLB;
-        GlobeState result = new GlobeState(dataMode, state.getVariable(),
+        GlobeState result = new GlobeState(dataMode,
+                state.isDynamicDimensions(), state.getVariable(),
                 state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateLB = result;
     }
 
     public synchronized void setRBDataMode(GlobeState.DataMode dataMode) {
         GlobeState state = globeStateRB;
-        GlobeState result = new GlobeState(dataMode, state.getVariable(),
+        GlobeState result = new GlobeState(dataMode,
+                state.isDynamicDimensions(), state.getVariable(),
                 state.getFrameNumber(), state.getDepth(), state.getColorMap());
         globeStateRB = result;
     }
 
     public synchronized void setLTVariable(GlobeState.Variable variable) {
         GlobeState state = globeStateLT;
-        GlobeState result = new GlobeState(state.getDataMode(), variable,
-                state.getFrameNumber(), state.getDepth(), state.getColorMap());
+        GlobeState result = new GlobeState(state.getDataMode(),
+                state.isDynamicDimensions(), variable, state.getFrameNumber(),
+                state.getDepth(), state.getColorMap());
         globeStateLT = result;
     }
 
     public synchronized void setRTVariable(GlobeState.Variable variable) {
         GlobeState state = globeStateRT;
-        GlobeState result = new GlobeState(state.getDataMode(), variable,
-                state.getFrameNumber(), state.getDepth(), state.getColorMap());
+        GlobeState result = new GlobeState(state.getDataMode(),
+                state.isDynamicDimensions(), variable, state.getFrameNumber(),
+                state.getDepth(), state.getColorMap());
         globeStateRT = result;
     }
 
     public synchronized void setLBVariable(GlobeState.Variable variable) {
         GlobeState state = globeStateLB;
-        GlobeState result = new GlobeState(state.getDataMode(), variable,
-                state.getFrameNumber(), state.getDepth(), state.getColorMap());
+        GlobeState result = new GlobeState(state.getDataMode(),
+                state.isDynamicDimensions(), variable, state.getFrameNumber(),
+                state.getDepth(), state.getColorMap());
         globeStateLB = result;
     }
 
     public synchronized void setRBVariable(GlobeState.Variable variable) {
         GlobeState state = globeStateRB;
-        GlobeState result = new GlobeState(state.getDataMode(), variable,
-                state.getFrameNumber(), state.getDepth(), state.getColorMap());
+        GlobeState result = new GlobeState(state.getDataMode(),
+                state.isDynamicDimensions(), variable, state.getFrameNumber(),
+                state.getDepth(), state.getColorMap());
         globeStateRB = result;
     }
 
@@ -530,33 +663,72 @@ public class ImauSettings extends Settings {
     public synchronized void setLTColorMap(String selectedColorMap) {
         GlobeState state = globeStateLT;
         GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), state.getFrameNumber(), state.getDepth(),
-                selectedColorMap);
+                state.isDynamicDimensions(), state.getVariable(),
+                state.getFrameNumber(), state.getDepth(), selectedColorMap);
         globeStateLT = result;
     }
 
     public synchronized void setRTColorMap(String selectedColorMap) {
         GlobeState state = globeStateRT;
         GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), state.getFrameNumber(), state.getDepth(),
-                selectedColorMap);
+                state.isDynamicDimensions(), state.getVariable(),
+                state.getFrameNumber(), state.getDepth(), selectedColorMap);
         globeStateRT = result;
     }
 
     public synchronized void setLBColorMap(String selectedColorMap) {
         GlobeState state = globeStateLB;
         GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), state.getFrameNumber(), state.getDepth(),
-                selectedColorMap);
+                state.isDynamicDimensions(), state.getVariable(),
+                state.getFrameNumber(), state.getDepth(), selectedColorMap);
         globeStateLB = result;
     }
 
     public synchronized void setRBColorMap(String selectedColorMap) {
         GlobeState state = globeStateRB;
         GlobeState result = new GlobeState(state.getDataMode(),
-                state.getVariable(), state.getFrameNumber(), state.getDepth(),
-                selectedColorMap);
+                state.isDynamicDimensions(), state.getVariable(),
+                state.getFrameNumber(), state.getDepth(), selectedColorMap);
         globeStateRB = result;
+    }
+
+    public void setDynamicDimensions(boolean value) {
+        DYNAMIC_DIMENSIONS = value;
+
+        GlobeState result;
+        GlobeState state;
+
+        state = globeStateLT;
+        if (state.isDynamicDimensions() != DYNAMIC_DIMENSIONS) {
+            result = new GlobeState(state.getDataMode(), DYNAMIC_DIMENSIONS,
+                    state.getVariable(), state.getFrameNumber(),
+                    state.getDepth(), state.getColorMap());
+            globeStateLT = result;
+        }
+
+        state = globeStateRT;
+        if (state.isDynamicDimensions() != DYNAMIC_DIMENSIONS) {
+            result = new GlobeState(state.getDataMode(), DYNAMIC_DIMENSIONS,
+                    state.getVariable(), state.getFrameNumber(),
+                    state.getDepth(), state.getColorMap());
+            globeStateRT = result;
+        }
+
+        state = globeStateLB;
+        if (state.isDynamicDimensions() != DYNAMIC_DIMENSIONS) {
+            result = new GlobeState(state.getDataMode(), DYNAMIC_DIMENSIONS,
+                    state.getVariable(), state.getFrameNumber(),
+                    state.getDepth(), state.getColorMap());
+            globeStateLB = result;
+        }
+
+        state = globeStateRB;
+        if (state.isDynamicDimensions() != DYNAMIC_DIMENSIONS) {
+            result = new GlobeState(state.getDataMode(), DYNAMIC_DIMENSIONS,
+                    state.getVariable(), state.getFrameNumber(),
+                    state.getDepth(), state.getColorMap());
+            globeStateRB = result;
+        }
     }
 
     public boolean isDynamicDimensions() {
@@ -587,7 +759,19 @@ public class ImauSettings extends Settings {
         IMAGE_STREAM_GL_ONLY = iMAGE_STREAM_GL_ONLY;
     }
 
-    public boolean isHeightDistortionEnabled() {
+    public float getHeightDistortion() {
         return HEIGHT_DISTORION;
+    }
+
+    public float getHeightDistortionMin() {
+        return HEIGHT_DISTORION_MIN;
+    }
+
+    public float getHeightDistortionMax() {
+        return HEIGHT_DISTORION_MAX;
+    }
+
+    public void setHeightDistortion(float value) {
+        HEIGHT_DISTORION = value;
     }
 }

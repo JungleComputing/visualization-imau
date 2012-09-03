@@ -236,6 +236,36 @@ public class GoggleSwing {
         return GoggleSwing.vBoxedComponents(components, true);
     }
 
+    public static Box sliderBox(String label, ChangeListener listener,
+            float fmin, float fmax, float fspacing, float fnorm,
+            JLabel dynamicLabel) {
+        int min = 0;
+        int max = (int) ((fmax - fmin) / fspacing);
+        if (fmin < 0 && fmax > 0) {
+            max += 1;
+        }
+        int spacing = 1;
+        int norm = (int) ((fnorm - fmin) / fspacing);
+
+        final ArrayList<Component> components = new ArrayList<Component>();
+        final JLabel thresholdlabel = new JLabel(label);
+        components.add(thresholdlabel);
+        components.add(Box.createHorizontalGlue());
+
+        final JSlider slider = new JSlider();
+        slider.setMinimum(min);
+        slider.setMaximum(max);
+        slider.setMinorTickSpacing(spacing);
+        slider.setPaintTicks(true);
+        slider.setSnapToTicks(true);
+        slider.setValue(norm);
+        slider.addChangeListener(listener);
+        components.add(slider);
+
+        components.add(dynamicLabel);
+        return GoggleSwing.vBoxedComponents(components, true);
+    }
+
     public static Box titleBox(String label, ItemListener listener) {
         final ArrayList<Component> vcomponents = new ArrayList<Component>();
 
