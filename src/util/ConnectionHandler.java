@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.net.Socket;
 
 class ConnectionHandler implements Runnable {
-    final protected Socket            socket;
+    private static final int INITIAL_MESSAGE_LENGTH = 4;
+    private static final int MAX_TOUCH_EVENTS = 6;
+    final protected Socket socket;
     final protected TouchEventHandler handler;
 
     public ConnectionHandler(TouchEventHandler handler, Socket socket) {
@@ -31,8 +33,8 @@ class ConnectionHandler implements Runnable {
         TouchPoint[] points;
 
         // XXX nicely hardcoded :)
-        points = new TouchPoint[16];
-        for (int i = 0; i < 16; i++)
+        points = new TouchPoint[MAX_TOUCH_EVENTS];
+        for (int i = 0; i < MAX_TOUCH_EVENTS; i++)
             points[i] = new TouchPoint();
 
         try {
@@ -43,7 +45,7 @@ class ConnectionHandler implements Runnable {
             // readFully(is, header_buffer, 6);
 
             while (true) {
-                if (!readFully(is, length_buffer, 4))
+                if (!readFully(is, length_buffer, INITIAL_MESSAGE_LENGTH))
                     return;
 
                 view.initialize(length_buffer);
@@ -76,8 +78,7 @@ class ConnectionHandler implements Runnable {
         }
     }
 
-    private boolean readFully(InputStream is, byte[] buffer, int n)
-            throws IOException {
+    private boolean readFully(InputStream is, byte[] buffer, int n) throws IOException {
         int read;
         int offset = 0;
 
