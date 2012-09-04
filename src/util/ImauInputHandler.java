@@ -1,18 +1,24 @@
 package util;
 
 import imau.visualization.ImauApp;
+import imau.visualization.ImauSettings;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 import openglCommon.math.VecF3;
 import openglCommon.util.InputHandler;
-import openglCommon.util.Settings;
 
-public class ImauInputHandler extends InputHandler {
-    private final Settings     settings           = Settings.getInstance();
+public class ImauInputHandler extends InputHandler implements TouchEventHandler {
+    private final ImauSettings settings           = ImauSettings.getInstance();
     private final InputHandler superClassInstance = InputHandler.getInstance();
+
+    private Socket             touchSocket;
+    private ConnectionHandler  touchConnection;
 
     private static class SingletonHolder {
         public static final ImauInputHandler instance = new ImauInputHandler();
@@ -24,6 +30,29 @@ public class ImauInputHandler extends InputHandler {
 
     protected ImauInputHandler() {
         super();
+
+        try {
+            if (settings.isTouchConnected()) {
+                touchSocket = new Socket("145.100.39.13", 12345);
+
+                this.touchConnection = new ConnectionHandler(this, touchSocket);
+                new Thread(touchConnection).start();
+            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void close() {
+        try {
+            if (touchConnection != null) {
+                touchSocket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -97,5 +126,11 @@ public class ImauInputHandler extends InputHandler {
     @Override
     public void setViewDist(float dist) {
         superClassInstance.setViewDist(dist);
+    }
+
+    @Override
+    public void OnTouchPoints(double timestamp, TouchPoint[] points, int n) {
+        // TODO
+        System.out.println("TOUCH: " + timestamp + " nr:" + n);
     }
 }

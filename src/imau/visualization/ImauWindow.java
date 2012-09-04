@@ -564,6 +564,8 @@ public class ImauWindow extends CommonWindow {
         rbFBO.delete(gl);
 
         atmosphereFBO.delete(gl);
+
+        ((ImauInputHandler) inputHandler).close();
     }
 
     @Override
@@ -610,32 +612,22 @@ public class ImauWindow extends CommonWindow {
                 atmosphereColor), 5, 53f, new VecF3(), false);
         atmModel.init(gl);
 
-        varNameTextLT = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
-        varNameTextRT = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
-        varNameTextLB = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
-        varNameTextRB = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
+        Material textMaterial = new Material(Color4.white, Color4.white,
+                Color4.white);
+        varNameTextLT = new MultiColorText(textMaterial, font, fontSize);
+        varNameTextRT = new MultiColorText(textMaterial, font, fontSize);
+        varNameTextLB = new MultiColorText(textMaterial, font, fontSize);
+        varNameTextRB = new MultiColorText(textMaterial, font, fontSize);
 
-        legendTextLTmin = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
-        legendTextRTmin = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
-        legendTextLBmin = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
-        legendTextRBmin = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
+        legendTextLTmin = new MultiColorText(textMaterial, font, fontSize);
+        legendTextRTmin = new MultiColorText(textMaterial, font, fontSize);
+        legendTextLBmin = new MultiColorText(textMaterial, font, fontSize);
+        legendTextRBmin = new MultiColorText(textMaterial, font, fontSize);
 
-        legendTextLTmax = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
-        legendTextRTmax = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
-        legendTextLBmax = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
-        legendTextRBmax = new MultiColorText(new Material(Color4.white,
-                Color4.white, Color4.white));
+        legendTextLTmax = new MultiColorText(textMaterial, font, fontSize);
+        legendTextRTmax = new MultiColorText(textMaterial, font, fontSize);
+        legendTextLBmax = new MultiColorText(textMaterial, font, fontSize);
+        legendTextRBmax = new MultiColorText(textMaterial, font, fontSize);
 
         varNameTextLT.init(gl);
         varNameTextRT.init(gl);
@@ -727,12 +719,9 @@ public class ImauWindow extends CommonWindow {
         variableName += " in " + units;
         min = settings.verbalizeMin(state);
         max = settings.verbalizeMax(state);
-        varNameTextLT.setString(gl, textProgram, font, variableName,
-                Color4.white, fontSize);
-        legendTextLTmin.setString(gl, textProgram, font, min, Color4.white,
-                fontSize);
-        legendTextLTmax.setString(gl, textProgram, font, max, Color4.white,
-                fontSize);
+        varNameTextLT.setString(gl, variableName, Color4.white);
+        legendTextLTmin.setString(gl, min, Color4.white);
+        legendTextLTmax.setString(gl, max, Color4.white);
 
         state = settings.getRTState();
         variableName = GlobeState.verbalizeVariable(state.getVariableIndex());
@@ -740,12 +729,9 @@ public class ImauWindow extends CommonWindow {
         variableName += " in " + units;
         min = settings.verbalizeMin(state);
         max = settings.verbalizeMax(state);
-        varNameTextRT.setString(gl, textProgram, font, variableName,
-                Color4.white, fontSize);
-        legendTextRTmin.setString(gl, textProgram, font, min, Color4.white,
-                fontSize);
-        legendTextRTmax.setString(gl, textProgram, font, max, Color4.white,
-                fontSize);
+        varNameTextRT.setString(gl, variableName, Color4.white);
+        legendTextRTmin.setString(gl, min, Color4.white);
+        legendTextRTmax.setString(gl, max, Color4.white);
 
         state = settings.getLBState();
         variableName = GlobeState.verbalizeVariable(state.getVariableIndex());
@@ -753,12 +739,9 @@ public class ImauWindow extends CommonWindow {
         variableName += " in " + units;
         min = settings.verbalizeMin(state);
         max = settings.verbalizeMax(state);
-        varNameTextLB.setString(gl, textProgram, font, variableName,
-                Color4.white, fontSize);
-        legendTextLBmin.setString(gl, textProgram, font, min, Color4.white,
-                fontSize);
-        legendTextLBmax.setString(gl, textProgram, font, max, Color4.white,
-                fontSize);
+        varNameTextLB.setString(gl, variableName, Color4.white);
+        legendTextLBmin.setString(gl, min, Color4.white);
+        legendTextLBmax.setString(gl, max, Color4.white);
 
         state = settings.getRBState();
         variableName = GlobeState.verbalizeVariable(state.getVariableIndex());
@@ -766,12 +749,9 @@ public class ImauWindow extends CommonWindow {
         variableName += " in " + units;
         min = settings.verbalizeMin(state);
         max = settings.verbalizeMax(state);
-        varNameTextRB.setString(gl, textProgram, font, variableName,
-                Color4.white, fontSize);
-        legendTextRBmin.setString(gl, textProgram, font, min, Color4.white,
-                fontSize);
-        legendTextRBmax.setString(gl, textProgram, font, max, Color4.white,
-                fontSize);
+        varNameTextRB.setString(gl, variableName, Color4.white);
+        legendTextRBmin.setString(gl, min, Color4.white);
+        legendTextRBmax.setString(gl, max, Color4.white);
     }
 
     @Override
