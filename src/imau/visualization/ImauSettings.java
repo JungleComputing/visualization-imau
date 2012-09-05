@@ -124,7 +124,7 @@ public class ImauSettings extends Settings {
 
     private static String SAGE_DIRECTORY = "/home/maarten/sage-code/sage3.0";
 
-    private static final boolean TOUCH_CONNECTED = true;
+    private static final boolean TOUCH_CONNECTED = false;
 
     public static ImauSettings getInstance() {
         return SingletonHolder.instance;
