@@ -17,7 +17,8 @@ uniform float height_distortion_intensity;
 void main() {
 	tCoord = MCtexCoord.xy;
 	
-	if (height_distortion_intensity != 0) {
+	if (height_distortion_intensity != 0) {		
+	
 		float xmin = tCoord.x - sample_dist;
 		if (xmin < 0) {
 			xmin += 1.0;
@@ -43,7 +44,7 @@ void main() {
 		float yn = 1.5 * height_distortion_intensity * length(texture(height_map, vec2(tCoord.x, ymin)).rgb);
 		float yp = 1.5 * height_distortion_intensity * length(texture(height_map, vec2(tCoord.x, yplus)).rgb);
 		
-		float self = 4 * height_distortion_intensity * length(texture(height_map, tCoord).rgb);
+		float self = 4 * height_distortion_intensity * length(texture(height_map, tCoord).rgb);		
 			
 		float offset = (1.0 - height_distortion_intensity*20) + (self + xn + xp + yn + yp);
 		

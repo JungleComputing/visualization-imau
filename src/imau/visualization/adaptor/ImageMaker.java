@@ -209,7 +209,7 @@ public class ImageMaker {
         }
 
         if (verticalOriented) {
-            for (int row = 0; row < height; row++) {
+            for (int row = height - 1; row >= 0; row--) {
                 float index = (float) row / (float) height;
                 float var = (index * dims.getDiff()) + dims.min;
 
@@ -262,7 +262,7 @@ public class ImageMaker {
         }
 
         if (verticalOriented) {
-            for (int row = 0; row < height; row++) {
+            for (int row = height - 1; row >= 0; row--) {
                 float index = (float) row / (float) height;
                 float var = (index * dims.getDiff()) + dims.min;
 
