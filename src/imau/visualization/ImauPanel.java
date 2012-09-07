@@ -38,7 +38,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import openglCommon.CommonPanel;
-import openglCommon.util.InputHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -235,7 +234,7 @@ public class ImauPanel extends CommonPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // timer.stop();
-                final InputHandler inputHandler = InputHandler.getInstance();
+                final ImauInputHandler inputHandler = ImauInputHandler.getInstance();
                 final String fileName = "" + timer.getFrameNumber() + " {" + inputHandler.getRotation().get(0) + ","
                         + inputHandler.getRotation().get(1) + " - " + Float.toString(inputHandler.getViewDist()) + "} ";
                 imauWindow.makeSnapshot(fileName);

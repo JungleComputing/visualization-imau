@@ -4,6 +4,7 @@ import imau.visualization.ImauApp;
 import imau.visualization.ImauSettings;
 
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -15,7 +16,6 @@ import openglCommon.util.InputHandler;
 
 public class ImauInputHandler extends InputHandler implements TouchEventHandler {
     private final ImauSettings settings = ImauSettings.getInstance();
-    private final InputHandler superClassInstance = InputHandler.getInstance();
 
     private Socket touchSocket;
     private ConnectionHandler touchConnection;
@@ -67,19 +67,40 @@ public class ImauInputHandler extends InputHandler implements TouchEventHandler 
     }
 
     public VecF3 getRotation() {
-        return rotation;
+        return super.rotation;
     }
 
     public void setRotation(VecF3 rotation) {
-        this.rotation = rotation;
+        super.rotation = rotation;
+    }
+
+    @Override
+    public void mouseWheelMoved(MouseWheelEvent e) {
+        if (e.isShiftDown()) {
+            setDeltaViewDist(e.getWheelRotation() * 2);
+        } else {
+            setDeltaViewDist(e.getWheelRotation() * 10);
+        }
     }
 
     public float getViewDist() {
-        return viewDist;
+        return super.viewDist;
     }
 
     public void setViewDist(float dist) {
-        this.viewDist = dist;
+        super.viewDist = dist;
+    }
+
+    public void setDeltaViewDist(float delta) {
+        float potential = super.viewDist + delta;
+
+        if (potential > -50f) {
+            potential = -50f;
+        } else if (potential < -400f) {
+            potential = -400f;
+        }
+
+        super.viewDist = potential;
     }
 
     int currentTouchID = 0;
@@ -129,7 +150,7 @@ public class ImauInputHandler extends InputHandler implements TouchEventHandler 
             } else if (points[1].state == 1 && points[0].state == 1) {
                 float amountShorterThanInitial = VectorFMath.length((v0.sub(v1))) - initialResizeDist;
 
-                viewDist += amountShorterThanInitial * 10;
+                setDeltaViewDist(amountShorterThanInitial * 10);
             }
         }
 
