@@ -16,8 +16,7 @@ import ucar.nc2.Variable;
 
 public class NetCDFUtil {
     private final static ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger       logger   = LoggerFactory
-                                                       .getLogger(NetCDFUtil.class);
+    private final static Logger logger = LoggerFactory.getLogger(NetCDFUtil.class);
 
     static class ExtFilter implements FilenameFilter {
         private final String ext;
@@ -33,24 +32,98 @@ public class NetCDFUtil {
     }
 
     public static String getPrefix(File file) {
-        int numberLength = settings.getFileNumberLength();
-
         final String path = getPath(file);
 
         final String name = file.getName();
         final String fullPath = path + name;
-        final String[] ext = fullPath.split("[.]");
-        String prefix = "";
-        for (int i = 0; i < ext.length - 1; i++) {
-            prefix += ext[i] + ".";
+        String[] split = fullPath.split("[.]");
+        String fileNameWithoutExt = "";
+        for (int i = 0; i < split.length - 1; i++) {
+            fileNameWithoutExt += split[i] + ".";
         }
 
-        return prefix.substring(0, prefix.length() - numberLength - 1);
+        split = fileNameWithoutExt.split("[.]");
+
+        int position = -1;
+        for (int i = 0; i < split.length; i++) {
+            String s = split[i];
+            try {
+                Integer.parseInt(s);
+                position = i;
+            } catch (NumberFormatException e) {
+                // IGNORE
+            }
+        }
+
+        String prefix = "";
+        for (int i = 0; i < position; i++) {
+            prefix += split[i] + ".";
+        }
+
+        return prefix;
+    }
+
+    public static String getNumber(File file) {
+        final String path = getPath(file);
+
+        final String name = file.getName();
+        final String fullPath = path + name;
+        String[] split = fullPath.split("[.]");
+        String fileNameWithoutExt = "";
+        for (int i = 0; i < split.length - 1; i++) {
+            fileNameWithoutExt += split[i] + ".";
+        }
+
+        split = fileNameWithoutExt.split("[.]");
+
+        int position = -1;
+        for (int i = 0; i < split.length; i++) {
+            String s = split[i];
+            try {
+                Integer.parseInt(s);
+                position = i;
+            } catch (NumberFormatException e) {
+                // IGNORE
+            }
+        }
+
+        return split[position];
+    }
+
+    public static String getPostfix(File file) {
+        final String path = getPath(file);
+
+        final String name = file.getName();
+        final String fullPath = path + name;
+        String[] split = fullPath.split("[.]");
+        String fileNameWithoutExt = "";
+        for (int i = 0; i < split.length - 1; i++) {
+            fileNameWithoutExt += split[i] + ".";
+        }
+
+        split = fileNameWithoutExt.split("[.]");
+
+        int position = -1;
+        for (int i = 0; i < split.length; i++) {
+            String s = split[i];
+            try {
+                Integer.parseInt(s);
+                position = i;
+            } catch (NumberFormatException e) {
+                // IGNORE
+            }
+        }
+
+        String postfix = ".";
+        for (int i = position + 1; i < split.length; i++) {
+            postfix += split[i] + ".";
+        }
+
+        return postfix;
     }
 
     public static String getPath(File file) {
-        final String path = file.getPath().substring(0,
-                file.getPath().length() - file.getName().length());
+        final String path = file.getPath().substring(0, file.getPath().length() - file.getName().length());
         return path;
     }
 
@@ -103,8 +176,7 @@ public class NetCDFUtil {
 
     public static int getNumFiles(File file) {
         final String path = getPath(file);
-        final String[] ls = new File(path).list(new ExtFilter(settings
-                .getCurrentExtension()));
+        final String[] ls = new File(path).list(new ExtFilter(settings.getCurrentExtension()));
 
         return ls.length;
     }
@@ -133,8 +205,7 @@ public class NetCDFUtil {
         return data;
     }
 
-    public static Array getDataSubset(NetcdfFile ncfile, String varName,
-            String subsections) {
+    public static Array getDataSubset(NetcdfFile ncfile, String varName, String subsections) {
         Variable v = ncfile.findVariable(varName);
         Array data = null;
         if (null == v)
@@ -157,22 +228,19 @@ public class NetCDFUtil {
 
     public static int getFrameNumber(File file) {
         String prefix = getPrefix(file);
-        String postfix = settings.getCurrentExtension();
-
-        String number = file.getPath().substring(prefix.length(),
-                file.getPath().length() - postfix.length());
+        String postfix = getPostfix(file) + settings.getCurrentExtension();
+        String number = getNumber(file);
 
         return Integer.parseInt(number);
     }
 
     public static int getLowestFileNumber(File file) {
         String prefix = getPrefix(file);
-        String postfix = ".nc";
+        String postfix = getPostfix(file) + settings.getCurrentExtension();
 
         int result = -1;
         for (int i = 0; i < 100000; i++) {
-            String number = String.format("%0" + settings.getFileNumberLength()
-                    + "d", i);
+            String number = getNumber(file);
 
             // System.out.println("Trying: " + prefix + number + postfix);
             File fileTry = new File(prefix + number + postfix);
@@ -202,12 +270,11 @@ public class NetCDFUtil {
 
     public static File getPreviousFile(File file, int last) throws IOException {
         String prefix = getPrefix(file);
-        String postfix = settings.getCurrentExtension();
+        String postfix = getPostfix(file) + settings.getCurrentExtension();
 
         File result = null;
         for (int i = last + 1; i >= 0; i--) {
-            String number = String.format("%0" + settings.getFileNumberLength()
-                    + "d", i);
+            String number = getNumber(file);
 
             // System.out.println("Trying: " + prefix + number + postfix);
             result = new File(prefix + number + postfix);
@@ -221,26 +288,32 @@ public class NetCDFUtil {
 
     public static File getFile(File file, int value) throws IOException {
         String prefix = getPrefix(file);
-        String postfix = settings.getCurrentExtension();
-        String number = String.format("%0" + settings.getFileNumberLength()
-                + "d", value);
+        String postfix = getPostfix(file) + settings.getCurrentExtension();
+        String number = getNumber(file);
 
         File result = new File(prefix + number + postfix);
-        if (result.exists()) {
-            return result;
-        } else {
-            throw new IOException("No such file.");
+
+        try {
+            boolean success = result.exists();
+            if (success) {
+                return result;
+            } else {
+                throw new IOException("Err getFile, no such file : " + result.getAbsolutePath());
+            }
+        } catch (SecurityException e) {
+            logger.error("getFile security exception: " + e.getMessage());
         }
+
+        return null;
     }
 
     public static File getNextFile(File file, int last) throws IOException {
         String prefix = getPrefix(file);
-        String postfix = settings.getCurrentExtension();
+        String postfix = getPostfix(file) + settings.getCurrentExtension();
 
         File result = null;
         for (int i = last + 1; i < 100000; i++) {
-            String number = String.format("%0" + settings.getFileNumberLength()
-                    + "d", i);
+            String number = getNumber(file);
 
             // System.out.println("Trying: " + prefix + number + postfix);
             result = new File(prefix + number + postfix);

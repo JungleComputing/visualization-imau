@@ -92,7 +92,7 @@ public class ImauInputHandler extends InputHandler implements TouchEventHandler 
     }
 
     public void setDeltaViewDist(float delta) {
-        float potential = super.viewDist + delta;
+        float potential = super.viewDist - delta;
 
         if (potential > -50f) {
             potential = -50f;
