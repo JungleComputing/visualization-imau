@@ -14,10 +14,11 @@ import ucar.ma2.InvalidRangeException;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
+//bla
+
 public class NetCDFUtil {
     private final static ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger       logger   = LoggerFactory
-                                                       .getLogger(NetCDFUtil.class);
+    private final static Logger logger = LoggerFactory.getLogger(NetCDFUtil.class);
 
     static class ExtFilter implements FilenameFilter {
         private final String ext;
@@ -50,8 +51,7 @@ public class NetCDFUtil {
                     if (!foundOne) {
                         foundOne = true;
                     } else {
-                        System.err
-                                .println("ERROR: Filename includes two possible sequence numbers.");
+                        System.err.println("ERROR: Filename includes two possible sequence numbers.");
                     }
                 }
             } catch (NumberFormatException e) {
@@ -85,8 +85,7 @@ public class NetCDFUtil {
     }
 
     public static String getPath(File file) {
-        final String path = file.getPath().substring(0,
-                file.getPath().length() - file.getName().length());
+        final String path = file.getPath().substring(0, file.getPath().length() - file.getName().length());
         return path;
     }
 
@@ -139,8 +138,7 @@ public class NetCDFUtil {
 
     public static int getNumFiles(File file) {
         final String path = getPath(file);
-        final String[] ls = new File(path).list(new ExtFilter(settings
-                .getCurrentExtension()));
+        final String[] ls = new File(path).list(new ExtFilter(settings.getCurrentExtension()));
 
         return ls.length;
     }
@@ -169,8 +167,7 @@ public class NetCDFUtil {
         return data;
     }
 
-    public static Array getDataSubset(NetcdfFile ncfile, String varName,
-            String subsections) {
+    public static Array getDataSubset(NetcdfFile ncfile, String varName, String subsections) {
         Variable v = ncfile.findVariable(varName);
         Array data = null;
         if (null == v)
@@ -251,8 +248,7 @@ public class NetCDFUtil {
         return null;
     }
 
-    public static File getSeqFile(File initialFile, int value)
-            throws IOException {
+    public static File getSeqFile(File initialFile, int value) throws IOException {
         String prefix = getPrefix(initialFile);
         String postfix = getPostfix(initialFile);
 
