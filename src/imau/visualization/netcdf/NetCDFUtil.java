@@ -16,7 +16,8 @@ import ucar.nc2.Variable;
 
 public class NetCDFUtil {
     private final static ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger logger = LoggerFactory.getLogger(NetCDFUtil.class);
+    private final static Logger       logger   = LoggerFactory
+                                                       .getLogger(NetCDFUtil.class);
 
     static class ExtFilter implements FilenameFilter {
         private final String ext;
@@ -31,99 +32,61 @@ public class NetCDFUtil {
         }
     }
 
-    public static String getPrefix(File file) {
+    private static String getSequenceNumber(File file) {
         final String path = getPath(file);
-
         final String name = file.getName();
         final String fullPath = path + name;
-        String[] split = fullPath.split("[.]");
-        String fileNameWithoutExt = "";
-        for (int i = 0; i < split.length - 1; i++) {
-            fileNameWithoutExt += split[i] + ".";
-        }
 
-        split = fileNameWithoutExt.split("[.]");
+        String[] split = fullPath.split("[^0-9]");
 
-        int position = -1;
+        boolean foundOne = false;
+        String sequenceNumberString = "";
         for (int i = 0; i < split.length; i++) {
             String s = split[i];
             try {
                 Integer.parseInt(s);
-                position = i;
+                if (s.length() > 3) {
+                    sequenceNumberString = s;
+                    if (!foundOne) {
+                        foundOne = true;
+                    } else {
+                        System.err
+                                .println("ERROR: Filename includes two possible sequence numbers.");
+                    }
+                }
             } catch (NumberFormatException e) {
                 // IGNORE
             }
         }
 
-        String prefix = "";
-        for (int i = 0; i < position; i++) {
-            prefix += split[i] + ".";
-        }
-
-        return prefix;
+        return sequenceNumberString;
     }
 
-    public static String getNumber(File file) {
+    public static String getPrefix(File file) {
         final String path = getPath(file);
-
         final String name = file.getName();
         final String fullPath = path + name;
-        String[] split = fullPath.split("[.]");
-        String fileNameWithoutExt = "";
-        for (int i = 0; i < split.length - 1; i++) {
-            fileNameWithoutExt += split[i] + ".";
-        }
 
-        split = fileNameWithoutExt.split("[.]");
+        String seqNum = getSequenceNumber(file);
+        int index = fullPath.lastIndexOf(seqNum);
 
-        int position = -1;
-        for (int i = 0; i < split.length; i++) {
-            String s = split[i];
-            try {
-                Integer.parseInt(s);
-                position = i;
-            } catch (NumberFormatException e) {
-                // IGNORE
-            }
-        }
-
-        return split[position];
+        return fullPath.substring(0, index);
     }
 
     public static String getPostfix(File file) {
         final String path = getPath(file);
-
         final String name = file.getName();
         final String fullPath = path + name;
-        String[] split = fullPath.split("[.]");
-        String fileNameWithoutExt = "";
-        for (int i = 0; i < split.length - 1; i++) {
-            fileNameWithoutExt += split[i] + ".";
-        }
 
-        split = fileNameWithoutExt.split("[.]");
+        String seqNum = getSequenceNumber(file);
+        int index = fullPath.lastIndexOf(seqNum) + seqNum.length();
 
-        int position = -1;
-        for (int i = 0; i < split.length; i++) {
-            String s = split[i];
-            try {
-                Integer.parseInt(s);
-                position = i;
-            } catch (NumberFormatException e) {
-                // IGNORE
-            }
-        }
-
-        String postfix = ".";
-        for (int i = position + 1; i < split.length; i++) {
-            postfix += split[i] + ".";
-        }
-
-        return postfix;
+        return fullPath.substring(index);
     }
 
     public static String getPath(File file) {
-        final String path = file.getPath().substring(0, file.getPath().length() - file.getName().length());
+        final String path = file.getPath().substring(0,
+                file.getPath().length() - file.getName().length());
         return path;
     }
 
@@ -176,7 +139,8 @@ public class NetCDFUtil {
 
     public static int getNumFiles(File file) {
         final String path = getPath(file);
-        final String[] ls = new File(path).list(new ExtFilter(settings.getCurrentExtension()));
+        final String[] ls = new File(path).list(new ExtFilter(settings
+                .getCurrentExtension()));
 
         return ls.length;
     }
@@ -205,7 +169,8 @@ public class NetCDFUtil {
         return data;
     }
 
-    public static Array getDataSubset(NetcdfFile ncfile, String varName, String subsections) {
+    public static Array getDataSubset(NetcdfFile ncfile, String varName,
+            String subsections) {
         Variable v = ncfile.findVariable(varName);
         Array data = null;
         if (null == v)
@@ -227,28 +192,28 @@ public class NetCDFUtil {
     }
 
     public static int getFrameNumber(File file) {
-        String prefix = getPrefix(file);
-        String postfix = getPostfix(file) + settings.getCurrentExtension();
-        String number = getNumber(file);
+        String number = getSequenceNumber(file);
 
         return Integer.parseInt(number);
     }
 
-    public static int getLowestFileNumber(File file) {
-        String prefix = getPrefix(file);
-        String postfix = getPostfix(file) + settings.getCurrentExtension();
+    public static File getSeqLowestFile(File initialFile) {
+        String prefix = getPrefix(initialFile);
+        String postfix = getPostfix(initialFile);
 
-        int result = -1;
+        int numberLength = getSequenceNumber(initialFile).length();
+
+        String format = "%0" + numberLength + "d";
+
         for (int i = 0; i < 100000; i++) {
-            String number = getNumber(file);
+            String number = String.format(format, i);
 
-            // System.out.println("Trying: " + prefix + number + postfix);
             File fileTry = new File(prefix + number + postfix);
             if (fileTry.exists())
-                return i;
+                return fileTry;
         }
 
-        return result;
+        return null;
     }
 
     public static boolean isAcceptableFile(File file) {
@@ -268,61 +233,58 @@ public class NetCDFUtil {
         return result;
     }
 
-    public static File getPreviousFile(File file, int last) throws IOException {
-        String prefix = getPrefix(file);
-        String postfix = getPostfix(file) + settings.getCurrentExtension();
+    public static File getSeqPreviousFile(File initialFile) {
+        String prefix = getPrefix(initialFile);
+        String postfix = getPostfix(initialFile);
 
-        File result = null;
-        for (int i = last + 1; i >= 0; i--) {
-            String number = getNumber(file);
+        int initialNumber = Integer.parseInt(getSequenceNumber(initialFile));
+        int numberLength = getSequenceNumber(initialFile).length();
 
-            // System.out.println("Trying: " + prefix + number + postfix);
-            result = new File(prefix + number + postfix);
-            if (result.exists()) {
-                return result;
-            }
-        }
+        String format = "%0" + numberLength + "d";
 
-        throw new IOException("No such file.");
-    }
+        String number = String.format(format, initialNumber - 1);
 
-    public static File getFile(File file, int value) throws IOException {
-        String prefix = getPrefix(file);
-        String postfix = getPostfix(file) + settings.getCurrentExtension();
-        String number = getNumber(file);
-
-        File result = new File(prefix + number + postfix);
-
-        try {
-            boolean success = result.exists();
-            if (success) {
-                return result;
-            } else {
-                throw new IOException("Err getFile, no such file : " + result.getAbsolutePath());
-            }
-        } catch (SecurityException e) {
-            logger.error("getFile security exception: " + e.getMessage());
-        }
+        File fileTry = new File(prefix + number + postfix);
+        if (fileTry.exists())
+            return fileTry;
 
         return null;
     }
 
-    public static File getNextFile(File file, int last) throws IOException {
-        String prefix = getPrefix(file);
-        String postfix = getPostfix(file) + settings.getCurrentExtension();
+    public static File getSeqFile(File initialFile, int value)
+            throws IOException {
+        String prefix = getPrefix(initialFile);
+        String postfix = getPostfix(initialFile);
 
-        File result = null;
-        for (int i = last + 1; i < 100000; i++) {
-            String number = getNumber(file);
+        int numberLength = getSequenceNumber(initialFile).length();
 
-            // System.out.println("Trying: " + prefix + number + postfix);
-            result = new File(prefix + number + postfix);
-            if (result.exists()) {
-                return result;
-            }
-        }
+        String format = "%0" + numberLength + "d";
 
-        throw new IOException("No such file.");
+        String number = String.format(format, value);
+
+        File fileTry = new File(prefix + number + postfix);
+        if (fileTry.exists())
+            return fileTry;
+
+        return null;
+    }
+
+    public static File getSeqNextFile(File initialFile) {
+        String prefix = getPrefix(initialFile);
+        String postfix = getPostfix(initialFile);
+
+        int initialNumber = Integer.parseInt(getSequenceNumber(initialFile));
+        int numberLength = getSequenceNumber(initialFile).length();
+
+        String format = "%0" + numberLength + "d";
+
+        String number = String.format(format, initialNumber + 1);
+
+        File fileTry = new File(prefix + number + postfix);
+        if (fileTry.exists())
+            return fileTry;
+
+        return null;
     }
 
 }

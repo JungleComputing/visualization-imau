@@ -54,7 +54,7 @@ public class NetCDFFrame implements Runnable {
         if (!initialized) {
             try {
                 // Open the correct file as a NetCDF specific file.
-                File myFile = NetCDFUtil.getFile(initialFile, frameNumber);
+                File myFile = NetCDFUtil.getSeqFile(initialFile, frameNumber);
                 NetcdfFile ncfile = NetCDFUtil.open(myFile);
 
                 // Read data
@@ -210,8 +210,8 @@ public class NetCDFFrame implements Runnable {
                     .println("ERROR: Request for frame nr "
                             + state.getFrameNumber() + " to NetCDFFrame "
                             + frameNumber);
-            new Exception().printStackTrace(System.err);
-            System.exit(1);
+            // new Exception().printStackTrace(System.err);
+            return null;
         }
 
         if (settings.getDepthDef() != selectedDepth) {
@@ -234,8 +234,8 @@ public class NetCDFFrame implements Runnable {
                     .println("ERROR: Request for frame nr "
                             + state.getFrameNumber() + " to NetCDFFrame "
                             + frameNumber);
-            new Exception().printStackTrace(System.err);
-            System.exit(1);
+            // new Exception().printStackTrace(System.err);
+            return null;
         }
 
         if (settings.getDepthDef() != selectedDepth) {
@@ -257,8 +257,8 @@ public class NetCDFFrame implements Runnable {
                     .println("ERROR: Request for frame nr "
                             + state.getFrameNumber() + " to NetCDFFrame "
                             + frameNumber);
-            new Exception().printStackTrace(System.err);
-            System.exit(1);
+            // new Exception().printStackTrace(System.err);
+            return null;
         }
 
         if (settings.getDepthDef() != selectedDepth) {
@@ -284,7 +284,7 @@ public class NetCDFFrame implements Runnable {
                     .println("ERROR: Request for frame nr "
                             + state.getFrameNumber() + " to NetCDFFrame "
                             + frameNumber);
-            new Exception().printStackTrace(System.err);
+            // new Exception().printStackTrace(System.err);
             System.exit(1);
         }
 

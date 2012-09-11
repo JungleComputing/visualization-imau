@@ -12,10 +12,11 @@ import javax.swing.JSlider;
 
 import openglCommon.math.VecF3;
 import openglCommon.util.CustomJSlider;
-import openglCommon.util.InputHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import util.ImauInputHandler;
 
 public class NetCDFTimedPlayer implements Runnable {
     public static enum states {
@@ -44,7 +45,7 @@ public class NetCDFTimedPlayer implements Runnable {
     private final JSlider             timeBar;
     private final JFormattedTextField frameCounter;
 
-    private InputHandler              inputHandler;
+    private ImauInputHandler          inputHandler;
 
     private ImauWindow                imauWindow;
     private NetCDFFrameManager        frameManagerDS1, frameManagerDS2;
@@ -58,7 +59,7 @@ public class NetCDFTimedPlayer implements Runnable {
     public NetCDFTimedPlayer(ImauWindow window, JSlider timeBar,
             JFormattedTextField frameCounter) {
         this.imauWindow = window;
-        inputHandler = InputHandler.getInstance();
+        inputHandler = ImauInputHandler.getInstance();
         this.timeBar = timeBar;
         this.frameCounter = frameCounter;
     }
@@ -111,7 +112,8 @@ public class NetCDFTimedPlayer implements Runnable {
         }
 
         final int initialMaxBar = NetCDFUtil.getNumFiles(ncfileDS1) - 1;
-        lowestFrameNumber = NetCDFUtil.getLowestFileNumber(ncfileDS1);
+        lowestFrameNumber = NetCDFUtil.getFrameNumber(NetCDFUtil
+                .getSeqLowestFile(ncfileDS1));
 
         timeBar.setMaximum(initialMaxBar + lowestFrameNumber);
         timeBar.setMinimum(lowestFrameNumber);
@@ -139,7 +141,8 @@ public class NetCDFTimedPlayer implements Runnable {
         }
 
         final int initialMaxBar = NetCDFUtil.getNumFiles(ncfileDS1) - 1;
-        lowestFrameNumber = NetCDFUtil.getLowestFileNumber(ncfileDS1);
+        lowestFrameNumber = NetCDFUtil.getFrameNumber(NetCDFUtil
+                .getSeqLowestFile(ncfileDS1));
 
         timeBar.setMaximum(initialMaxBar + lowestFrameNumber);
         timeBar.setMinimum(lowestFrameNumber);
@@ -281,8 +284,6 @@ public class NetCDFTimedPlayer implements Runnable {
     private synchronized void updateFrame(int newFrameNumber,
             boolean overrideUpdate) {
 
-        settings.setFrameNumber(newFrameNumber);
-
         if (!twosources) {
             if (currentFrameDS1 == null || newFrameNumber != frameNumber
                     || overrideUpdate) {
@@ -290,6 +291,7 @@ public class NetCDFTimedPlayer implements Runnable {
 
                 if (!frame.isError()) {
                     frameNumber = newFrameNumber;
+                    settings.setFrameNumber(newFrameNumber);
                     this.timeBar.setValue(newFrameNumber);
                     this.frameCounter.setValue(newFrameNumber);
 
@@ -307,6 +309,7 @@ public class NetCDFTimedPlayer implements Runnable {
 
                 if (!frameDS1.isError() && !frameDS2.isError()) {
                     frameNumber = newFrameNumber;
+                    settings.setFrameNumber(newFrameNumber);
                     this.timeBar.setValue(newFrameNumber);
                     this.frameCounter.setValue(newFrameNumber);
 
@@ -318,7 +321,6 @@ public class NetCDFTimedPlayer implements Runnable {
                 }
             }
         }
-
     }
 
     public int getLowestFrameNumber() {
