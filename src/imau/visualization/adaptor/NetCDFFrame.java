@@ -32,13 +32,14 @@ public class NetCDFFrame implements Runnable {
     private int                pixels, width, height;
     private TGridPoint[]       tGridPoints;
 
-    private final File         initialFile;
+    private final File         file;
 
     float                      latMin, latMax;
 
-    public NetCDFFrame(int frameNumber, File initialFile) {
-        this.frameNumber = frameNumber;
-        this.initialFile = initialFile;
+    public NetCDFFrame(File ncFile) {
+        this.file = ncFile;
+        this.frameNumber = NetCDFDatasetManager
+                .getIndexOfFrameNumber(NetCDFUtil.getFrameNumber(ncFile));
 
         this.initialized = false;
 
@@ -54,8 +55,7 @@ public class NetCDFFrame implements Runnable {
         if (!initialized) {
             try {
                 // Open the correct file as a NetCDF specific file.
-                File myFile = NetCDFUtil.getSeqFile(initialFile, frameNumber);
-                NetcdfFile ncfile = NetCDFUtil.open(myFile);
+                NetcdfFile ncfile = NetCDFUtil.open(file);
 
                 // Read data
                 Array t_lat = NetCDFUtil.getData(ncfile, "t_lat");

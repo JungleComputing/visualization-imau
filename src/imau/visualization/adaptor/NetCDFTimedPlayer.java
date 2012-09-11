@@ -41,14 +41,13 @@ public class NetCDFTimedPlayer implements Runnable {
 
     private long                      startTime, stopTime;
 
-    private int                       lowestFrameNumber;
     private final JSlider             timeBar;
     private final JFormattedTextField frameCounter;
 
     private ImauInputHandler          inputHandler;
 
     private ImauWindow                imauWindow;
-    private NetCDFFrameManager        frameManagerDS1, frameManagerDS2;
+    private NetCDFDatasetManager        frameManagerDS1, frameManagerDS2;
 
     public NetCDFTimedPlayer(CustomJSlider timeBar,
             JFormattedTextField frameCounter) {
@@ -104,7 +103,7 @@ public class NetCDFTimedPlayer implements Runnable {
 
     public void init(File file) {
         this.ncfileDS1 = file;
-        this.frameManagerDS1 = new NetCDFFrameManager(0, file);
+        this.frameManagerDS1 = new NetCDFDatasetManager(file);
 
         if (ncfileDS1 == null) {
             logger.error("NetCDFTimer initialized with null file.");
@@ -112,13 +111,11 @@ public class NetCDFTimedPlayer implements Runnable {
         }
 
         final int initialMaxBar = NetCDFUtil.getNumFiles(ncfileDS1) - 1;
-        lowestFrameNumber = NetCDFUtil.getFrameNumber(NetCDFUtil
-                .getSeqLowestFile(ncfileDS1));
 
-        timeBar.setMaximum(initialMaxBar + lowestFrameNumber);
-        timeBar.setMinimum(lowestFrameNumber);
+        timeBar.setMaximum(initialMaxBar);
+        timeBar.setMinimum(0);
 
-        updateFrame(lowestFrameNumber, true);
+        updateFrame(0, true);
 
         initialized = true;
     }
@@ -127,8 +124,8 @@ public class NetCDFTimedPlayer implements Runnable {
         this.ncfileDS1 = fileDS1;
         this.ncfileDS2 = fileDS2;
 
-        this.frameManagerDS1 = new NetCDFFrameManager(0, fileDS1);
-        this.frameManagerDS2 = new NetCDFFrameManager(0, fileDS2);
+        this.frameManagerDS1 = new NetCDFDatasetManager(fileDS1);
+        this.frameManagerDS2 = new NetCDFDatasetManager(fileDS2);
 
         if (ncfileDS1 == null) {
             logger.error("NetCDFTimer initialized with null file on DS1.");
@@ -141,13 +138,11 @@ public class NetCDFTimedPlayer implements Runnable {
         }
 
         final int initialMaxBar = NetCDFUtil.getNumFiles(ncfileDS1) - 1;
-        lowestFrameNumber = NetCDFUtil.getFrameNumber(NetCDFUtil
-                .getSeqLowestFile(ncfileDS1));
 
-        timeBar.setMaximum(initialMaxBar + lowestFrameNumber);
-        timeBar.setMinimum(lowestFrameNumber);
+        timeBar.setMaximum(initialMaxBar);
+        timeBar.setMinimum(0);
 
-        updateFrame(lowestFrameNumber, true);
+        updateFrame(0, true);
 
         initialized = true;
         twosources = true;
@@ -188,7 +183,7 @@ public class NetCDFTimedPlayer implements Runnable {
     }
 
     public void rewind() {
-        setFrame(lowestFrameNumber, false);
+        setFrame(0, false);
     }
 
     @Override
@@ -321,9 +316,5 @@ public class NetCDFTimedPlayer implements Runnable {
                 }
             }
         }
-    }
-
-    public int getLowestFrameNumber() {
-        return lowestFrameNumber;
     }
 }
