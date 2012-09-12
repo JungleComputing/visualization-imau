@@ -74,7 +74,7 @@ public class NetCDFTimedPlayer implements Runnable {
 
     public NetCDFFrame getFrame() throws UninitializedException {
         if (frameManagerDS1 == null) {
-            throw new UninitializedException("Second frame requested while not twosourced.");
+            throw new UninitializedException("Not properly initialized.");
         }
         return currentFrameDS1;
     }

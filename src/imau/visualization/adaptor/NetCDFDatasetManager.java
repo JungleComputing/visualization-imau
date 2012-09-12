@@ -92,14 +92,14 @@ public class NetCDFDatasetManager {
     private HashMap<Integer, NetCDFFrame> getWindow(int index) {
         HashMap<Integer, NetCDFFrame> newFrameWindow = new HashMap<Integer, NetCDFFrame>();
 
-        for (int i = index; i < settings.getPreprocessAmount() + index; i++) {
+        for (int i = index - settings.getPreprocessAmount(); i < settings.getPreprocessAmount() + index; i++) {
             try {
                 NetCDFFrame frame = null;
                 if (i == 0) {
                     frame = frame0;
                 } else if (frameWindow.containsKey(i)) {
                     frame = frameWindow.get(i);
-                } else if (i < availableFrames.size()) {
+                } else if (i > 0 && i < availableFrames.size()) {
                     frame = new NetCDFFrame(NetCDFUtil.getSeqFile(ncfile, availableFrames.get(i)));
                 }
                 if (frame != null) {

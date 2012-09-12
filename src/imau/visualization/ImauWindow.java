@@ -3,6 +3,7 @@ package imau.visualization;
 import imau.visualization.adaptor.GlobeState;
 import imau.visualization.adaptor.NetCDFFrame;
 import imau.visualization.adaptor.NetCDFTimedPlayer;
+import imau.visualization.adaptor.WrongFrameException;
 import imau.visualization.jni.SageInterface;
 
 import java.awt.Dimension;
@@ -99,12 +100,31 @@ public class ImauWindow extends CommonWindow {
 
                 if (!timer.isTwoSourced()) {
                     currentFrame2 = null;
-                    displayContext(currentFrame1, null, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO,
-                            legendTextureFBO, sphereTextureFBO);
+                    boolean sync = false;
+                    while (!sync) {
+                        try {
+                            displayContext(currentFrame1, null, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO,
+                                    legendTextureFBO, sphereTextureFBO);
+                            sync = true;
+                        } catch (WrongFrameException e) {
+                            currentFrame1 = timer.getFrame();
+                            System.out.println(e.getMessage());
+                        }
+                    }
                 } else {
                     currentFrame2 = timer.getFrame2();
-                    displayContext(currentFrame1, currentFrame2, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO,
-                            legendTextureFBO, sphereTextureFBO);
+                    boolean sync = false;
+                    while (!sync) {
+                        try {
+                            displayContext(currentFrame1, currentFrame2, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO,
+                                    hudTextFBO, legendTextureFBO, sphereTextureFBO);
+                            sync = true;
+                        } catch (WrongFrameException e) {
+                            currentFrame1 = timer.getFrame();
+                            currentFrame2 = timer.getFrame2();
+                            System.out.println(e.getMessage());
+                        }
+                    }
                 }
             } catch (UninitializedException e) {
                 // TODO Auto-generated catch block
@@ -126,7 +146,8 @@ public class ImauWindow extends CommonWindow {
     }
 
     private void displayContext(NetCDFFrame frame1, NetCDFFrame frame2, HDRFBO ltFBO, HDRFBO rtFBO, HDRFBO lbFBO,
-            HDRFBO rbFBO, HDRFBO atmosphereFBO, HDRFBO hudTextFBO, HDRFBO legendTextureFBO, HDRFBO sphereTextureFBO) {
+            HDRFBO rbFBO, HDRFBO atmosphereFBO, HDRFBO hudTextFBO, HDRFBO legendTextureFBO, HDRFBO sphereTextureFBO)
+            throws WrongFrameException {
         final int width = GLContext.getCurrent().getGLDrawable().getWidth();
         final int height = GLContext.getCurrent().getGLDrawable().getHeight();
         final float aspect = (float) width / (float) height;
@@ -240,7 +261,7 @@ public class ImauWindow extends CommonWindow {
     }
 
     private HDRTexture2D getGlobeTexture(NetCDFFrame frame1, NetCDFFrame frame2, final GL3 gl, int glTexUnit,
-            GlobeState state) {
+            GlobeState state) throws WrongFrameException {
         HDRTexture2D globeTex = null;
         if (state.getDataMode() == GlobeState.DataMode.DIFF) {
             if (frame1 != null && frame2 != null) {
@@ -259,7 +280,7 @@ public class ImauWindow extends CommonWindow {
     }
 
     private HDRTexture2D getLegendTexture(NetCDFFrame frame1, NetCDFFrame frame2, final GL3 gl, int glTexUnit,
-            GlobeState state) {
+            GlobeState state) throws WrongFrameException {
         HDRTexture2D legendTex = null;
         if (state.getDataMode() == GlobeState.DataMode.DIFF) {
             if (frame1 != null && frame2 != null) {
@@ -739,8 +760,16 @@ public class ImauWindow extends CommonWindow {
 
         gl.glClearColor(0f, 0f, 0f, 0f);
 
-        displayContext(currentFrame1, currentFrame2, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO,
-                legendTextureFBO, sphereTextureFBO);
+        boolean sync = false;
+        while (!sync) {
+            try {
+                displayContext(currentFrame1, currentFrame2, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO,
+                        legendTextureFBO, sphereTextureFBO);
+                sync = true;
+            } catch (WrongFrameException e) {
+                System.out.println("Screenshotter: " + e.getMessage());
+            }
+        }
 
         final Picture p = new Picture(width, height);
 

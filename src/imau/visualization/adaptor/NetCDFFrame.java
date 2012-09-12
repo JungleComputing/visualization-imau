@@ -213,12 +213,11 @@ public class NetCDFFrame implements Runnable {
         }
     }
 
-    public HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit, GlobeState state) {
+    public synchronized HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit, GlobeState state)
+            throws WrongFrameException {
         if (state.getFrameNumber() != frameNumber) {
-            System.err.println("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
+            throw new WrongFrameException("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
                     + frameNumber);
-            // new Exception().printStackTrace(System.err);
-            return null;
         }
 
         if (settings.getDepthDef() != selectedDepth) {
@@ -248,12 +247,11 @@ public class NetCDFFrame implements Runnable {
         return tex;
     }
 
-    public HDRTexture2D getLegendImage(GL3 gl, NetCDFFrame otherFrame, int glMultitexUnit, GlobeState state) {
-        if (state.getFrameNumber() != frameNumber) {
-            System.err.println("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
-                    + frameNumber);
-            // new Exception().printStackTrace(System.err);
-            return null;
+    public synchronized HDRTexture2D getLegendImage(GL3 gl, NetCDFFrame otherFrame, int glMultitexUnit, GlobeState state)
+            throws WrongFrameException {
+        if (state.getFrameNumber() != frameNumber || otherFrame.getNumber() != frameNumber
+                || state.getFrameNumber() != otherFrame.getNumber()) {
+            throw new WrongFrameException("ERROR: FrameNumber mismatch");
         }
 
         if (settings.getDepthDef() != selectedDepth) {
@@ -284,12 +282,10 @@ public class NetCDFFrame implements Runnable {
         return tex;
     }
 
-    public HDRTexture2D getImage(GL3 gl, int glMultitexUnit, GlobeState state) {
+    public synchronized HDRTexture2D getImage(GL3 gl, int glMultitexUnit, GlobeState state) throws WrongFrameException {
         if (state.getFrameNumber() != frameNumber) {
-            System.err.println("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
+            throw new WrongFrameException("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
                     + frameNumber);
-            // new Exception().printStackTrace(System.err);
-            return null;
         }
 
         if (settings.getDepthDef() != selectedDepth) {
@@ -322,12 +318,11 @@ public class NetCDFFrame implements Runnable {
         return tex;
     }
 
-    public HDRTexture2D getImage(GL3 gl, NetCDFFrame otherFrame, int glMultitexUnit, GlobeState state) {
-        if (state.getFrameNumber() != frameNumber) {
-            System.err.println("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
-                    + frameNumber);
-            // new Exception().printStackTrace(System.err);
-            System.exit(1);
+    public synchronized HDRTexture2D getImage(GL3 gl, NetCDFFrame otherFrame, int glMultitexUnit, GlobeState state)
+            throws WrongFrameException {
+        if (state.getFrameNumber() != frameNumber || otherFrame.getNumber() != frameNumber
+                || state.getFrameNumber() != otherFrame.getNumber()) {
+            throw new WrongFrameException("ERROR: FrameNumber mismatch");
         }
 
         if (settings.getDepthDef() != selectedDepth) {
