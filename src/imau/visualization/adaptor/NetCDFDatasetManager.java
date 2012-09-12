@@ -10,17 +10,17 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 public class NetCDFDatasetManager {
-    private final ImauSettings            settings = ImauSettings.getInstance();
+    private final ImauSettings settings = ImauSettings.getInstance();
 
-    private NetCDFFrame                   frame0;
+    private NetCDFFrame frame0;
     private HashMap<Integer, NetCDFFrame> frameWindow;
-    private static ArrayList<Integer>     availableFrames;
+    private static ArrayList<Integer> availableFrames;
 
-    private final int                     nThreads;
-    private final PoolWorker[]            threads;
-    private final LinkedList<Runnable>    queue;
+    private final int nThreads;
+    private final PoolWorker[] threads;
+    private final LinkedList<Runnable> queue;
 
-    private final File                    ncfile;
+    private final File ncfile;
 
     public void execute(Runnable r) {
         synchronized (queue) {
@@ -74,16 +74,19 @@ public class NetCDFDatasetManager {
     }
 
     public void resetModels() {
-        this.frame0 = new NetCDFFrame(NetCDFUtil.getSeqLowestFile(ncfile));
-        this.frameWindow = new HashMap<Integer, NetCDFFrame>();
-
-        this.availableFrames = new ArrayList<Integer>();
+        NetCDFDatasetManager.availableFrames = new ArrayList<Integer>();
 
         File currentFile = NetCDFUtil.getSeqLowestFile(ncfile);
         while (currentFile != null) {
-            availableFrames.add(NetCDFUtil.getFrameNumber(currentFile));
+            int nr = NetCDFUtil.getFrameNumber(currentFile);
+            availableFrames.add(nr);
+
             currentFile = NetCDFUtil.getSeqNextFile(currentFile);
         }
+
+        this.frame0 = new NetCDFFrame(NetCDFUtil.getSeqLowestFile(ncfile));
+        this.frameWindow = new HashMap<Integer, NetCDFFrame>();
+
     }
 
     private HashMap<Integer, NetCDFFrame> getWindow(int index) {
@@ -96,9 +99,8 @@ public class NetCDFDatasetManager {
                     frame = frame0;
                 } else if (frameWindow.containsKey(i)) {
                     frame = frameWindow.get(i);
-                } else {
-                    frame = new NetCDFFrame(NetCDFUtil.getSeqFile(ncfile,
-                            availableFrames.get(i)));
+                } else if (i < availableFrames.size()) {
+                    frame = new NetCDFFrame(NetCDFUtil.getSeqFile(ncfile, availableFrames.get(i)));
                 }
                 if (frame != null) {
                     newFrameWindow.put(i, frame);
@@ -129,5 +131,9 @@ public class NetCDFDatasetManager {
 
     public static int getIndexOfFrameNumber(int frameNumber) {
         return availableFrames.indexOf(frameNumber);
+    }
+
+    public int getNumFiles() {
+        return availableFrames.size();
     }
 }

@@ -2,7 +2,6 @@ package imau.visualization.adaptor;
 
 import imau.visualization.ImauSettings;
 import imau.visualization.ImauWindow;
-import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
 
@@ -10,6 +9,7 @@ import javax.media.opengl.GL3;
 import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 
+import openglCommon.exceptions.UninitializedException;
 import openglCommon.math.VecF3;
 import openglCommon.util.CustomJSlider;
 
@@ -23,40 +23,33 @@ public class NetCDFTimedPlayer implements Runnable {
         UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
     }
 
-    private final ImauSettings        settings     = ImauSettings.getInstance();
-    private final static Logger       logger       = LoggerFactory
-                                                           .getLogger(NetCDFTimedPlayer.class);
+    private final ImauSettings settings = ImauSettings.getInstance();
+    private final static Logger logger = LoggerFactory.getLogger(NetCDFTimedPlayer.class);
 
-    private states                    currentState = states.UNOPENED;
-    private int                       frameNumber;
+    private states currentState = states.UNOPENED;
+    private int frameNumber;
 
-    private NetCDFFrame               currentFrameDS1, currentFrameDS2;
+    private NetCDFFrame currentFrameDS1, currentFrameDS2;
 
-    private final boolean             running      = true;
-    private boolean                   initialized  = false;
-    private boolean                   twosources   = false;
+    private final boolean running = true;
+    private boolean initialized = false;
 
-    private File                      ncfileDS1    = null;
-    private File                      ncfileDS2    = null;
+    private long startTime, stopTime;
 
-    private long                      startTime, stopTime;
-
-    private final JSlider             timeBar;
+    private final JSlider timeBar;
     private final JFormattedTextField frameCounter;
 
-    private ImauInputHandler          inputHandler;
+    private ImauInputHandler inputHandler;
 
-    private ImauWindow                imauWindow;
-    private NetCDFDatasetManager        frameManagerDS1, frameManagerDS2;
+    private ImauWindow imauWindow;
+    private NetCDFDatasetManager frameManagerDS1, frameManagerDS2;
 
-    public NetCDFTimedPlayer(CustomJSlider timeBar,
-            JFormattedTextField frameCounter) {
+    public NetCDFTimedPlayer(CustomJSlider timeBar, JFormattedTextField frameCounter) {
         this.timeBar = timeBar;
         this.frameCounter = frameCounter;
     }
 
-    public NetCDFTimedPlayer(ImauWindow window, JSlider timeBar,
-            JFormattedTextField frameCounter) {
+    public NetCDFTimedPlayer(ImauWindow window, JSlider timeBar, JFormattedTextField frameCounter) {
         this.imauWindow = window;
         inputHandler = ImauInputHandler.getInstance();
         this.timeBar = timeBar;
@@ -79,13 +72,16 @@ public class NetCDFTimedPlayer implements Runnable {
         return frameNumber;
     }
 
-    public NetCDFFrame getFrame() {
+    public NetCDFFrame getFrame() throws UninitializedException {
+        if (frameManagerDS1 == null) {
+            throw new UninitializedException("Second frame requested while not twosourced.");
+        }
         return currentFrameDS1;
     }
 
-    public NetCDFFrame getFrame2() {
-        if (!twosources) {
-            System.err.println("Second frame requested while not twosourced.");
+    public NetCDFFrame getFrame2() throws UninitializedException {
+        if (frameManagerDS2 == null) {
+            throw new UninitializedException("Second frame requested while not twosourced.");
         }
         if (currentFrameDS2 == null) {
             updateFrame(frameNumber, true);
@@ -93,24 +89,14 @@ public class NetCDFTimedPlayer implements Runnable {
         return currentFrameDS2;
     }
 
-    public boolean isTwoSourced() {
-        return twosources;
-    }
-
     public synchronized states getState() {
         return currentState;
     }
 
-    public void init(File file) {
-        this.ncfileDS1 = file;
-        this.frameManagerDS1 = new NetCDFDatasetManager(file);
+    public void init(File fileDS1) {
+        this.frameManagerDS1 = new NetCDFDatasetManager(fileDS1);
 
-        if (ncfileDS1 == null) {
-            logger.error("NetCDFTimer initialized with null file.");
-            System.exit(1);
-        }
-
-        final int initialMaxBar = NetCDFUtil.getNumFiles(ncfileDS1) - 1;
+        final int initialMaxBar = frameManagerDS1.getNumFiles() - 1;
 
         timeBar.setMaximum(initialMaxBar);
         timeBar.setMinimum(0);
@@ -121,23 +107,10 @@ public class NetCDFTimedPlayer implements Runnable {
     }
 
     public void init(File fileDS1, File fileDS2) {
-        this.ncfileDS1 = fileDS1;
-        this.ncfileDS2 = fileDS2;
-
         this.frameManagerDS1 = new NetCDFDatasetManager(fileDS1);
         this.frameManagerDS2 = new NetCDFDatasetManager(fileDS2);
 
-        if (ncfileDS1 == null) {
-            logger.error("NetCDFTimer initialized with null file on DS1.");
-            System.exit(1);
-        }
-
-        if (ncfileDS2 == null) {
-            logger.error("NetCDFTimer initialized with null file on DS2.");
-            System.exit(1);
-        }
-
-        final int initialMaxBar = NetCDFUtil.getNumFiles(ncfileDS1) - 1;
+        final int initialMaxBar = frameManagerDS1.getNumFiles() - 1;
 
         timeBar.setMaximum(initialMaxBar);
         timeBar.setMinimum(0);
@@ -145,7 +118,6 @@ public class NetCDFTimedPlayer implements Runnable {
         updateFrame(0, true);
 
         initialized = true;
-        twosources = true;
     }
 
     public boolean isInitialized() {
@@ -153,8 +125,7 @@ public class NetCDFTimedPlayer implements Runnable {
     }
 
     public synchronized boolean isPlaying() {
-        if ((currentState == states.PLAYING)
-                || (currentState == states.MOVIEMAKING)) {
+        if ((currentState == states.PLAYING) || (currentState == states.MOVIEMAKING)) {
             return true;
         }
 
@@ -193,15 +164,13 @@ public class NetCDFTimedPlayer implements Runnable {
             System.exit(1);
         }
 
-        inputHandler.setRotation(new VecF3(settings.getInitialRotationX(),
-                settings.getInitialRotationY(), 0f));
+        inputHandler.setRotation(new VecF3(settings.getInitialRotationX(), settings.getInitialRotationY(), 0f));
         inputHandler.setViewDist(settings.getInitialZoom());
 
         stop();
 
         while (running) {
-            if ((currentState == states.PLAYING)
-                    || (currentState == states.REDRAWING)
+            if ((currentState == states.PLAYING) || (currentState == states.REDRAWING)
                     || (currentState == states.MOVIEMAKING)) {
                 try {
                     startTime = System.currentTimeMillis();
@@ -209,22 +178,14 @@ public class NetCDFTimedPlayer implements Runnable {
                     if (currentState == states.MOVIEMAKING) {
                         if (settings.getMovieRotate()) {
                             final VecF3 rotation = inputHandler.getRotation();
-                            System.out.println("Simulation frame: "
-                                    + frameNumber + ", Rotation x: "
-                                    + rotation.get(0) + " y: "
-                                    + rotation.get(1));
-                            imauWindow.makeSnapshot(String.format("%05d",
-                                    (frameNumber)));
+                            System.out.println("Simulation frame: " + frameNumber + ", Rotation x: " + rotation.get(0)
+                                    + " y: " + rotation.get(1));
+                            imauWindow.makeSnapshot(String.format("%05d", (frameNumber)));
 
-                            rotation.set(
-                                    1,
-                                    rotation.get(1)
-                                            + settings
-                                                    .getMovieRotationSpeedDef());
+                            rotation.set(1, rotation.get(1) + settings.getMovieRotationSpeedDef());
                             inputHandler.setRotation(rotation);
                         } else {
-                            imauWindow.makeSnapshot(String.format("%05d",
-                                    frameNumber));
+                            imauWindow.makeSnapshot(String.format("%05d", frameNumber));
                         }
                     }
 
@@ -235,10 +196,8 @@ public class NetCDFTimedPlayer implements Runnable {
 
                     // Wait for the _rest_ of the timeframe
                     stopTime = System.currentTimeMillis();
-                    if (((startTime - stopTime) < settings.getWaittimeMovie())
-                            && (currentState != states.MOVIEMAKING)) {
-                        Thread.sleep(settings.getWaittimeMovie()
-                                - (startTime - stopTime));
+                    if (((startTime - stopTime) < settings.getWaittimeMovie()) && (currentState != states.MOVIEMAKING)) {
+                        Thread.sleep(settings.getWaittimeMovie() - (startTime - stopTime));
                     }
                 } catch (final InterruptedException e) {
                     System.err.println("Interrupted while playing.");
@@ -276,29 +235,9 @@ public class NetCDFTimedPlayer implements Runnable {
         currentState = states.STOPPED;
     }
 
-    private synchronized void updateFrame(int newFrameNumber,
-            boolean overrideUpdate) {
-
-        if (!twosources) {
-            if (currentFrameDS1 == null || newFrameNumber != frameNumber
-                    || overrideUpdate) {
-                NetCDFFrame frame = frameManagerDS1.getFrame(newFrameNumber);
-
-                if (!frame.isError()) {
-                    frameNumber = newFrameNumber;
-                    settings.setFrameNumber(newFrameNumber);
-                    this.timeBar.setValue(newFrameNumber);
-                    this.frameCounter.setValue(newFrameNumber);
-
-                    currentFrameDS1 = frame;
-                } else {
-                    logger.warn(frame.getError());
-                    currentState = states.WAITINGONFRAME;
-                }
-            }
-        } else {
-            if (currentFrameDS1 == null || currentFrameDS2 == null
-                    || newFrameNumber != frameNumber || overrideUpdate) {
+    private synchronized void updateFrame(int newFrameNumber, boolean overrideUpdate) {
+        if (currentFrameDS1 != null && currentFrameDS2 != null) {
+            if (newFrameNumber != frameNumber || overrideUpdate) {
                 NetCDFFrame frameDS1 = frameManagerDS1.getFrame(newFrameNumber);
                 NetCDFFrame frameDS2 = frameManagerDS2.getFrame(newFrameNumber);
 
@@ -315,6 +254,30 @@ public class NetCDFTimedPlayer implements Runnable {
                     currentState = states.WAITINGONFRAME;
                 }
             }
+        } else {
+            if (currentFrameDS1 == null || newFrameNumber != frameNumber || overrideUpdate) {
+                NetCDFFrame frame = frameManagerDS1.getFrame(newFrameNumber);
+
+                if (!frame.isError()) {
+                    frameNumber = newFrameNumber;
+                    settings.setFrameNumber(newFrameNumber);
+                    this.timeBar.setValue(newFrameNumber);
+                    this.frameCounter.setValue(newFrameNumber);
+
+                    currentFrameDS1 = frame;
+                } else {
+                    logger.warn(frame.getError());
+                    currentState = states.WAITINGONFRAME;
+                }
+            }
         }
+
+    }
+
+    public boolean isTwoSourced() {
+        if (currentFrameDS1 != null && currentFrameDS2 != null) {
+            return true;
+        }
+        return false;
     }
 }

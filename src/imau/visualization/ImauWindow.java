@@ -94,16 +94,21 @@ public class ImauWindow extends CommonWindow {
 
         NetCDFTimedPlayer timer = ImauPanel.getTimer();
         if (timer.isInitialized()) {
-            currentFrame1 = timer.getFrame();
+            try {
+                currentFrame1 = timer.getFrame();
 
-            if (!timer.isTwoSourced()) {
-                currentFrame2 = null;
-                displayContext(currentFrame1, null, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO,
-                        legendTextureFBO, sphereTextureFBO);
-            } else {
-                currentFrame2 = timer.getFrame2();
-                displayContext(currentFrame1, currentFrame2, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO,
-                        legendTextureFBO, sphereTextureFBO);
+                if (!timer.isTwoSourced()) {
+                    currentFrame2 = null;
+                    displayContext(currentFrame1, null, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO,
+                            legendTextureFBO, sphereTextureFBO);
+                } else {
+                    currentFrame2 = timer.getFrame2();
+                    displayContext(currentFrame1, currentFrame2, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO,
+                            legendTextureFBO, sphereTextureFBO);
+                }
+            } catch (UninitializedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
 

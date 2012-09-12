@@ -5,6 +5,8 @@ import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.media.opengl.GL3;
@@ -18,33 +20,44 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 public class NetCDFFrame implements Runnable {
-    private final ImauSettings settings      = ImauSettings.getInstance();
+    private final ImauSettings settings = ImauSettings.getInstance();
 
-    private int                selectedDepth = settings.getDepthDef();
+    private int selectedDepth = settings.getDepthDef();
 
-    private final int          frameNumber;
+    private final int frameNumber;
 
-    private boolean            initialized;
+    private boolean initialized;
 
-    private boolean            error;
-    private String             errMessage;
+    private boolean error;
+    private String errMessage;
 
-    private int                pixels, width, height;
-    private TGridPoint[]       tGridPoints;
+    private int pixels, width, height;
+    private TGridPoint[] tGridPoints;
 
-    private final File         file;
+    private final File file;
 
-    float                      latMin, latMax;
+    float latMin, latMax;
+
+    HashMap<GlobeState, FloatBuffer> preparedGlobeImages;
+    HashMap<GlobeState, FloatBuffer> preparedLegendImages;
+
+    HashMap<Integer, HDRTexture2D> displayedImages;
+    HashMap<Integer, GlobeState> displayedImageStates;
 
     public NetCDFFrame(File ncFile) {
         this.file = ncFile;
-        this.frameNumber = NetCDFDatasetManager
-                .getIndexOfFrameNumber(NetCDFUtil.getFrameNumber(ncFile));
+        this.frameNumber = NetCDFDatasetManager.getIndexOfFrameNumber(NetCDFUtil.getFrameNumber(ncFile));
 
         this.initialized = false;
 
         this.error = false;
         this.errMessage = "";
+
+        this.preparedLegendImages = new HashMap<GlobeState, FloatBuffer>();
+        this.preparedGlobeImages = new HashMap<GlobeState, FloatBuffer>();
+
+        this.displayedImages = new HashMap<Integer, HDRTexture2D>();
+        this.displayedImageStates = new HashMap<Integer, GlobeState>();
     }
 
     public int getNumber() {
@@ -182,12 +195,9 @@ public class NetCDFFrame implements Runnable {
                         float velocityY = vvel.getFloat(vvel_index);
                         float horzKineticEnergy = ke.getFloat(ke_index);
 
-                        tGridPoints[(tlat_i * tlon_dim) + tlon_i] = new TGridPoint(
-                                tlat, tlon, tdepth, seaHeight, surfHeatFlux,
-                                saltFlux, mixedLayerDepth, salinity,
-                                temperature, velocityX, velocityY,
-                                horzKineticEnergy, potentialDensity,
-                                windstressX, windstressY, seaHeight2);
+                        tGridPoints[(tlat_i * tlon_dim) + tlon_i] = new TGridPoint(tlat, tlon, tdepth, seaHeight,
+                                surfHeatFlux, saltFlux, mixedLayerDepth, salinity, temperature, velocityX, velocityY,
+                                horzKineticEnergy, potentialDensity, windstressX, windstressY, seaHeight2);
                     }
                 }
 
@@ -203,13 +213,10 @@ public class NetCDFFrame implements Runnable {
         }
     }
 
-    public HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
-            GlobeState state) {
+    public HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit, GlobeState state) {
         if (state.getFrameNumber() != frameNumber) {
-            System.err
-                    .println("ERROR: Request for frame nr "
-                            + state.getFrameNumber() + " to NetCDFFrame "
-                            + frameNumber);
+            System.err.println("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
+                    + frameNumber);
             // new Exception().printStackTrace(System.err);
             return null;
         }
@@ -223,17 +230,28 @@ public class NetCDFFrame implements Runnable {
             init();
         }
 
-        return ImageMaker.efficientGetLegendImage(gl, glMultitexUnit,
-                tGridPoints, state, 1, 500, true);
+        HDRTexture2D tex;
+        if (displayedImageStates.containsKey(glMultitexUnit) && displayedImageStates.get(glMultitexUnit) == state) {
+            tex = displayedImages.get(glMultitexUnit);
+        } else {
+            if (preparedLegendImages.containsKey(state)) {
+                FloatBuffer fb = preparedLegendImages.get(state);
+                tex = new NetCDFTexture(glMultitexUnit, fb, 1, 500);
+            } else {
+                tex = ImageMaker.getLegendImage(gl, glMultitexUnit, tGridPoints, state, 1, 500, true);
+                preparedLegendImages.put(state, tex.getPixelBuffer());
+            }
+            displayedImages.put(glMultitexUnit, tex);
+            displayedImageStates.put(glMultitexUnit, state);
+        }
+
+        return tex;
     }
 
-    public HDRTexture2D getLegendImage(GL3 gl, NetCDFFrame otherFrame,
-            int glMultitexUnit, GlobeState state) {
+    public HDRTexture2D getLegendImage(GL3 gl, NetCDFFrame otherFrame, int glMultitexUnit, GlobeState state) {
         if (state.getFrameNumber() != frameNumber) {
-            System.err
-                    .println("ERROR: Request for frame nr "
-                            + state.getFrameNumber() + " to NetCDFFrame "
-                            + frameNumber);
+            System.err.println("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
+                    + frameNumber);
             // new Exception().printStackTrace(System.err);
             return null;
         }
@@ -247,16 +265,29 @@ public class NetCDFFrame implements Runnable {
             init();
         }
 
-        return ImageMaker.efficientGetLegendImage(gl, glMultitexUnit,
-                tGridPoints, otherFrame.getGridPoints(), state, 1, 500, true);
+        HDRTexture2D tex;
+        if (displayedImageStates.containsKey(glMultitexUnit) && displayedImageStates.get(glMultitexUnit) == state) {
+            tex = displayedImages.get(glMultitexUnit);
+        } else {
+            if (preparedLegendImages.containsKey(state)) {
+                FloatBuffer fb = preparedLegendImages.get(state);
+                tex = new NetCDFTexture(glMultitexUnit, fb, 1, 500);
+            } else {
+                tex = ImageMaker.getLegendImage(gl, glMultitexUnit, tGridPoints, otherFrame.getGridPoints(), state, 1,
+                        500, true);
+                preparedLegendImages.put(state, tex.getPixelBuffer());
+            }
+            displayedImages.put(glMultitexUnit, tex);
+            displayedImageStates.put(glMultitexUnit, state);
+        }
+
+        return tex;
     }
 
     public HDRTexture2D getImage(GL3 gl, int glMultitexUnit, GlobeState state) {
         if (state.getFrameNumber() != frameNumber) {
-            System.err
-                    .println("ERROR: Request for frame nr "
-                            + state.getFrameNumber() + " to NetCDFFrame "
-                            + frameNumber);
+            System.err.println("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
+                    + frameNumber);
             // new Exception().printStackTrace(System.err);
             return null;
         }
@@ -273,17 +304,28 @@ public class NetCDFFrame implements Runnable {
         int newHeight = (int) Math.floor((180f / (latMax - latMin)) * height);
         int blankRows = (int) Math.floor(180f / latMax);
 
-        return ImageMaker.efficientGetImage(gl, glMultitexUnit, tGridPoints,
-                state, width, height, newHeight, blankRows);
+        HDRTexture2D tex;
+        if (displayedImageStates.containsKey(glMultitexUnit) && displayedImageStates.get(glMultitexUnit) == state) {
+            tex = displayedImages.get(glMultitexUnit);
+        } else {
+            if (preparedGlobeImages.containsKey(state)) {
+                FloatBuffer fb = preparedGlobeImages.get(state);
+                tex = new NetCDFTexture(glMultitexUnit, fb, width, newHeight);
+            } else {
+                tex = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints, state, width, height, newHeight, blankRows);
+                preparedGlobeImages.put(state, tex.getPixelBuffer());
+            }
+            displayedImages.put(glMultitexUnit, tex);
+            displayedImageStates.put(glMultitexUnit, state);
+        }
+
+        return tex;
     }
 
-    public HDRTexture2D getImage(GL3 gl, NetCDFFrame otherFrame,
-            int glMultitexUnit, GlobeState state) {
+    public HDRTexture2D getImage(GL3 gl, NetCDFFrame otherFrame, int glMultitexUnit, GlobeState state) {
         if (state.getFrameNumber() != frameNumber) {
-            System.err
-                    .println("ERROR: Request for frame nr "
-                            + state.getFrameNumber() + " to NetCDFFrame "
-                            + frameNumber);
+            System.err.println("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
+                    + frameNumber);
             // new Exception().printStackTrace(System.err);
             System.exit(1);
         }
@@ -300,9 +342,23 @@ public class NetCDFFrame implements Runnable {
         int newHeight = (int) Math.floor((180f / (latMax - latMin)) * height);
         int blankRows = (int) Math.floor(180f / latMax);
 
-        return ImageMaker.efficientGetImage(gl, glMultitexUnit, tGridPoints,
-                otherFrame.getGridPoints(), state, width, height, newHeight,
-                blankRows);
+        HDRTexture2D tex;
+        if (displayedImageStates.containsKey(glMultitexUnit) && displayedImageStates.get(glMultitexUnit) == state) {
+            tex = displayedImages.get(glMultitexUnit);
+        } else {
+            if (preparedGlobeImages.containsKey(state)) {
+                FloatBuffer fb = preparedGlobeImages.get(state);
+                tex = new NetCDFTexture(glMultitexUnit, fb, width, newHeight);
+            } else {
+                tex = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints, otherFrame.getGridPoints(), state, width,
+                        height, newHeight, blankRows);
+                preparedGlobeImages.put(state, tex.getPixelBuffer());
+            }
+            displayedImages.put(glMultitexUnit, tex);
+            displayedImageStates.put(glMultitexUnit, state);
+        }
+
+        return tex;
     }
 
     private TGridPoint[] getGridPoints() {

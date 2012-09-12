@@ -138,9 +138,18 @@ public class NetCDFUtil {
 
     public static int getNumFiles(File file) {
         final String path = getPath(file);
+        int fileNameLength = file.getName().length();
+
         final String[] ls = new File(path).list(new ExtFilter(settings.getCurrentExtension()));
 
-        return ls.length;
+        int result = 0;
+        for (String s : ls) {
+            if (s.length() == fileNameLength) {
+                result++;
+            }
+        }
+
+        return result;
     }
 
     public static int getNumFiles(String pathName, String ext) {
@@ -274,13 +283,20 @@ public class NetCDFUtil {
 
         String format = "%0" + numberLength + "d";
 
-        String number = String.format(format, initialNumber + 1);
-
+        int attempts = 1;
+        String number = String.format(format, (initialNumber + attempts));
         File fileTry = new File(prefix + number + postfix);
-        if (fileTry.exists())
-            return fileTry;
+        while (!fileTry.exists() && attempts < 10000) {
+            attempts++;
+            number = String.format(format, (initialNumber + attempts));
+            fileTry = new File(prefix + number + postfix);
+        }
 
-        return null;
+        if (attempts == 10000) {
+            return null;
+        } else {
+            return fileTry;
+        }
     }
 
 }
