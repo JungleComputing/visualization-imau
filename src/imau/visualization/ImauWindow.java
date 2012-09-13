@@ -133,11 +133,18 @@ public class ImauWindow extends CommonWindow {
         }
 
         try {
+
             if (settings.isIMAGE_STREAM_OUTPUT()) {
                 currentImage = Screenshot.readToBufferedImage(canvasWidth, canvasHeight);
 
-                int[] rgb = knitImages();
+                int[] rgb = knitImages(currentImage);
                 sage.display(rgb);
+            }
+            if (timer.isScreenshotNeeded()) {
+                currentImage = Screenshot.readToBufferedImage(canvasWidth, canvasHeight);
+
+                ImauApp.writeImageToDisk(timer.getScreenshotFileName());
+                timer.setScreenshotNeeded(false);
             }
             drawable.getContext().release();
         } catch (final GLException e) {
@@ -784,14 +791,14 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private int[] knitImages() {
+    private int[] knitImages(BufferedImage glCanvasImage) {
         int[] frameRGB = null;
 
-        int glWidth = currentImage.getWidth();
-        int glHeight = currentImage.getHeight();
+        int glWidth = glCanvasImage.getWidth();
+        int glHeight = glCanvasImage.getHeight();
 
         int[] glRGB = new int[glWidth * glHeight];
-        currentImage.getRGB(0, 0, glWidth, glHeight, glRGB, 0, glWidth);
+        glCanvasImage.getRGB(0, 0, glWidth, glHeight, glRGB, 0, glWidth);
 
         if (settings.isIMAGE_STREAM_GL_ONLY()) {
             frameRGB = glRGB;

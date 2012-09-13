@@ -60,10 +60,6 @@ public class ImauInputHandler extends InputHandler implements TouchEventHandler 
     @Override
     public void keyPressed(KeyEvent e) {
         super.keyPressed(e);
-
-        if (e.getKeyCode() == KeyEvent.VK_P) {
-            ImauApp.getImage();
-        }
     }
 
     public VecF3 getRotation() {

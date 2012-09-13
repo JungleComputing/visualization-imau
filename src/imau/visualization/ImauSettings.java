@@ -40,7 +40,7 @@ public class ImauSettings extends Settings {
 
     private static String CURRENT_POSTFIX = "nc";
 
-    private static int PREPROCESSING_AMOUNT = 25;
+    private static int PREPROCESSING_AMOUNT = 2;
 
     private static float MIN_SSH = -200f;
     private static float MAX_SSH = 200f;

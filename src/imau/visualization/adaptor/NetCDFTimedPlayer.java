@@ -44,6 +44,9 @@ public class NetCDFTimedPlayer implements Runnable {
     private ImauWindow imauWindow;
     private NetCDFDatasetManager frameManagerDS1, frameManagerDS2;
 
+    private boolean needsScreenshot = false;
+    private String screenshotFilename = "";
+
     public NetCDFTimedPlayer(CustomJSlider timeBar, JFormattedTextField frameCounter) {
         this.timeBar = timeBar;
         this.frameCounter = frameCounter;
@@ -157,6 +160,18 @@ public class NetCDFTimedPlayer implements Runnable {
         setFrame(0, false);
     }
 
+    public synchronized void setScreenshotNeeded(boolean value) {
+        needsScreenshot = value;
+    }
+
+    public synchronized boolean isScreenshotNeeded() {
+        return needsScreenshot;
+    }
+
+    public String getScreenshotFileName() {
+        return screenshotFilename;
+    }
+
     @Override
     public void run() {
         if (!initialized) {
@@ -173,31 +188,40 @@ public class NetCDFTimedPlayer implements Runnable {
             if ((currentState == states.PLAYING) || (currentState == states.REDRAWING)
                     || (currentState == states.MOVIEMAKING)) {
                 try {
-                    startTime = System.currentTimeMillis();
+                    if (!isScreenshotNeeded()) {
+                        startTime = System.currentTimeMillis();
 
-                    if (currentState == states.MOVIEMAKING) {
-                        if (settings.getMovieRotate()) {
-                            final VecF3 rotation = inputHandler.getRotation();
-                            System.out.println("Simulation frame: " + frameNumber + ", Rotation x: " + rotation.get(0)
-                                    + " y: " + rotation.get(1));
-                            imauWindow.makeSnapshot(String.format("%05d", (frameNumber)));
+                        if (currentState == states.MOVIEMAKING) {
+                            if (settings.getMovieRotate()) {
+                                final VecF3 rotation = inputHandler.getRotation();
+                                System.out.println("Simulation frame: " + frameNumber + ", Rotation x: "
+                                        + rotation.get(0) + " y: " + rotation.get(1));
+                                // imauWindow.makeSnapshot(String.format("%05d",
+                                // (frameNumber)));
+                                screenshotFilename = String.format("%05d", (frameNumber));
+                                setScreenshotNeeded(true);
 
-                            rotation.set(1, rotation.get(1) + settings.getMovieRotationSpeedDef());
-                            inputHandler.setRotation(rotation);
-                        } else {
-                            imauWindow.makeSnapshot(String.format("%05d", frameNumber));
+                                rotation.set(1, rotation.get(1) + settings.getMovieRotationSpeedDef());
+                                inputHandler.setRotation(rotation);
+                            } else {
+                                screenshotFilename = String.format("%05d", (frameNumber));
+                                setScreenshotNeeded(true);
+                                // imauWindow.makeSnapshot(String.format("%05d",
+                                // frameNumber));
+                            }
                         }
-                    }
 
-                    // Forward frame
-                    if (currentState != states.REDRAWING) {
-                        updateFrame(frameNumber + 1, false);
-                    }
+                        // Forward frame
+                        if (currentState != states.REDRAWING) {
+                            updateFrame(frameNumber + 1, false);
+                        }
 
-                    // Wait for the _rest_ of the timeframe
-                    stopTime = System.currentTimeMillis();
-                    if (((startTime - stopTime) < settings.getWaittimeMovie()) && (currentState != states.MOVIEMAKING)) {
-                        Thread.sleep(settings.getWaittimeMovie() - (startTime - stopTime));
+                        // Wait for the _rest_ of the timeframe
+                        stopTime = System.currentTimeMillis();
+                        if (((startTime - stopTime) < settings.getWaittimeMovie())
+                                && (currentState != states.MOVIEMAKING)) {
+                            Thread.sleep(settings.getWaittimeMovie() - (startTime - stopTime));
+                        }
                     }
                 } catch (final InterruptedException e) {
                     System.err.println("Interrupted while playing.");
@@ -258,7 +282,7 @@ public class NetCDFTimedPlayer implements Runnable {
             if (currentFrameDS1 == null || newFrameNumber != frameNumber || overrideUpdate) {
                 NetCDFFrame frame = frameManagerDS1.getFrame(newFrameNumber);
 
-                if (!frame.isError()) {
+                if (frame != null && !frame.isError()) {
                     frameNumber = newFrameNumber;
                     settings.setFrameNumber(newFrameNumber);
                     this.timeBar.setValue(newFrameNumber);

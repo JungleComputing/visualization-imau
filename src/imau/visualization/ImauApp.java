@@ -131,11 +131,12 @@ public class ImauApp {
         }
     }
 
-    public static void getImage() {
+    public static void writeImageToDisk(String filename) {
         try {
-            ImageIO.write(imauWindow.getScreenshot(), "png", new File("screenshot.png"));
+            ImageIO.write(imauWindow.getScreenshot(), "png", new File(settings.getScreenshotPath() + "screenshots/"
+                    + filename + ".png"));
 
-            System.out.println("screenshot!");
+            // System.out.println("screenshot!");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
