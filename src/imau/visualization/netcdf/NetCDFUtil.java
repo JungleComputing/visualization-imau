@@ -18,7 +18,8 @@ import ucar.nc2.Variable;
 
 public class NetCDFUtil {
     private final static ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger logger = LoggerFactory.getLogger(NetCDFUtil.class);
+    private final static Logger       logger   = LoggerFactory
+                                                       .getLogger(NetCDFUtil.class);
 
     static class ExtFilter implements FilenameFilter {
         private final String ext;
@@ -51,7 +52,8 @@ public class NetCDFUtil {
                     if (!foundOne) {
                         foundOne = true;
                     } else {
-                        System.err.println("ERROR: Filename includes two possible sequence numbers.");
+                        System.err
+                                .println("ERROR: Filename includes two possible sequence numbers.");
                     }
                 }
             } catch (NumberFormatException e) {
@@ -85,7 +87,8 @@ public class NetCDFUtil {
     }
 
     public static String getPath(File file) {
-        final String path = file.getPath().substring(0, file.getPath().length() - file.getName().length());
+        final String path = file.getPath().substring(0,
+                file.getPath().length() - file.getName().length());
         return path;
     }
 
@@ -94,7 +97,7 @@ public class NetCDFUtil {
         try {
             ncfile = NetcdfFile.open(filename);
         } catch (IOException ioe) {
-            log("trying to open " + filename, ioe);
+            logger.error("trying to open " + filename, ioe);
         }
 
         return ncfile;
@@ -105,7 +108,7 @@ public class NetCDFUtil {
         try {
             ncfile = NetcdfFile.open(file.getAbsolutePath());
         } catch (IOException ioe) {
-            log("trying to open " + file.getAbsolutePath(), ioe);
+            logger.error("trying to open " + file.getAbsolutePath(), ioe);
         }
 
         return ncfile;
@@ -115,7 +118,7 @@ public class NetCDFUtil {
         try {
             ncfile.close();
         } catch (IOException ioe) {
-            log("trying to close file.", ioe);
+            logger.error("trying to close file.", ioe);
         }
     }
 
@@ -140,7 +143,8 @@ public class NetCDFUtil {
         final String path = getPath(file);
         int fileNameLength = file.getName().length();
 
-        final String[] ls = new File(path).list(new ExtFilter(settings.getCurrentExtension()));
+        final String[] ls = new File(path).list(new ExtFilter(settings
+                .getCurrentExtension()));
 
         int result = 0;
         for (String s : ls) {
@@ -162,39 +166,38 @@ public class NetCDFUtil {
         System.out.println(ncfile.getDetailInfo());
     }
 
-    public static Array getData(NetcdfFile ncfile, String varName) {
+    public static Array getData(NetcdfFile ncfile, String varName)
+            throws NetCDFNoSuchVariableException {
         Variable v = ncfile.findVariable(varName);
         Array data = null;
         if (null == v)
-            return null;
+            throw new NetCDFNoSuchVariableException("no such variable "
+                    + varName);
         try {
             data = v.read();
         } catch (IOException ioe) {
-            log("trying to read " + varName, ioe);
+            logger.error("trying to read " + varName, ioe);
         }
 
         return data;
     }
 
-    public static Array getDataSubset(NetcdfFile ncfile, String varName, String subsections) {
+    public static Array getDataSubset(NetcdfFile ncfile, String varName,
+            String subsections) throws NetCDFNoSuchVariableException {
         Variable v = ncfile.findVariable(varName);
         Array data = null;
         if (null == v)
-            return null;
+            throw new NetCDFNoSuchVariableException("no such variable "
+                    + varName);
         try {
             data = v.read(subsections);
         } catch (IOException ioe) {
-            log("trying to read " + varName, ioe);
+            logger.error("trying to read " + varName, ioe);
         } catch (InvalidRangeException e) {
-            log("invalid Range for " + varName, e);
+            logger.error("invalid Range for " + varName, e);
         }
 
         return data;
-    }
-
-    private static void log(String l, Exception e) {
-        logger.error("Error : " + l);
-        logger.debug(e.getMessage());
     }
 
     public static int getFrameNumber(File file) {
@@ -257,7 +260,8 @@ public class NetCDFUtil {
         return null;
     }
 
-    public static File getSeqFile(File initialFile, int value) throws IOException {
+    public static File getSeqFile(File initialFile, int value)
+            throws IOException {
         String prefix = getPrefix(initialFile);
         String postfix = getPostfix(initialFile);
 

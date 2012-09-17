@@ -9,18 +9,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class NetCDFDatasetManager {
-    private final ImauSettings settings = ImauSettings.getInstance();
+    private final ImauSettings            settings = ImauSettings.getInstance();
+    private final static Logger           logger   = LoggerFactory
+                                                           .getLogger(NetCDFDatasetManager.class);
 
-    private NetCDFFrame frame0;
+    private NetCDFFrame                   frame0;
     private HashMap<Integer, NetCDFFrame> frameWindow;
-    private static ArrayList<Integer> availableFrames;
+    private static ArrayList<Integer>     availableFrames;
 
-    private final int nThreads;
-    private final PoolWorker[] threads;
-    private final LinkedList<Runnable> queue;
+    private final int                     nThreads;
+    private final PoolWorker[]            threads;
+    private final LinkedList<Runnable>    queue;
 
-    private final File ncfile;
+    private final File                    ncfile;
 
     public void execute(Runnable r) {
         synchronized (queue) {
@@ -58,6 +63,8 @@ public class NetCDFDatasetManager {
     }
 
     public NetCDFDatasetManager(File ncfile) {
+        logger.debug("Opening dataset with initial file: "
+                + ncfile.getAbsolutePath());
         this.ncfile = ncfile;
 
         this.nThreads = 5;
@@ -92,7 +99,8 @@ public class NetCDFDatasetManager {
     private HashMap<Integer, NetCDFFrame> getWindow(int index) {
         HashMap<Integer, NetCDFFrame> newFrameWindow = new HashMap<Integer, NetCDFFrame>();
 
-        for (int i = index - settings.getPreprocessAmount(); i < settings.getPreprocessAmount() + index; i++) {
+        for (int i = index - settings.getPreprocessAmount(); i < settings
+                .getPreprocessAmount() + index; i++) {
             try {
                 NetCDFFrame frame = null;
                 if (i == 0) {
@@ -100,7 +108,8 @@ public class NetCDFDatasetManager {
                 } else if (frameWindow.containsKey(i)) {
                     frame = frameWindow.get(i);
                 } else if (i > 0 && i < availableFrames.size()) {
-                    frame = new NetCDFFrame(NetCDFUtil.getSeqFile(ncfile, availableFrames.get(i)));
+                    frame = new NetCDFFrame(NetCDFUtil.getSeqFile(ncfile,
+                            availableFrames.get(i)));
                 }
                 if (frame != null) {
                     newFrameWindow.put(i, frame);

@@ -1,6 +1,7 @@
 package imau.visualization.adaptor;
 
 import imau.visualization.ImauSettings;
+import imau.visualization.netcdf.NetCDFNoSuchVariableException;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
@@ -12,41 +13,47 @@ import java.util.List;
 import javax.media.opengl.GL3;
 
 import openglCommon.textures.HDRTexture2D;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ucar.ma2.Array;
-import ucar.ma2.Index;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 public class NetCDFFrame implements Runnable {
-    private final ImauSettings settings = ImauSettings.getInstance();
+    private final ImauSettings       settings      = ImauSettings.getInstance();
+    private final static Logger      logger        = LoggerFactory
+                                                           .getLogger(NetCDFFrame.class);
 
-    private int selectedDepth = settings.getDepthDef();
+    private int                      selectedDepth = settings.getDepthDef();
 
-    private final int frameNumber;
+    private final int                frameNumber;
 
-    private boolean initialized;
+    private boolean                  initialized;
 
-    private boolean error;
-    private String errMessage;
+    private boolean                  error;
+    private String                   errMessage;
 
-    private int pixels, width, height;
-    private TGridPoint[] tGridPoints;
+    private int                      pixels, width, height, depth;
+    private TGridPoint[]             tGridPoints;
 
-    private final File file;
+    private final File               file;
 
-    float latMin, latMax;
+    float                            latMin, latMax;
 
     HashMap<GlobeState, FloatBuffer> preparedGlobeImages;
     HashMap<GlobeState, FloatBuffer> preparedLegendImages;
 
-    HashMap<Integer, HDRTexture2D> displayedImages;
-    HashMap<Integer, GlobeState> displayedImageStates;
+    HashMap<Integer, HDRTexture2D>   displayedImages;
+    HashMap<Integer, GlobeState>     displayedImageStates;
 
     public NetCDFFrame(File ncFile) {
         this.file = ncFile;
-        this.frameNumber = NetCDFDatasetManager.getIndexOfFrameNumber(NetCDFUtil.getFrameNumber(ncFile));
+        this.frameNumber = NetCDFDatasetManager
+                .getIndexOfFrameNumber(NetCDFUtil.getFrameNumber(ncFile));
 
         this.initialized = false;
 
@@ -71,133 +78,65 @@ public class NetCDFFrame implements Runnable {
                 NetcdfFile ncfile = NetCDFUtil.open(file);
 
                 // Read data
-                Array t_lat = NetCDFUtil.getData(ncfile, "t_lat");
-                Array t_lon = NetCDFUtil.getData(ncfile, "t_lon");
-                int tlat_dim = 0;
-                int tlon_dim = 0;
+                Array t_lat = tryPermutationsArrayOpen(ncfile, "t_lat", "TLAT");
+                Array t_lon = tryPermutationsArrayOpen(ncfile, "t_lon", "TLONG");
 
-                Array t_depth = NetCDFUtil.getData(ncfile, "depth_t");
+                Array t_depth = tryPermutationsArrayOpen(ncfile, "depth_t",
+                        "z_t");
 
-                List<Dimension> dims = ncfile.getDimensions();
-                for (Dimension d : dims) {
-                    if (d.getName().compareTo("t_lat") == 0) {
-                        tlat_dim = d.getLength();
-                    } else if (d.getName().compareTo("t_lon") == 0) {
-                        tlon_dim = d.getLength();
-                    }
-                }
-
-                this.height = tlat_dim;
-                this.width = tlon_dim;
+                this.height = tryPermutationsGetLength(ncfile, "t_lat", "nlat");
+                this.width = tryPermutationsGetLength(ncfile, "t_lon", "nlon");
+                this.depth = tryPermutationsGetLength(ncfile, "depth_t", "z_t");
 
                 latMin = t_lat.getFloat(0) + 90f;
                 latMax = t_lat.getFloat(height - 1) + 90f;
 
-                Variable vssh = ncfile.findVariable("SSH");
-                Variable vshf = ncfile.findVariable("SHF");
-                Variable vsfwf = ncfile.findVariable("SFWF");
-                Variable vhmxl = ncfile.findVariable("HMXL");
+                tGridPoints = new TGridPoint[height * width];
 
-                Variable vsalt = ncfile.findVariable("SALT");
-                Variable vtemp = ncfile.findVariable("TEMP");
+                float[] seaHeight = efficientOpenVariable(ncfile,
+                        selectedDepth, "SSH");
+                float[] surfHeatFlux = efficientOpenVariable(ncfile,
+                        selectedDepth, "SHF");
+                float[] saltFlux = efficientOpenVariable(ncfile, selectedDepth,
+                        "SFWF");
+                float[] mixedLayerDepth = efficientOpenVariable(ncfile,
+                        selectedDepth, "HMXL");
 
-                Variable vuvel = ncfile.findVariable("UVEL");
-                Variable vvvel = ncfile.findVariable("VVEL");
-                Variable vke = ncfile.findVariable("KE");
+                float[] salinity = efficientOpenVariable(ncfile, selectedDepth,
+                        "SALT");
+                float[] temperature = efficientOpenVariable(ncfile,
+                        selectedDepth, "TEMP");
 
-                Variable vpd = ncfile.findVariable("PD");
-                Variable vtaux = ncfile.findVariable("TAUX");
-                Variable vtauy = ncfile.findVariable("TAUY");
-                Variable vh2 = ncfile.findVariable("H2");
+                float[] windstressX = efficientOpenVariable(ncfile,
+                        selectedDepth, "TAUX");
+                float[] windstressY = efficientOpenVariable(ncfile,
+                        selectedDepth, "TAUY");
+                float[] seaHeight2 = efficientOpenVariable(ncfile,
+                        selectedDepth, "H2");
 
-                Array ssh = vssh.read();
-                Array shf = vshf.read();
-                Array sfwf = vsfwf.read();
-                Array hmxl = vhmxl.read();
+                float[] potentialDensity = efficientOpenVariable(ncfile,
+                        selectedDepth, "PD");
+                float[] velocityX = efficientOpenVariable(ncfile,
+                        selectedDepth, "UVEL");
+                float[] velocityY = efficientOpenVariable(ncfile,
+                        selectedDepth, "VVEL");
+                float[] horzKineticEnergy = efficientOpenVariable(ncfile,
+                        selectedDepth, "KE");
 
-                Array taux = vtaux.read();
-                Array tauy = vtauy.read();
-                Array h2 = vh2.read();
+                float tdepth = t_depth.getFloat(selectedDepth);
 
-                this.pixels = tlat_dim * tlon_dim;
+                for (int col = 0; col < width; col++) {
+                    float tlon = t_lon.getFloat(col);
+                    for (int row = 0; row < height; row++) {
+                        float tlat = t_lat.getFloat(row);
+                        int j = (row * width) + col;
 
-                tGridPoints = new TGridPoint[pixels];
-
-                int[] origin = new int[] { 0, 0, 0 };
-                int[] size = new int[] { 1, tlat_dim, tlon_dim };
-
-                int tdepth_i = selectedDepth;
-                float tdepth = t_depth.getFloat(tdepth_i);
-
-                origin[0] = tdepth_i;
-                Array salt = vsalt.read(origin, size).reduce(0);
-                Array temp = vtemp.read(origin, size).reduce(0);
-
-                Array pd = vpd.read(origin, size).reduce(0);
-                Array uvel = vuvel.read(origin, size).reduce(0);
-                Array vvel = vvvel.read(origin, size).reduce(0);
-                Array ke = vke.read(origin, size).reduce(0);
-
-                Index ssh_index = ssh.getIndex();
-                Index shf_index = shf.getIndex();
-                Index sfwf_index = sfwf.getIndex();
-                Index hmxl_index = hmxl.getIndex();
-
-                Index salt_index = salt.getIndex();
-                Index temp_index = temp.getIndex();
-
-                Index taux_index = taux.getIndex();
-                Index tauy_index = tauy.getIndex();
-                Index h2_index = h2.getIndex();
-
-                Index pd_index = pd.getIndex();
-                Index uvel_index = uvel.getIndex();
-                Index vvel_index = vvel.getIndex();
-                Index ke_index = ke.getIndex();
-
-                for (int tlon_i = 0; tlon_i < tlon_dim; tlon_i++) {
-                    float tlon = t_lon.getFloat(tlon_i);
-
-                    for (int tlat_i = 0; tlat_i < tlat_dim; tlat_i++) {
-                        float tlat = t_lat.getFloat(tlat_i);
-
-                        ssh_index.set(tlat_i, tlon_i);
-                        shf_index.set(tlat_i, tlon_i);
-                        sfwf_index.set(tlat_i, tlon_i);
-                        hmxl_index.set(tlat_i, tlon_i);
-
-                        salt_index.set(tlat_i, tlon_i);
-                        temp_index.set(tlat_i, tlon_i);
-
-                        taux_index.set(tlat_i, tlon_i);
-                        tauy_index.set(tlat_i, tlon_i);
-                        h2_index.set(tlat_i, tlon_i);
-
-                        pd_index.set(tlat_i, tlon_i);
-                        uvel_index.set(tlat_i, tlon_i);
-                        vvel_index.set(tlat_i, tlon_i);
-                        ke_index.set(tlat_i, tlon_i);
-
-                        float seaHeight = ssh.getFloat(ssh_index);
-                        float surfHeatFlux = shf.getFloat(shf_index);
-                        float saltFlux = sfwf.getFloat(sfwf_index);
-                        float mixedLayerDepth = hmxl.getFloat(hmxl_index);
-
-                        float salinity = salt.getFloat(salt_index);
-                        float temperature = temp.getFloat(temp_index);
-
-                        float windstressX = taux.getFloat(taux_index);
-                        float windstressY = tauy.getFloat(tauy_index);
-                        float seaHeight2 = h2.getFloat(h2_index);
-
-                        float potentialDensity = pd.getFloat(pd_index);
-                        float velocityX = uvel.getFloat(uvel_index);
-                        float velocityY = vvel.getFloat(vvel_index);
-                        float horzKineticEnergy = ke.getFloat(ke_index);
-
-                        tGridPoints[(tlat_i * tlon_dim) + tlon_i] = new TGridPoint(tlat, tlon, tdepth, seaHeight,
-                                surfHeatFlux, saltFlux, mixedLayerDepth, salinity, temperature, velocityX, velocityY,
-                                horzKineticEnergy, potentialDensity, windstressX, windstressY, seaHeight2);
+                        tGridPoints[j] = new TGridPoint(tlat, tlon, tdepth,
+                                seaHeight[j], surfHeatFlux[j], saltFlux[j],
+                                mixedLayerDepth[j], salinity[j],
+                                temperature[j], velocityX[j], velocityY[j],
+                                horzKineticEnergy[j], potentialDensity[j],
+                                windstressX[j], windstressY[j], seaHeight2[j]);
                     }
                 }
 
@@ -207,17 +146,120 @@ public class NetCDFFrame implements Runnable {
                 errMessage = e.getMessage();
             } catch (InvalidRangeException e) {
                 e.printStackTrace();
+            } catch (NetCDFNoSuchVariableException e2) {
+                logger.error(e2.getMessage());
             }
 
             initialized = true;
         }
     }
 
-    public synchronized HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit, GlobeState state)
-            throws WrongFrameException {
+    private float[] efficientOpenVariable(NetcdfFile ncfile, int selectedDepth,
+            String varName) throws IOException, InvalidRangeException {
+        float[] result = new float[width * height];
+
+        Variable ncdfVar = ncfile.findVariable(varName);
+        List<Dimension> dims = ncdfVar.getDimensions();
+
+        Array ncdfArray2D;
+        if (dims.size() > 3) {
+            if (dims.get(0).getLength() == 1 || dims.size() > 4) {
+                // Peel off the time 'dimension'
+                int[] origin = new int[] { 0, selectedDepth, 0, 0 };
+                int[] size = new int[] { 1, 1, height, width };
+
+                ncdfArray2D = ncdfVar.read(origin, size).reduce();
+            } else {
+                throw new IOException(
+                        "Unanticipated NetCDF variable dimensions.");
+            }
+        } else if (dims.size() > 2) {
+            // Select the correct the depth
+            int[] origin = new int[] { selectedDepth, 0, 0 };
+            int[] size = new int[] { 1, height, width };
+
+            ncdfArray2D = ncdfVar.read(origin, size).reduce();
+        } else {
+            ncdfArray2D = ncdfVar.read();
+        }
+
+        result = (float[]) ncdfArray2D.get1DJavaArray(float.class);
+
+        return result;
+    }
+
+    private Array tryPermutationsArrayOpen(NetcdfFile ncfile,
+            String... permutations) throws NetCDFNoSuchVariableException {
+        boolean success = false;
+        int i = 0;
+        String current = permutations[i];
+        Array result = null;
+
+        while (!success) {
+            try {
+                result = NetCDFUtil.getData(ncfile, current);
+                success = true;
+            } catch (NetCDFNoSuchVariableException e) {
+                i++;
+                if (i > permutations.length - 1) {
+                    break;
+                } else {
+                    current = permutations[i];
+                }
+            }
+        }
+        if (!success) {
+            String perms = "";
+            for (String s : permutations) {
+                perms += s + "; ";
+            }
+
+            throw new NetCDFNoSuchVariableException(
+                    "Dimension finder: All permutations (" + perms + ") failed");
+        }
+        return result;
+    }
+
+    private int tryPermutationsGetLength(NetcdfFile ncfile,
+            String... permutations) throws NetCDFNoSuchVariableException {
+        List<Dimension> dims = ncfile.getDimensions();
+
+        int i = 0;
+        String current = permutations[i];
+        int result = -1;
+
+        boolean success = false;
+        while (!success) {
+            for (Dimension d : dims) {
+                if (d.getName().compareTo(current) == 0) {
+                    result = d.getLength();
+                    success = true;
+                    break;
+                }
+            }
+            if (i > permutations.length - 1 || success) {
+                break;
+            } else {
+                current = permutations[i];
+            }
+        }
+        if (!success) {
+            String perms = "";
+            for (String s : permutations) {
+                perms += s + "; ";
+            }
+
+            throw new NetCDFNoSuchVariableException(
+                    "Dimension finder: All permutations (" + perms + ") failed");
+        }
+        return result;
+    }
+
+    public synchronized HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
+            GlobeState state) throws WrongFrameException {
         if (state.getFrameNumber() != frameNumber) {
-            throw new WrongFrameException("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
-                    + frameNumber);
+            throw new WrongFrameException("ERROR: Request for frame nr "
+                    + state.getFrameNumber() + " to NetCDFFrame " + frameNumber);
         }
 
         if (settings.getDepthDef() != selectedDepth) {
@@ -230,14 +272,16 @@ public class NetCDFFrame implements Runnable {
         }
 
         HDRTexture2D tex;
-        if (displayedImageStates.containsKey(glMultitexUnit) && displayedImageStates.get(glMultitexUnit) == state) {
+        if (displayedImageStates.containsKey(glMultitexUnit)
+                && displayedImageStates.get(glMultitexUnit) == state) {
             tex = displayedImages.get(glMultitexUnit);
         } else {
             if (preparedLegendImages.containsKey(state)) {
                 FloatBuffer fb = preparedLegendImages.get(state);
                 tex = new NetCDFTexture(glMultitexUnit, fb, 1, 500);
             } else {
-                tex = ImageMaker.getLegendImage(gl, glMultitexUnit, tGridPoints, state, 1, 500, true);
+                tex = ImageMaker.getLegendImage(gl, glMultitexUnit,
+                        tGridPoints, state, 1, 500, true);
                 preparedLegendImages.put(state, tex.getPixelBuffer());
             }
             displayedImages.put(glMultitexUnit, tex);
@@ -247,9 +291,11 @@ public class NetCDFFrame implements Runnable {
         return tex;
     }
 
-    public synchronized HDRTexture2D getLegendImage(GL3 gl, NetCDFFrame otherFrame, int glMultitexUnit, GlobeState state)
+    public synchronized HDRTexture2D getLegendImage(GL3 gl,
+            NetCDFFrame otherFrame, int glMultitexUnit, GlobeState state)
             throws WrongFrameException {
-        if (state.getFrameNumber() != frameNumber || otherFrame.getNumber() != frameNumber
+        if (state.getFrameNumber() != frameNumber
+                || otherFrame.getNumber() != frameNumber
                 || state.getFrameNumber() != otherFrame.getNumber()) {
             throw new WrongFrameException("ERROR: FrameNumber mismatch");
         }
@@ -264,15 +310,17 @@ public class NetCDFFrame implements Runnable {
         }
 
         HDRTexture2D tex;
-        if (displayedImageStates.containsKey(glMultitexUnit) && displayedImageStates.get(glMultitexUnit) == state) {
+        if (displayedImageStates.containsKey(glMultitexUnit)
+                && displayedImageStates.get(glMultitexUnit) == state) {
             tex = displayedImages.get(glMultitexUnit);
         } else {
             if (preparedLegendImages.containsKey(state)) {
                 FloatBuffer fb = preparedLegendImages.get(state);
                 tex = new NetCDFTexture(glMultitexUnit, fb, 1, 500);
             } else {
-                tex = ImageMaker.getLegendImage(gl, glMultitexUnit, tGridPoints, otherFrame.getGridPoints(), state, 1,
-                        500, true);
+                tex = ImageMaker.getLegendImage(gl, glMultitexUnit,
+                        tGridPoints, otherFrame.getGridPoints(), state, 1, 500,
+                        true);
                 preparedLegendImages.put(state, tex.getPixelBuffer());
             }
             displayedImages.put(glMultitexUnit, tex);
@@ -282,10 +330,11 @@ public class NetCDFFrame implements Runnable {
         return tex;
     }
 
-    public synchronized HDRTexture2D getImage(GL3 gl, int glMultitexUnit, GlobeState state) throws WrongFrameException {
+    public synchronized HDRTexture2D getImage(GL3 gl, int glMultitexUnit,
+            GlobeState state) throws WrongFrameException {
         if (state.getFrameNumber() != frameNumber) {
-            throw new WrongFrameException("ERROR: Request for frame nr " + state.getFrameNumber() + " to NetCDFFrame "
-                    + frameNumber);
+            throw new WrongFrameException("ERROR: Request for frame nr "
+                    + state.getFrameNumber() + " to NetCDFFrame " + frameNumber);
         }
 
         if (settings.getDepthDef() != selectedDepth) {
@@ -301,14 +350,16 @@ public class NetCDFFrame implements Runnable {
         int blankRows = (int) Math.floor(180f / latMax);
 
         HDRTexture2D tex;
-        if (displayedImageStates.containsKey(glMultitexUnit) && displayedImageStates.get(glMultitexUnit) == state) {
+        if (displayedImageStates.containsKey(glMultitexUnit)
+                && displayedImageStates.get(glMultitexUnit) == state) {
             tex = displayedImages.get(glMultitexUnit);
         } else {
             if (preparedGlobeImages.containsKey(state)) {
                 FloatBuffer fb = preparedGlobeImages.get(state);
                 tex = new NetCDFTexture(glMultitexUnit, fb, width, newHeight);
             } else {
-                tex = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints, state, width, height, newHeight, blankRows);
+                tex = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints,
+                        state, width, height, newHeight, blankRows);
                 preparedGlobeImages.put(state, tex.getPixelBuffer());
             }
             displayedImages.put(glMultitexUnit, tex);
@@ -318,9 +369,10 @@ public class NetCDFFrame implements Runnable {
         return tex;
     }
 
-    public synchronized HDRTexture2D getImage(GL3 gl, NetCDFFrame otherFrame, int glMultitexUnit, GlobeState state)
-            throws WrongFrameException {
-        if (state.getFrameNumber() != frameNumber || otherFrame.getNumber() != frameNumber
+    public synchronized HDRTexture2D getImage(GL3 gl, NetCDFFrame otherFrame,
+            int glMultitexUnit, GlobeState state) throws WrongFrameException {
+        if (state.getFrameNumber() != frameNumber
+                || otherFrame.getNumber() != frameNumber
                 || state.getFrameNumber() != otherFrame.getNumber()) {
             throw new WrongFrameException("ERROR: FrameNumber mismatch");
         }
@@ -338,15 +390,17 @@ public class NetCDFFrame implements Runnable {
         int blankRows = (int) Math.floor(180f / latMax);
 
         HDRTexture2D tex;
-        if (displayedImageStates.containsKey(glMultitexUnit) && displayedImageStates.get(glMultitexUnit) == state) {
+        if (displayedImageStates.containsKey(glMultitexUnit)
+                && displayedImageStates.get(glMultitexUnit) == state) {
             tex = displayedImages.get(glMultitexUnit);
         } else {
             if (preparedGlobeImages.containsKey(state)) {
                 FloatBuffer fb = preparedGlobeImages.get(state);
                 tex = new NetCDFTexture(glMultitexUnit, fb, width, newHeight);
             } else {
-                tex = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints, otherFrame.getGridPoints(), state, width,
-                        height, newHeight, blankRows);
+                tex = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints,
+                        otherFrame.getGridPoints(), state, width, height,
+                        newHeight, blankRows);
                 preparedGlobeImages.put(state, tex.getPixelBuffer());
             }
             displayedImages.put(glMultitexUnit, tex);
