@@ -1,6 +1,7 @@
 package imau.visualization.adaptor;
 
 import imau.visualization.ImauSettings;
+import imau.visualization.netcdf.NetCDFNoSuchVariableException;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
@@ -12,6 +13,10 @@ import java.util.LinkedList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ucar.nc2.Dimension;
+import ucar.nc2.NetcdfFile;
+import ucar.nc2.Variable;
+
 public class NetCDFDatasetManager {
     private final ImauSettings            settings = ImauSettings.getInstance();
     private final static Logger           logger   = LoggerFactory
@@ -19,13 +24,15 @@ public class NetCDFDatasetManager {
 
     private NetCDFFrame                   frame0;
     private HashMap<Integer, NetCDFFrame> frameWindow;
-    private static ArrayList<Integer>     availableFrames;
+    private static ArrayList<Integer>     availableFrameSequenceNumbers;
 
     private final int                     nThreads;
     private final PoolWorker[]            threads;
     private final LinkedList<Runnable>    queue;
 
     private final File                    ncfile;
+
+    private Variable[]                    variables;
 
     public void execute(Runnable r) {
         synchronized (queue) {
@@ -62,10 +69,10 @@ public class NetCDFDatasetManager {
         }
     }
 
-    public NetCDFDatasetManager(File ncfile) {
+    public NetCDFDatasetManager(File file) {
         logger.debug("Opening dataset with initial file: "
-                + ncfile.getAbsolutePath());
-        this.ncfile = ncfile;
+                + file.getAbsolutePath());
+        this.ncfile = file;
 
         this.nThreads = 5;
         queue = new LinkedList<Runnable>();
@@ -77,21 +84,36 @@ public class NetCDFDatasetManager {
             threads[i].start();
         }
 
+        NetcdfFile ncfile = NetCDFUtil.open(file);
+
+        try {
+            Dimension[] yDims = NetCDFUtil.getUsedDimensionsBySubstring(ncfile,
+                    "lat");
+            Dimension[] xDims = NetCDFUtil.getUsedDimensionsBySubstring(ncfile,
+                    "lon");
+
+            variables = NetCDFUtil.getQualifyingVariables(ncfile, yDims, xDims);
+        } catch (NetCDFNoSuchVariableException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
         resetModels();
     }
 
     public void resetModels() {
-        NetCDFDatasetManager.availableFrames = new ArrayList<Integer>();
+        NetCDFDatasetManager.availableFrameSequenceNumbers = new ArrayList<Integer>();
 
         File currentFile = NetCDFUtil.getSeqLowestFile(ncfile);
         while (currentFile != null) {
             int nr = NetCDFUtil.getFrameNumber(currentFile);
-            availableFrames.add(nr);
+            availableFrameSequenceNumbers.add(nr);
 
             currentFile = NetCDFUtil.getSeqNextFile(currentFile);
         }
 
-        this.frame0 = new NetCDFFrame(NetCDFUtil.getSeqLowestFile(ncfile));
+        this.frame0 = new NetCDFFrame(NetCDFUtil.getSeqLowestFile(ncfile), 0,
+                variables);
         this.frameWindow = new HashMap<Integer, NetCDFFrame>();
 
     }
@@ -107,9 +129,9 @@ public class NetCDFDatasetManager {
                     frame = frame0;
                 } else if (frameWindow.containsKey(i)) {
                     frame = frameWindow.get(i);
-                } else if (i > 0 && i < availableFrames.size()) {
+                } else if (i > 0 && i < availableFrameSequenceNumbers.size()) {
                     frame = new NetCDFFrame(NetCDFUtil.getSeqFile(ncfile,
-                            availableFrames.get(i)));
+                            availableFrameSequenceNumbers.get(i)), i, variables);
                 }
                 if (frame != null) {
                     newFrameWindow.put(i, frame);
@@ -134,15 +156,15 @@ public class NetCDFDatasetManager {
         return frame;
     }
 
-    public static int getFrameNumberOfIndex(int index) {
-        return availableFrames.get(index);
+    public int getFrameNumberOfIndex(int index) {
+        return availableFrameSequenceNumbers.get(index);
     }
 
-    public static int getIndexOfFrameNumber(int frameNumber) {
-        return availableFrames.indexOf(frameNumber);
+    public int getIndexOfFrameNumber(int frameNumber) {
+        return availableFrameSequenceNumbers.indexOf(frameNumber);
     }
 
     public int getNumFiles() {
-        return availableFrames.size();
+        return availableFrameSequenceNumbers.size();
     }
 }

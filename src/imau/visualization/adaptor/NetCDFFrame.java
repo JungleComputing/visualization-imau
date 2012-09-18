@@ -24,36 +24,40 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
 public class NetCDFFrame implements Runnable {
-    private final ImauSettings       settings      = ImauSettings.getInstance();
-    private final static Logger      logger        = LoggerFactory
-                                                           .getLogger(NetCDFFrame.class);
+    private final ImauSettings                     settings      = ImauSettings
+                                                                         .getInstance();
+    private final static Logger                    logger        = LoggerFactory
+                                                                         .getLogger(NetCDFFrame.class);
 
-    private int                      selectedDepth = settings.getDepthDef();
+    private int                                    selectedDepth = settings
+                                                                         .getDepthDef();
 
-    private final int                frameNumber;
+    private final int                              frameNumber;
 
-    private boolean                  initialized;
+    private boolean                                initialized;
 
-    private boolean                  error;
-    private String                   errMessage;
+    private boolean                                error;
+    private String                                 errMessage;
 
-    private int                      pixels, width, height, depth;
-    private TGridPoint[]             tGridPoints;
+    private int                                    pixels, width, height,
+            depth;
+    private TGridPoint[]                           tGridPoints;
 
-    private final File               file;
+    private final File                             file;
 
-    float                            latMin, latMax;
+    private float                                  latMin, latMax;
 
-    HashMap<GlobeState, FloatBuffer> preparedGlobeImages;
-    HashMap<GlobeState, FloatBuffer> preparedLegendImages;
+    private final HashMap<GlobeState, FloatBuffer> preparedGlobeImages;
+    private final HashMap<GlobeState, FloatBuffer> preparedLegendImages;
 
-    HashMap<Integer, HDRTexture2D>   displayedImages;
-    HashMap<Integer, GlobeState>     displayedImageStates;
+    private final HashMap<Integer, HDRTexture2D>   displayedImages;
+    private final HashMap<Integer, GlobeState>     displayedImageStates;
 
-    public NetCDFFrame(File ncFile) {
+    private final Variable[]                       variables;
+
+    public NetCDFFrame(File ncFile, int indexNumber, Variable[] variables) {
         this.file = ncFile;
-        this.frameNumber = NetCDFDatasetManager
-                .getIndexOfFrameNumber(NetCDFUtil.getFrameNumber(ncFile));
+        this.frameNumber = indexNumber;
 
         this.initialized = false;
 
@@ -65,6 +69,8 @@ public class NetCDFFrame implements Runnable {
 
         this.displayedImages = new HashMap<Integer, HDRTexture2D>();
         this.displayedImageStates = new HashMap<Integer, GlobeState>();
+
+        this.variables = variables;
     }
 
     public int getNumber() {
@@ -78,11 +84,19 @@ public class NetCDFFrame implements Runnable {
                 NetcdfFile ncfile = NetCDFUtil.open(file);
 
                 // Read data
-                Array t_lat = tryPermutationsArrayOpen(ncfile, "t_lat", "TLAT");
-                Array t_lon = tryPermutationsArrayOpen(ncfile, "t_lon", "TLONG");
+                String latName = NetCDFUtil.getUsedDimensionName(ncfile,
+                        settings.getLatNamePermutations());
+                String lonName = NetCDFUtil.getUsedDimensionName(ncfile,
+                        settings.getLonNamePermutations());
+                String depthName = NetCDFUtil.getUsedDimensionName(ncfile,
+                        settings.getDepthNamePermutations());
 
-                Array t_depth = tryPermutationsArrayOpen(ncfile, "depth_t",
-                        "z_t");
+                Array t_lat = tryPermutationsArrayOpen(ncfile, latName);
+                Array t_lon = tryPermutationsArrayOpen(ncfile, lonName);
+                Array t_depth = tryPermutationsArrayOpen(ncfile, depthName);
+
+                // String[] varNames = NetCDFUtil.getVarNames(ncfile, latName,
+                // lonName);
 
                 this.height = tryPermutationsGetLength(ncfile, "t_lat", "nlat");
                 this.width = tryPermutationsGetLength(ncfile, "t_lon", "nlon");
@@ -201,6 +215,7 @@ public class NetCDFFrame implements Runnable {
                 success = true;
             } catch (NetCDFNoSuchVariableException e) {
                 i++;
+
                 if (i > permutations.length - 1) {
                     break;
                 } else {
@@ -237,6 +252,9 @@ public class NetCDFFrame implements Runnable {
                     break;
                 }
             }
+
+            i++;
+
             if (i > permutations.length - 1 || success) {
                 break;
             } else {

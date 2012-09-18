@@ -5,12 +5,15 @@ import imau.visualization.ImauSettings;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ucar.ma2.Array;
 import ucar.ma2.InvalidRangeException;
+import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 
@@ -180,6 +183,176 @@ public class NetCDFUtil {
         }
 
         return data;
+    }
+
+    public static String getUsedDimensionName(NetcdfFile ncfile,
+            String... permutations) throws NetCDFNoSuchVariableException {
+        List<Dimension> dims = ncfile.getDimensions();
+
+        int i = 0;
+        String current = permutations[i];
+
+        boolean success = false;
+        while (!success) {
+            for (Dimension d : dims) {
+                if (d.getName().compareTo(current) == 0) {
+                    success = true;
+                    break;
+                }
+            }
+
+            i++;
+
+            if (i > permutations.length - 1 || success) {
+                break;
+            } else {
+
+                current = permutations[i];
+            }
+        }
+        if (!success) {
+            String perms = "";
+            for (String s : permutations) {
+                perms += s + "; ";
+            }
+
+            throw new NetCDFNoSuchVariableException(
+                    "Dimension finder: All permutations (" + perms + ") failed");
+        }
+        return current;
+    }
+
+    public static Dimension[] getUsedDimensionsBySubstring(NetcdfFile ncfile,
+            String subString) throws NetCDFNoSuchVariableException {
+        List<Dimension> dims = ncfile.getDimensions();
+
+        ArrayList<Dimension> result = new ArrayList<Dimension>();
+        for (Dimension d : dims) {
+            if (d.getName().contains(subString)) {
+                result.add(d);
+            }
+        }
+
+        return result.toArray(new Dimension[0]);
+    }
+
+    public static Variable[] getQualifyingVariables(NetcdfFile ncfile,
+            Dimension[] latCandidates, Dimension[] lonCandidates) {
+        ArrayList<Variable> qualifyingVariables = new ArrayList<Variable>();
+
+        List<Variable> variables = ncfile.getVariables();
+        for (Variable v : variables) {
+            List<Dimension> availableDims = v.getDimensions();
+
+            boolean successLat = false;
+            for (Dimension lat : latCandidates) {
+                if (availableDims.contains(lat)) {
+                    successLat = true;
+                }
+            }
+            boolean successLon = false;
+            for (Dimension lon : lonCandidates) {
+                if (availableDims.contains(lon)) {
+                    successLon = true;
+                }
+            }
+
+            if (successLat && successLon) {
+                qualifyingVariables.add(v);
+            }
+        }
+
+        for (Variable v : qualifyingVariables) {
+            System.out.println(v.getShortName());
+        }
+        return qualifyingVariables.toArray(new Variable[0]);
+    }
+
+    public static String[] getUsedDimensionNames(NetcdfFile ncfile,
+            String... permutations) throws NetCDFNoSuchVariableException {
+        List<Dimension> dims = ncfile.getDimensions();
+
+        ArrayList<String> result = new ArrayList<String>();
+        for (String current : permutations) {
+            for (Dimension d : dims) {
+                if (d.getName().compareTo(current) == 0) {
+                    result.add(current);
+                }
+            }
+        }
+
+        return result.toArray(new String[0]);
+    }
+
+    public static String[] getVarNames(NetcdfFile ncfile,
+            String... mandatoryDims) {
+        ArrayList<String> varNames = new ArrayList<String>();
+
+        List<Variable> variables = ncfile.getVariables();
+        for (Variable v : variables) {
+            boolean success = true;
+
+            List<Dimension> availableDims = v.getDimensions();
+            List<String> availableDimNames = new ArrayList<String>();
+
+            for (Dimension d : availableDims) {
+                availableDimNames.add(d.getName());
+            }
+
+            for (String name : mandatoryDims) {
+                if (!availableDimNames.contains(name)) {
+                    success = false;
+                }
+            }
+            if (success) {
+                varNames.add(v.getFullName());
+            }
+        }
+        String[] result = varNames.toArray(new String[0]);
+
+        for (String s : result) {
+            System.out.println(s);
+        }
+        return result;
+    }
+
+    public static String[] getVarNames(NetcdfFile ncfile,
+            String[] latCandidates, String[] lonCandidates) {
+        ArrayList<String> varNames = new ArrayList<String>();
+
+        List<Variable> variables = ncfile.getVariables();
+        for (Variable v : variables) {
+
+            List<Dimension> availableDims = v.getDimensions();
+            List<String> availableDimNames = new ArrayList<String>();
+
+            for (Dimension d : availableDims) {
+                availableDimNames.add(d.getName());
+            }
+
+            boolean successLat = false;
+            for (String name : latCandidates) {
+                if (availableDimNames.contains(name)) {
+                    successLat = true;
+                }
+            }
+            boolean successLon = false;
+            for (String name : lonCandidates) {
+                if (availableDimNames.contains(name)) {
+                    successLon = true;
+                }
+            }
+
+            if (successLat && successLon) {
+                varNames.add(v.getFullName());
+            }
+        }
+        String[] result = varNames.toArray(new String[0]);
+
+        for (String s : result) {
+            System.out.println(s);
+        }
+        return result;
     }
 
     public static Array getDataSubset(NetcdfFile ncfile, String varName,

@@ -21,123 +21,147 @@ public class ImauSettings extends Settings {
         FIRST_DATASET, SECOND_DATASET, DIFF
     };
 
-    private static GlobeState    globeStateLT          = new GlobeState(
-                                                               GlobeState.DataMode.FIRST_DATASET,
-                                                               false,
-                                                               GlobeState.Variable.SALT,
-                                                               75, 0, "default");
-    private static GlobeState    globeStateRT          = new GlobeState(
-                                                               GlobeState.DataMode.FIRST_DATASET,
-                                                               false,
-                                                               GlobeState.Variable.TEMP,
-                                                               75, 0, "default");
-    private static GlobeState    globeStateLB          = new GlobeState(
-                                                               GlobeState.DataMode.FIRST_DATASET,
-                                                               false,
-                                                               GlobeState.Variable.SSH,
-                                                               75, 0, "default");
-    private static GlobeState    globeStateRB          = new GlobeState(
-                                                               GlobeState.DataMode.FIRST_DATASET,
-                                                               false,
-                                                               GlobeState.Variable.SFWF,
-                                                               75, 0, "default");
+    private static GlobeState    globeStateLT              = new GlobeState(
+                                                                   GlobeState.DataMode.FIRST_DATASET,
+                                                                   false,
+                                                                   GlobeState.Variable.SALT,
+                                                                   75, 0,
+                                                                   "default");
+    private static GlobeState    globeStateRT              = new GlobeState(
+                                                                   GlobeState.DataMode.FIRST_DATASET,
+                                                                   false,
+                                                                   GlobeState.Variable.TEMP,
+                                                                   75, 0,
+                                                                   "default");
+    private static GlobeState    globeStateLB              = new GlobeState(
+                                                                   GlobeState.DataMode.FIRST_DATASET,
+                                                                   false,
+                                                                   GlobeState.Variable.SSH,
+                                                                   75, 0,
+                                                                   "default");
+    private static GlobeState    globeStateRB              = new GlobeState(
+                                                                   GlobeState.DataMode.FIRST_DATASET,
+                                                                   false,
+                                                                   GlobeState.Variable.SFWF,
+                                                                   75, 0,
+                                                                   "default");
 
-    private static long          WAITTIME_FOR_RETRY    = 10000;
-    private static long          WAITTIME_FOR_MOVIE    = 500;
-    private static float         EPSILON               = 1.0E-7f;
+    private static long          WAITTIME_FOR_RETRY        = 10000;
+    private static long          WAITTIME_FOR_MOVIE        = 500;
+    private static float         EPSILON                   = 1.0E-7f;
 
-    private static int           FILE_EXTENSION_LENGTH = 2;
-    private static int           FILE_NUMBER_LENGTH    = 4;
+    private static int           FILE_EXTENSION_LENGTH     = 2;
+    private static int           FILE_NUMBER_LENGTH        = 4;
 
-    private static String[]      ACCEPTABLE_POSTFIXES  = { ".nc" };
+    private static String[]      ACCEPTABLE_POSTFIXES      = { ".nc" };
 
-    private static String        CURRENT_POSTFIX       = "nc";
+    private static String        CURRENT_POSTFIX           = "nc";
 
-    private static int           PREPROCESSING_AMOUNT  = 2;
+    private static int           PREPROCESSING_AMOUNT      = 2;
 
-    private static float         MIN_SSH               = -200f;
-    private static float         MAX_SSH               = 200f;
-    private static float         MIN_DIFF_SSH          = -125f;
-    private static float         MAX_DIFF_SSH          = 125f;
+    private static float         MIN_SSH                   = -200f;
+    private static float         MAX_SSH                   = 200f;
+    private static float         MIN_DIFF_SSH              = -125f;
+    private static float         MAX_DIFF_SSH              = 125f;
 
-    private static float         MIN_SHF               = -400f;
-    private static float         MAX_SHF               = 250f;
-    private static float         MIN_DIFF_SHF          = -400f;
-    private static float         MAX_DIFF_SHF          = 250f;
+    private static float         MIN_SHF                   = -400f;
+    private static float         MAX_SHF                   = 250f;
+    private static float         MIN_DIFF_SHF              = -400f;
+    private static float         MAX_DIFF_SHF              = 250f;
 
-    private static float         MIN_SFWF              = -3E-4f;
-    private static float         MAX_SFWF              = 3E-4f;
-    private static float         MIN_DIFF_SFWF         = -5E-5f;
-    private static float         MAX_DIFF_SFWF         = 3.5E-4f;
+    private static float         MIN_SFWF                  = -3E-4f;
+    private static float         MAX_SFWF                  = 3E-4f;
+    private static float         MIN_DIFF_SFWF             = -5E-5f;
+    private static float         MAX_DIFF_SFWF             = 3.5E-4f;
 
-    private static float         MIN_HMXL              = 750f;
-    private static float         MAX_HMXL              = 100000f;
-    private static float         MIN_DIFF_HMXL         = 750f;
-    private static float         MAX_DIFF_HMXL         = 100000f;
+    private static float         MIN_HMXL                  = 750f;
+    private static float         MAX_HMXL                  = 100000f;
+    private static float         MIN_DIFF_HMXL             = 750f;
+    private static float         MAX_DIFF_HMXL             = 100000f;
 
-    private static float         MIN_SALT              = 0.00f;
-    private static float         MAX_SALT              = 0.05f;
-    private static float         MIN_DIFF_SALT         = 0.00f;
-    private static float         MAX_DIFF_SALT         = 0.05f;
+    private static float         MIN_SALT                  = 0.00f;
+    private static float         MAX_SALT                  = 0.05f;
+    private static float         MIN_DIFF_SALT             = 0.00f;
+    private static float         MAX_DIFF_SALT             = 0.05f;
 
-    private static float         MIN_TEMP              = -7.5f;
-    private static float         MAX_TEMP              = 35f;
-    private static float         MIN_DIFF_TEMP         = -7.5f;
-    private static float         MAX_DIFF_TEMP         = 35f;
+    private static float         MIN_TEMP                  = -7.5f;
+    private static float         MAX_TEMP                  = 35f;
+    private static float         MIN_DIFF_TEMP             = -7.5f;
+    private static float         MAX_DIFF_TEMP             = 35f;
 
-    private static float         MIN_UVEL              = -200f;
-    private static float         MAX_UVEL              = 200f;
-    private static float         MIN_DIFF_UVEL         = -200f;
-    private static float         MAX_DIFF_UVEL         = 200f;
+    private static float         MIN_UVEL                  = -200f;
+    private static float         MAX_UVEL                  = 200f;
+    private static float         MIN_DIFF_UVEL             = -200f;
+    private static float         MAX_DIFF_UVEL             = 200f;
 
-    private static float         MIN_VVEL              = -200f;
-    private static float         MAX_VVEL              = 200f;
-    private static float         MIN_DIFF_VVEL         = -200f;
-    private static float         MAX_DIFF_VVEL         = 200f;
+    private static float         MIN_VVEL                  = -200f;
+    private static float         MAX_VVEL                  = 200f;
+    private static float         MIN_DIFF_VVEL             = -200f;
+    private static float         MAX_DIFF_VVEL             = 200f;
 
-    private static float         MIN_KE                = 0f;
-    private static float         MAX_KE                = 17000f;
-    private static float         MIN_DIFF_KE           = 0f;
-    private static float         MAX_DIFF_KE           = 17000f;
+    private static float         MIN_KE                    = 0f;
+    private static float         MAX_KE                    = 17000f;
+    private static float         MIN_DIFF_KE               = 0f;
+    private static float         MAX_DIFF_KE               = 17000f;
 
-    private static float         MIN_PD                = 1f;
-    private static float         MAX_PD                = 1.04f;
-    private static float         MIN_DIFF_PD           = 1f;
-    private static float         MAX_DIFF_PD           = 1.04f;
+    private static float         MIN_PD                    = 1f;
+    private static float         MAX_PD                    = 1.04f;
+    private static float         MIN_DIFF_PD               = 1f;
+    private static float         MAX_DIFF_PD               = 1.04f;
 
-    private static float         MIN_TAUX              = -1f;
-    private static float         MAX_TAUX              = 1f;
-    private static float         MIN_DIFF_TAUX         = -1f;
-    private static float         MAX_DIFF_TAUX         = 1f;
+    private static float         MIN_TAUX                  = -1f;
+    private static float         MAX_TAUX                  = 1f;
+    private static float         MIN_DIFF_TAUX             = -1f;
+    private static float         MAX_DIFF_TAUX             = 1f;
 
-    private static float         MIN_TAUY              = -1f;
-    private static float         MAX_TAUY              = 1f;
-    private static float         MIN_DIFF_TAUY         = -1f;
-    private static float         MAX_DIFF_TAUY         = 1f;
+    private static float         MIN_TAUY                  = -1f;
+    private static float         MAX_TAUY                  = 1f;
+    private static float         MIN_DIFF_TAUY             = -1f;
+    private static float         MAX_DIFF_TAUY             = 1f;
 
-    private static float         MIN_H2                = 0f;
-    private static float         MAX_H2                = 100000f;
-    private static float         MIN_DIFF_H2           = 0f;
-    private static float         MAX_DIFF_H2           = 100000f;
+    private static float         MIN_H2                    = 0f;
+    private static float         MAX_H2                    = 100000f;
+    private static float         MIN_DIFF_H2               = 0f;
+    private static float         MAX_DIFF_H2               = 100000f;
 
-    private static int           DEPTH_MIN             = 0;
-    private static int           DEPTH_DEF             = 0;
-    private static int           DEPTH_MAX             = 41;
+    private static int           DEPTH_MIN                 = 0;
+    private static int           DEPTH_DEF                 = 0;
+    private static int           DEPTH_MAX                 = 41;
 
-    private static int           WINDOW_SELECTION      = 0;
+    private static int           WINDOW_SELECTION          = 0;
 
-    private static boolean       DYNAMIC_DIMENSIONS    = false;
+    private static boolean       DYNAMIC_DIMENSIONS        = false;
 
-    private static boolean       IMAGE_STREAM_OUTPUT   = false;
-    private static boolean       IMAGE_STREAM_GL_ONLY  = false;
+    private static boolean       IMAGE_STREAM_OUTPUT       = false;
+    private static boolean       IMAGE_STREAM_GL_ONLY      = false;
 
-    private static float         HEIGHT_DISTORION      = 0f;
-    private static float         HEIGHT_DISTORION_MIN  = 0f;
-    private static float         HEIGHT_DISTORION_MAX  = .01f;
+    private static float         HEIGHT_DISTORION          = 0f;
+    private static float         HEIGHT_DISTORION_MIN      = 0f;
+    private static float         HEIGHT_DISTORION_MAX      = .01f;
 
-    private static String        SAGE_DIRECTORY        = "/home/maarten/sage-code/sage3.0";
+    private static String        SAGE_DIRECTORY            = "/home/maarten/sage-code/sage3.0";
 
-    private static final boolean TOUCH_CONNECTED       = false;
+    private static final boolean TOUCH_CONNECTED           = false;
+
+    private static String[]      POSSIBLE_LAT_AXIS_NAMES   = { "t_lat", "TLAT",
+            "T_LAT", "tlat", "lat_t", "latt", "LATT", "u_lat", "ULAT", "U_LAT",
+            "ulat", "lat_u", "latu", "LATU", "nlat", "NLAT", "latn", "LATN",
+            "n_lat", "N_LAT", "lat_n", "LAT_N"            };
+    private static String[]      POSSIBLE_LON_AXIS_NAMES   = { "t_lon", "TLON",
+            "T_LON", "tlon", "lon_t", "lont", "LONT", "t_long", "TLONG",
+            "T_LONG", "tlong", "long_t", "longt", "LONGT", "u_lon", "ULON",
+            "U_LON", "ulon", "lon_u", "lonu", "LONU", "u_long", "ULONG",
+            "U_LONG", "ulong", "long_u", "longu", "LONGU", "nlon", "NLON",
+            "lonn", "LONN", "n_lon", "N_LON", "lon_n", "LON_N", "nlong",
+            "NLONG", "longn", "LONGN", "n_long", "N_LONG", "long_n", "LONG_N" };
+    private static String[]      POSSIBLE_DEPTH_AXIS_NAMES = { "t_depth",
+            "TDEPTH", "T_DEPTH", "tdepth", "depth_t", "deptht", "DEPTHT", "ZT",
+            "zt", "Z_T", "z_t", "TZ", "tz", "T_Z", "t_z", "u_depth", "UDEPTH",
+            "U_DEPTH", "udepth", "depth_u", "depthu", "DEPTHU", "ZU", "zu",
+            "Z_U", "z_u", "UZ", "uz", "U_Z", "u_z"        };
+
+    private static String        LAT_SUBSTRING             = "lat";
+    private static String        LON_SUBSTRING             = "lon";
 
     public static ImauSettings getInstance() {
         return SingletonHolder.instance;
@@ -891,5 +915,17 @@ public class ImauSettings extends Settings {
 
     public boolean isTouchConnected() {
         return TOUCH_CONNECTED;
+    }
+
+    public String[] getLatNamePermutations() {
+        return POSSIBLE_LAT_AXIS_NAMES;
+    }
+
+    public String[] getLonNamePermutations() {
+        return POSSIBLE_LON_AXIS_NAMES;
+    }
+
+    public String[] getDepthNamePermutations() {
+        return POSSIBLE_DEPTH_AXIS_NAMES;
     }
 }
