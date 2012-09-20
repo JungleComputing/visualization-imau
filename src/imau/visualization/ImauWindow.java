@@ -1,5 +1,7 @@
 package imau.visualization;
 
+import imau.visualization.adaptor.GeoSphereCut;
+import imau.visualization.adaptor.GeoSphereCutEdge;
 import imau.visualization.adaptor.GlobeState;
 import imau.visualization.adaptor.NetCDFFrame;
 import imau.visualization.adaptor.NetCDFTimedPlayer;
@@ -31,7 +33,6 @@ import openglCommon.math.MatrixFMath;
 import openglCommon.math.Point4;
 import openglCommon.math.VecF3;
 import openglCommon.math.VecF4;
-import openglCommon.models.GeoSphere;
 import openglCommon.models.Model;
 import openglCommon.models.MultiColorText;
 import openglCommon.models.Text;
@@ -52,7 +53,7 @@ public class ImauWindow extends CommonWindow {
             textProgram;
     // private Texture2D worldTex;
 
-    private Model              sphereModel, legendModel, atmModel;
+    private Model              sphereModel, legendModel, atmModel, cutModel;
 
     private HDRFBO             ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO,
             hudTextFBO, legendTextureFBO, sphereTextureFBO;
@@ -191,30 +192,46 @@ public class ImauWindow extends CommonWindow {
         loader.setUniformMatrix("NormalMatrix", MatrixFMath.getNormalMatrix(mv));
         loader.setUniformMatrix("PMatrix", p);
 
-        HDRTexture2D textureLT = null, legendLT = null, heightmapLT = null;
-        HDRTexture2D textureRT = null, legendRT = null, heightmapRT = null;
-        HDRTexture2D textureLB = null, legendLB = null, heightmapLB = null;
-        HDRTexture2D textureRB = null, legendRB = null, heightmapRB = null;
+        HDRTexture2D textureLT = null, legendLT = null, heightmapLT = null, depthTextureLT = null;
+        HDRTexture2D textureRT = null, legendRT = null, heightmapRT = null, depthTextureRT = null;
+        HDRTexture2D textureLB = null, legendLB = null, heightmapLB = null, depthTextureLB = null;
+        HDRTexture2D textureRB = null, legendRB = null, heightmapRB = null, depthTextureRB = null;
 
         GlobeState state;
 
         state = settings.getLTState();
         textureLT = getGlobeTexture(frame1, frame2, gl, GL3.GL_TEXTURE8, state);
+        // depthTextureLT = getDepthTexture(frame1, frame2, gl,
+        // GL3.GL_TEXTURE16,
+        // state);
+        depthTextureLT = textureLT;
         heightmapLT = textureLT;
         legendLT = getLegendTexture(frame1, frame2, gl, GL3.GL_TEXTURE12, state);
 
         state = settings.getRTState();
         textureRT = getGlobeTexture(frame1, frame2, gl, GL3.GL_TEXTURE9, state);
+        // depthTextureRT = getDepthTexture(frame1, frame2, gl,
+        // GL3.GL_TEXTURE17,
+        // state);
+        depthTextureRT = textureRT;
         heightmapRT = textureRT;
         legendRT = getLegendTexture(frame1, frame2, gl, GL3.GL_TEXTURE13, state);
 
         state = settings.getLBState();
         textureLB = getGlobeTexture(frame1, frame2, gl, GL3.GL_TEXTURE10, state);
+        // depthTextureLB = getDepthTexture(frame1, frame2, gl,
+        // GL3.GL_TEXTURE18,
+        // state);
+        depthTextureLB = textureLB;
         heightmapLB = textureLB;
         legendLB = getLegendTexture(frame1, frame2, gl, GL3.GL_TEXTURE14, state);
 
         state = settings.getRBState();
         textureRB = getGlobeTexture(frame1, frame2, gl, GL3.GL_TEXTURE11, state);
+        // depthTextureRB = getDepthTexture(frame1, frame2, gl,
+        // GL3.GL_TEXTURE19,
+        // state);
+        depthTextureRB = textureRB;
         heightmapRB = textureRB;
         legendRB = getLegendTexture(frame1, frame2, gl, GL3.GL_TEXTURE15, state);
 
@@ -228,6 +245,11 @@ public class ImauWindow extends CommonWindow {
             textureRT.init(gl);
             textureLB.init(gl);
             textureRB.init(gl);
+
+            depthTextureLT.init(gl);
+            depthTextureRT.init(gl);
+            depthTextureLB.init(gl);
+            depthTextureRB.init(gl);
 
             heightmapLT.init(gl);
             heightmapRT.init(gl);
@@ -246,26 +268,26 @@ public class ImauWindow extends CommonWindow {
                 // LEFT TOP
                 drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
                         sphereTextureFBO, width, height, gl, mv, legendLT,
-                        textureLT, heightmapLT, varNameTextLT, legendTextLTmin,
-                        legendTextLTmax, ltFBO);
+                        textureLT, depthTextureLT, heightmapLT, varNameTextLT,
+                        legendTextLTmin, legendTextLTmax, ltFBO);
 
                 // RIGHT TOP
                 drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
                         sphereTextureFBO, width, height, gl, mv, legendRT,
-                        textureRT, heightmapRT, varNameTextRT, legendTextRTmin,
-                        legendTextRTmax, rtFBO);
+                        textureRT, depthTextureRT, heightmapRT, varNameTextRT,
+                        legendTextRTmin, legendTextRTmax, rtFBO);
 
                 // LEFT BOTTOM
                 drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
                         sphereTextureFBO, width, height, gl, mv, legendLB,
-                        textureLB, heightmapLB, varNameTextLB, legendTextLBmin,
-                        legendTextLBmax, lbFBO);
+                        textureLB, depthTextureLB, heightmapLB, varNameTextLB,
+                        legendTextLBmin, legendTextLBmax, lbFBO);
 
                 // RIGHT BOTTOM
                 drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
                         sphereTextureFBO, width, height, gl, mv, legendRB,
-                        textureRB, heightmapRB, varNameTextRB, legendTextRBmin,
-                        legendTextRBmax, rbFBO);
+                        textureRB, depthTextureRB, heightmapRB, varNameTextRB,
+                        legendTextRBmin, legendTextRBmax, rbFBO);
 
             } else {
                 System.err.println("err legends?");
@@ -283,14 +305,15 @@ public class ImauWindow extends CommonWindow {
     private void drawSingleWindow(HDRFBO atmosphereFBO, HDRFBO hudTextFBO,
             HDRFBO hudLegendTextureFBO, HDRFBO sphereTextureFBO,
             final int width, final int height, final GL3 gl, MatF4 mv,
-            HDRTexture2D legend, HDRTexture2D globe, HDRTexture2D heightMap,
-            MultiColorText varNameText, MultiColorText legendTextMin,
-            MultiColorText legendTextMax, HDRFBO target) {
+            HDRTexture2D legend, HDRTexture2D globe, HDRTexture2D depth,
+            HDRTexture2D heightMap, MultiColorText varNameText,
+            MultiColorText legendTextMin, MultiColorText legendTextMax,
+            HDRFBO target) {
         drawHUDText(gl, width, height, varNameText, legendTextMin,
                 legendTextMax, textProgram, hudTextFBO);
         drawHUDLegend(gl, width, height, legend, legendProgram,
                 hudLegendTextureFBO);
-        drawSphere(gl, mv, globe, heightMap, texturedSphereProgram,
+        drawSphere(gl, mv, globe, depth, heightMap, texturedSphereProgram,
                 sphereTextureFBO);
 
         flattenLayers(gl, width, height, hudTextFBO, hudLegendTextureFBO,
@@ -315,6 +338,26 @@ public class ImauWindow extends CommonWindow {
             }
         }
         return globeTex;
+    }
+
+    private HDRTexture2D getDepthTexture(NetCDFFrame frame1,
+            NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state)
+            throws WrongFrameException {
+        HDRTexture2D depthTex = null;
+        if (state.getDataMode() == GlobeState.DataMode.DIFF) {
+            if (frame1 != null && frame2 != null) {
+                depthTex = frame1.getDepthImage(gl, frame2, glTexUnit, state);
+            }
+        } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
+            if (frame1 != null) {
+                depthTex = frame1.getDepthImage(gl, glTexUnit, state);
+            }
+        } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
+            if (frame2 != null) {
+                depthTex = frame2.getDepthImage(gl, glTexUnit, state);
+            }
+        }
+        return depthTex;
     }
 
     private HDRTexture2D getLegendTexture(NetCDFFrame frame1,
@@ -399,8 +442,9 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void drawSphere(GL3 gl, MatF4 mv, HDRTexture2D texture,
-            HDRTexture2D heightMap, Program program, HDRFBO target) {
+    private void drawSphere(GL3 gl, MatF4 mv, HDRTexture2D surfaceTexture,
+            HDRTexture2D depthTexture, HDRTexture2D heightMap, Program program,
+            HDRFBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -409,10 +453,14 @@ public class ImauWindow extends CommonWindow {
 
             program.setUniform("height_distortion_intensity",
                     settings.getHeightDistortion());
-            program.setUniform("texture_map", texture.getMultitexNumber());
-            program.setUniform("height_map", texture.getMultitexNumber());
+            program.setUniform("texture_map",
+                    surfaceTexture.getMultitexNumber());
+            program.setUniform("height_map", surfaceTexture.getMultitexNumber());
 
             sphereModel.draw(gl, program, mv);
+
+            program.setUniform("texture_map", depthTexture.getMultitexNumber());
+            cutModel.draw(gl, program, mv);
 
             if (post_process) {
                 target.unBind(gl);
@@ -642,10 +690,13 @@ public class ImauWindow extends CommonWindow {
         fsq = new Quad(Material.random(), 2, 2, new VecF3(0, 0, 0.1f));
         fsq.init(gl);
 
-        sphereModel = new GeoSphere(Material.random(), 120, 120, 50f, false);
+        sphereModel = new GeoSphereCut(Material.random(), 120, 120, 50f, false);
         // sphereModel = new Sphere(Material.random(), 5, 50f, new VecF3(),
         // false);
         sphereModel.init(gl);
+
+        cutModel = new GeoSphereCutEdge(Material.random(), 120, 50f);
+        cutModel.init(gl);
 
         legendModel = new Quad(Material.random(), 1.5f, .1f, new VecF3(1, 0,
                 0.1f));

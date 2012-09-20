@@ -479,6 +479,189 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgHeight);
     }
 
+    public static HDRTexture2D getDepthImage(GL3 gl, int glMultitexUnit,
+            TGridPoint[] tGridPoints, GlobeState state, int dsWidth,
+            int dsHeight, int imgHeight, int blankStartRows) {
+        Variable variable = state.getVariable();
+        String colorMapName = state.getColorMap();
+
+        int pixels = imgHeight * dsWidth;
+
+        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        outBuf.clear();
+        outBuf.rewind();
+
+        for (int i = 0; i < blankStartRows; i++) {
+            for (int w = 0; w < dsWidth; w++) {
+                outBuf.put(0f);
+                outBuf.put(0f);
+                outBuf.put(0f);
+                outBuf.put(0f);
+            }
+        }
+
+        Dimensions dims;
+
+        if (settings.isDynamicDimensions()) {
+            dims = getDynamicDimensions(tGridPoints, state);
+        } else {
+            dims = getDimensions(state);
+        }
+
+        for (int row = dsHeight - 1; row >= 0; row--) {
+            for (int col = 0; col < dsWidth; col++) {
+                int i = (row * dsWidth + col);
+
+                Color c = null;
+                if (variable == GlobeState.Variable.SSH) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].ssh);
+                } else if (variable == GlobeState.Variable.SHF) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].shf);
+                } else if (variable == GlobeState.Variable.SFWF) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].sfwf);
+                } else if (variable == GlobeState.Variable.HMXL) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].hmxl);
+                } else if (variable == GlobeState.Variable.SALT) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].salinity);
+                } else if (variable == GlobeState.Variable.TEMP) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].temp);
+                } else if (variable == GlobeState.Variable.UVEL) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].uvel);
+                } else if (variable == GlobeState.Variable.VVEL) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].vvel);
+                } else if (variable == GlobeState.Variable.KE) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].ke);
+                } else if (variable == GlobeState.Variable.PD) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].pd);
+                } else if (variable == GlobeState.Variable.TAUX) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].taux);
+                } else if (variable == GlobeState.Variable.TAUY) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].tauy);
+                } else if (variable == GlobeState.Variable.H2) {
+                    c = getColor(colorMapName, dims, tGridPoints[i].h2);
+                }
+
+                if (c != null) {
+                    outBuf.put(c.red);
+                    outBuf.put(c.green);
+                    outBuf.put(c.blue);
+                    outBuf.put(0f);
+                } else {
+                    outBuf.put(0f);
+                    outBuf.put(0f);
+                    outBuf.put(0f);
+                    outBuf.put(0f);
+                }
+            }
+        }
+
+        while (outBuf.hasRemaining()) {
+            outBuf.put(0f);
+        }
+
+        outBuf.flip();
+
+        return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgHeight);
+    }
+
+    public static HDRTexture2D getDepthImage(GL3 gl, int glMultitexUnit,
+            TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
+            GlobeState state, int dsWidth, int dsHeight, int imgWidth,
+            int blankStartRows) {
+        Variable variable = state.getVariable();
+        String colorMapName = state.getColorMap();
+
+        int pixels = imgWidth * dsHeight;
+
+        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        outBuf.clear();
+        outBuf.rewind();
+
+        for (int i = 0; i < blankStartRows; i++) {
+            for (int w = 0; w < dsWidth; w++) {
+                outBuf.put(0f);
+                outBuf.put(0f);
+                outBuf.put(0f);
+                outBuf.put(0f);
+            }
+        }
+
+        Dimensions dims;
+        if (settings.isDynamicDimensions()) {
+            dims = getDynamicDimensions(tGridPoints1, tGridPoints2, state);
+        } else {
+            dims = getDimensions(state);
+        }
+
+        for (int row = dsHeight - 1; row >= 0; row--) {
+            for (int col = 0; col < dsWidth; col++) {
+                int i = (row * dsWidth + col);
+
+                Color c = null;
+                if (variable == GlobeState.Variable.SSH) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].ssh,
+                            tGridPoints2[i].ssh);
+                } else if (variable == GlobeState.Variable.SHF) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].shf,
+                            tGridPoints2[i].shf);
+                } else if (variable == GlobeState.Variable.SFWF) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].sfwf,
+                            tGridPoints2[i].sfwf);
+                } else if (variable == GlobeState.Variable.HMXL) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].hmxl,
+                            tGridPoints2[i].hmxl);
+                } else if (variable == GlobeState.Variable.SALT) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].salinity,
+                            tGridPoints2[i].salinity);
+                } else if (variable == GlobeState.Variable.TEMP) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].temp,
+                            tGridPoints2[i].temp);
+                } else if (variable == GlobeState.Variable.UVEL) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].uvel,
+                            tGridPoints2[i].uvel);
+                } else if (variable == GlobeState.Variable.VVEL) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].vvel,
+                            tGridPoints2[i].vvel);
+                } else if (variable == GlobeState.Variable.KE) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].ke,
+                            tGridPoints2[i].ke);
+                } else if (variable == GlobeState.Variable.PD) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].pd,
+                            tGridPoints2[i].pd);
+                } else if (variable == GlobeState.Variable.TAUX) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].taux,
+                            tGridPoints2[i].taux);
+                } else if (variable == GlobeState.Variable.TAUY) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].tauy,
+                            tGridPoints2[i].tauy);
+                } else if (variable == GlobeState.Variable.H2) {
+                    c = getColor(colorMapName, dims, tGridPoints1[i].h2,
+                            tGridPoints2[i].h2);
+                }
+
+                if (c != null) {
+                    outBuf.put(c.red);
+                    outBuf.put(c.green);
+                    outBuf.put(c.blue);
+                    outBuf.put(0f);
+                } else {
+                    outBuf.put(0f);
+                    outBuf.put(0f);
+                    outBuf.put(0f);
+                    outBuf.put(0f);
+                }
+            }
+        }
+
+        while (outBuf.hasRemaining()) {
+            outBuf.put(0f);
+        }
+
+        outBuf.flip();
+
+        return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgWidth);
+    }
+
     public synchronized static Color getColor(String colorMapName,
             Dimensions dim, float var) {
         if (!colorMapMaps.containsKey(colorMapName)) {
