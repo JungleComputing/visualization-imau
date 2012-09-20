@@ -22,11 +22,12 @@ import util.ImauInputHandler;
 
 public class ImauApp {
     private final static ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger log = LoggerFactory.getLogger(ImauApp.class);
+    private final static Logger       log      = LoggerFactory
+                                                       .getLogger(ImauApp.class);
 
-    private static JFrame frame;
-    private static ImauPanel imauPanel;
-    private static ImauWindow imauWindow;
+    private static JFrame             frame;
+    private static ImauPanel          imauPanel;
+    private static ImauWindow         imauWindow;
 
     public static void main(String[] arguments) {
         String cmdlnfileName = null;
@@ -38,17 +39,23 @@ public class ImauApp {
                 i++;
                 cmdlnfileName = arguments[i];
                 final File cmdlnfile = new File(cmdlnfileName);
-                path = cmdlnfile.getPath().substring(0, cmdlnfile.getPath().length() - cmdlnfile.getName().length());
+                path = cmdlnfile.getPath().substring(
+                        0,
+                        cmdlnfile.getPath().length()
+                                - cmdlnfile.getName().length());
             } else if (arguments[i].equals("-o2")) {
                 i++;
                 cmdlnfileName2 = arguments[i];
             } else if (arguments[i].equals("-resume")) {
                 i++;
-                ImauApp.settings.setInitial_simulation_frame(Integer.parseInt(arguments[i]));
+                ImauApp.settings.setInitial_simulation_frame(Integer
+                        .parseInt(arguments[i]));
                 i++;
-                ImauApp.settings.setInitial_rotation_x(Float.parseFloat(arguments[i]));
+                ImauApp.settings.setInitial_rotation_x(Float
+                        .parseFloat(arguments[i]));
                 i++;
-                ImauApp.settings.setInitial_rotation_y(Float.parseFloat(arguments[i]));
+                ImauApp.settings.setInitial_rotation_y(Float
+                        .parseFloat(arguments[i]));
             } else {
                 cmdlnfileName = null;
                 path = System.getProperty("user.dir");
@@ -56,11 +63,13 @@ public class ImauApp {
         }
 
         frame = new JFrame("Imau Visualization");
-        frame.setPreferredSize(new Dimension(ImauApp.settings.getDefaultScreenWidth(), ImauApp.settings
+        frame.setPreferredSize(new Dimension(ImauApp.settings
+                .getDefaultScreenWidth(), ImauApp.settings
                 .getDefaultScreenHeight()));
 
         imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
-        imauPanel = new ImauPanel(imauWindow, path, cmdlnfileName, cmdlnfileName2);
+        imauPanel = new ImauPanel(imauWindow, path, cmdlnfileName,
+                cmdlnfileName2);
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -93,7 +102,8 @@ public class ImauApp {
 
     public static BufferedImage getFrameImage() {
         Component component = frame.getContentPane();
-        BufferedImage image = new BufferedImage(component.getWidth(), component.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(component.getWidth(),
+                component.getHeight(), BufferedImage.TYPE_INT_RGB);
 
         // call the Component's paint method, using
         // the Graphics object of the image.
@@ -117,24 +127,36 @@ public class ImauApp {
         System.out.println("x " + x + " y " + y);
         System.out.println("p.x " + p.x + " p.y " + p.y);
 
-        if ((p.x > 0 && p.x < frame.getWidth()) && (p.y > 0 && p.y < frame.getHeight())) {
-            Component comp = SwingUtilities.getDeepestComponentAt(frame.getContentPane(), p.x, p.y);
+        if ((p.x > 0 && p.x < frame.getWidth())
+                && (p.y > 0 && p.y < frame.getHeight())) {
+            Component comp = SwingUtilities.getDeepestComponentAt(
+                    frame.getContentPane(), p.x, p.y);
 
             System.out.println(comp.toString());
 
-            Toolkit.getDefaultToolkit().getSystemEventQueue()
-                    .postEvent(new MouseEvent(comp, MouseEvent.MOUSE_PRESSED, 0, 0, p.x, p.y, 1, false));
-            Toolkit.getDefaultToolkit().getSystemEventQueue()
-                    .postEvent(new MouseEvent(comp, MouseEvent.MOUSE_RELEASED, 0, 0, p.x, p.y, 1, false));
-            Toolkit.getDefaultToolkit().getSystemEventQueue()
-                    .postEvent(new MouseEvent(comp, MouseEvent.MOUSE_CLICKED, 0, 0, p.x, p.y, 1, false));
+            Toolkit.getDefaultToolkit()
+                    .getSystemEventQueue()
+                    .postEvent(
+                            new MouseEvent(comp, MouseEvent.MOUSE_PRESSED, 0,
+                                    0, p.x, p.y, 1, false));
+            Toolkit.getDefaultToolkit()
+                    .getSystemEventQueue()
+                    .postEvent(
+                            new MouseEvent(comp, MouseEvent.MOUSE_RELEASED, 0,
+                                    0, p.x, p.y, 1, false));
+            Toolkit.getDefaultToolkit()
+                    .getSystemEventQueue()
+                    .postEvent(
+                            new MouseEvent(comp, MouseEvent.MOUSE_CLICKED, 0,
+                                    0, p.x, p.y, 1, false));
         }
     }
 
     public static void writeImageToDisk(String filename) {
         try {
-            ImageIO.write(imauWindow.getScreenshot(), "png", new File(settings.getScreenshotPath() + "screenshots/"
-                    + filename + ".png"));
+            ImageIO.write(imauWindow.getScreenshot(), "png",
+                    new File(settings.getScreenshotPath() + "screenshots/"
+                            + filename + ".png"));
 
             // System.out.println("screenshot!");
         } catch (IOException e) {

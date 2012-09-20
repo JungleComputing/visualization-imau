@@ -643,6 +643,8 @@ public class ImauWindow extends CommonWindow {
         fsq.init(gl);
 
         sphereModel = new GeoSphere(Material.random(), 120, 120, 50f, false);
+        // sphereModel = new Sphere(Material.random(), 5, 50f, new VecF3(),
+        // false);
         sphereModel.init(gl);
 
         legendModel = new Quad(Material.random(), 1.5f, .1f, new VecF3(1, 0,
