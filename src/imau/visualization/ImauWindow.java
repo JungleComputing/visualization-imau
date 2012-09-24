@@ -281,25 +281,25 @@ public class ImauWindow extends CommonWindow {
                 sphereTextureFBO, atmosphereFBO, target);
     }
 
-    private HDRTexture2D getGlobeTexture(NetCDFFrame frame1,
-            NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state)
-            throws WrongFrameException {
-        HDRTexture2D globeTex = null;
-        if (state.getDataMode() == GlobeState.DataMode.DIFF) {
-            if (frame1 != null && frame2 != null) {
-                globeTex = frame1.getImage(gl, frame2, glTexUnit, state);
-            }
-        } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-            if (frame1 != null) {
-                globeTex = frame1.getImage(gl, glTexUnit, state);
-            }
-        } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-            if (frame2 != null) {
-                globeTex = frame2.getImage(gl, glTexUnit, state);
-            }
-        }
-        return globeTex;
-    }
+    // private HDRTexture2D getGlobeTexture(NetCDFFrame frame1,
+    // NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state)
+    // throws WrongFrameException {
+    // HDRTexture2D globeTex = null;
+    // if (state.getDataMode() == GlobeState.DataMode.DIFF) {
+    // if (frame1 != null && frame2 != null) {
+    // globeTex = frame1.getImage(gl, frame2, glTexUnit, state);
+    // }
+    // } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
+    // if (frame1 != null) {
+    // globeTex = frame1.getImage(gl, glTexUnit, state);
+    // }
+    // } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
+    // if (frame2 != null) {
+    // globeTex = frame2.getImage(gl, glTexUnit, state);
+    // }
+    // }
+    // return globeTex;
+    // }
 
     // private HDRTexture2D getDepthTexture(NetCDFFrame frame1, NetCDFFrame
     // frame2, final GL3 gl, int glTexUnit,
@@ -321,25 +321,25 @@ public class ImauWindow extends CommonWindow {
     // return depthTex;
     // }
 
-    private HDRTexture2D getLegendTexture(NetCDFFrame frame1,
-            NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state)
-            throws WrongFrameException {
-        HDRTexture2D legendTex = null;
-        if (state.getDataMode() == GlobeState.DataMode.DIFF) {
-            if (frame1 != null && frame2 != null) {
-                legendTex = frame1.getLegendImage(gl, frame2, glTexUnit, state);
-            }
-        } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-            if (frame1 != null) {
-                legendTex = frame1.getLegendImage(gl, glTexUnit, state);
-            }
-        } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-            if (frame2 != null) {
-                legendTex = frame2.getLegendImage(gl, glTexUnit, state);
-            }
-        }
-        return legendTex;
-    }
+    // private HDRTexture2D getLegendTexture(NetCDFFrame frame1,
+    // NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state)
+    // throws WrongFrameException {
+    // HDRTexture2D legendTex = null;
+    // if (state.getDataMode() == GlobeState.DataMode.DIFF) {
+    // if (frame1 != null && frame2 != null) {
+    // legendTex = frame1.getLegendImage(gl, frame2, glTexUnit, state);
+    // }
+    // } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
+    // if (frame1 != null) {
+    // legendTex = frame1.getLegendImage(gl, glTexUnit, state);
+    // }
+    // } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
+    // if (frame2 != null) {
+    // legendTex = frame2.getLegendImage(gl, glTexUnit, state);
+    // }
+    // }
+    // return legendTex;
+    // }
 
     private void drawHUDText(GL3 gl, int width, int height,
             MultiColorText varNameText, MultiColorText legendTextMin,
