@@ -19,8 +19,7 @@ import ucar.nc2.Variable;
 
 public class NetCDFDatasetManager {
     private final ImauSettings            settings = ImauSettings.getInstance();
-    private final static Logger           logger   = LoggerFactory
-                                                           .getLogger(NetCDFDatasetManager.class);
+    private final static Logger           logger   = LoggerFactory.getLogger(NetCDFDatasetManager.class);
 
     private NetCDFFrame                   frame0;
     private HashMap<Integer, NetCDFFrame> frameWindow;
@@ -70,8 +69,7 @@ public class NetCDFDatasetManager {
     }
 
     public NetCDFDatasetManager(File file) {
-        logger.debug("Opening dataset with initial file: "
-                + file.getAbsolutePath());
+        logger.debug("Opening dataset with initial file: " + file.getAbsolutePath());
         this.ncfile = file;
 
         this.nThreads = 5;
@@ -87,10 +85,8 @@ public class NetCDFDatasetManager {
         NetcdfFile ncfile = NetCDFUtil.open(file);
 
         try {
-            Dimension[] yDims = NetCDFUtil.getUsedDimensionsBySubstring(ncfile,
-                    "lat");
-            Dimension[] xDims = NetCDFUtil.getUsedDimensionsBySubstring(ncfile,
-                    "lon");
+            Dimension[] yDims = NetCDFUtil.getUsedDimensionsBySubstring(ncfile, "lat");
+            Dimension[] xDims = NetCDFUtil.getUsedDimensionsBySubstring(ncfile, "lon");
 
             variables = NetCDFUtil.getQualifyingVariables(ncfile, yDims, xDims);
         } catch (NetCDFNoSuchVariableException e) {
@@ -112,8 +108,7 @@ public class NetCDFDatasetManager {
             currentFile = NetCDFUtil.getSeqNextFile(currentFile);
         }
 
-        this.frame0 = new NetCDFFrame(NetCDFUtil.getSeqLowestFile(ncfile), 0,
-                variables);
+        this.frame0 = new NetCDFFrame(NetCDFUtil.getSeqLowestFile(ncfile), 0, variables);
         this.frameWindow = new HashMap<Integer, NetCDFFrame>();
 
     }
@@ -121,8 +116,7 @@ public class NetCDFDatasetManager {
     private HashMap<Integer, NetCDFFrame> getWindow(int index) {
         HashMap<Integer, NetCDFFrame> newFrameWindow = new HashMap<Integer, NetCDFFrame>();
 
-        for (int i = index - settings.getPreprocessAmount(); i < settings
-                .getPreprocessAmount() + index; i++) {
+        for (int i = index - settings.getPreprocessAmount(); i < settings.getPreprocessAmount() + index; i++) {
             try {
                 NetCDFFrame frame = null;
                 if (i == 0) {
@@ -130,8 +124,8 @@ public class NetCDFDatasetManager {
                 } else if (frameWindow.containsKey(i)) {
                     frame = frameWindow.get(i);
                 } else if (i > 0 && i < availableFrameSequenceNumbers.size()) {
-                    frame = new NetCDFFrame(NetCDFUtil.getSeqFile(ncfile,
-                            availableFrameSequenceNumbers.get(i)), i, variables);
+                    frame = new NetCDFFrame(NetCDFUtil.getSeqFile(ncfile, availableFrameSequenceNumbers.get(i)), i,
+                            variables);
                 }
                 if (frame != null) {
                     newFrameWindow.put(i, frame);

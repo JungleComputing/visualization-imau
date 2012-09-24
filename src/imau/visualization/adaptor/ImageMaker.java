@@ -20,8 +20,7 @@ import org.slf4j.LoggerFactory;
 
 public class ImageMaker {
     private final static ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger       logger   = LoggerFactory
-                                                       .getLogger(ImageMaker.class);
+    private final static Logger       logger   = LoggerFactory.getLogger(ImageMaker.class);
 
     public static class Dimensions {
         public float min, max;
@@ -78,25 +77,21 @@ public class ImageMaker {
             for (String fileName : colorMapFileNames) {
                 HashMap<Integer, Color> colorMap = new HashMap<Integer, Color>();
 
-                BufferedReader in = new BufferedReader(new FileReader(
-                        "colormaps/" + fileName + ".ncmap"));
+                BufferedReader in = new BufferedReader(new FileReader("colormaps/" + fileName + ".ncmap"));
                 String str;
 
                 int key = 0;
                 while ((str = in.readLine()) != null) {
                     String[] numbers = str.split(" ");
-                    colorMap.put(key,
-                            new Color(Integer.parseInt(numbers[0]) / 255f,
-                                    Integer.parseInt(numbers[1]) / 255f,
-                                    Integer.parseInt(numbers[2]) / 255f));
+                    colorMap.put(key, new Color(Integer.parseInt(numbers[0]) / 255f,
+                            Integer.parseInt(numbers[1]) / 255f, Integer.parseInt(numbers[2]) / 255f));
                     key++;
                 }
 
                 in.close();
 
                 colorMapMaps.put(fileName, colorMap);
-                System.out.println("Colormap " + fileName
-                        + " registered for use.");
+                System.out.println("Colormap " + fileName + " registered for use.");
             }
 
         } catch (IOException e) {
@@ -104,17 +99,14 @@ public class ImageMaker {
         }
     }
 
-    public static HDRTexture2D efficientGetLegendImage(GL3 gl,
-            int glMultitexUnit, TGridPoint[] tGridPoints, GlobeState state,
-            int width, int height, boolean verticalOriented) {
+    public static HDRTexture2D efficientGetLegendImage(GL3 gl, int glMultitexUnit, TGridPoint[] tGridPoints,
+            GlobeState state, int width, int height, boolean verticalOriented) {
         // If the state was used already, retrieve the image for re-use
-        if (storedStates.containsKey(glMultitexUnit)
-                && storedStates.get(glMultitexUnit).equals(state)) {
+        if (storedStates.containsKey(glMultitexUnit) && storedStates.get(glMultitexUnit).equals(state)) {
             return storedLegends.get(glMultitexUnit);
         }
 
-        HDRTexture2D image = getLegendImage(gl, glMultitexUnit, tGridPoints,
-                state, 1, 500, true);
+        HDRTexture2D image = getLegendImage(gl, glMultitexUnit, tGridPoints, state, 1, 500, true);
 
         // Either the state has changed, or the glMultitexUnit was not used
         // before, so change the image.
@@ -126,21 +118,17 @@ public class ImageMaker {
 
     }
 
-    public static HDRTexture2D efficientGetLegendImage(GL3 gl,
-            int glMultitexUnit, TGridPoint[] tGridPoints1,
-            TGridPoint[] tGridPoints2, GlobeState state, int width, int height,
-            boolean verticalOriented) {
+    public static HDRTexture2D efficientGetLegendImage(GL3 gl, int glMultitexUnit, TGridPoint[] tGridPoints1,
+            TGridPoint[] tGridPoints2, GlobeState state, int width, int height, boolean verticalOriented) {
         // If the state was used already, retrieve the image for re-use
-        if (storedStates.containsKey(glMultitexUnit)
-                && storedStates.get(glMultitexUnit).equals(state)) {
+        if (storedStates.containsKey(glMultitexUnit) && storedStates.get(glMultitexUnit).equals(state)) {
             return storedLegends.get(glMultitexUnit);
         }
 
         // Either the state has changed, or the glMultitexUnit was not used
         // before, so change the image.
 
-        HDRTexture2D image = getLegendImage(gl, glMultitexUnit, tGridPoints1,
-                tGridPoints2, state, 1, 500, true);
+        HDRTexture2D image = getLegendImage(gl, glMultitexUnit, tGridPoints1, tGridPoints2, state, 1, 500, true);
 
         storedLegends.put(glMultitexUnit, image);
         storedStates.put(glMultitexUnit, state);
@@ -148,51 +136,44 @@ public class ImageMaker {
         return image;
     }
 
-    public static HDRTexture2D efficientGetImage(GL3 gl, int glMultitexUnit,
-            TGridPoint[] tGridPoints, GlobeState state, int dsWidth,
-            int dsHeight, int imgHeight, int blankStartRows) {
+    public static HDRTexture2D efficientGetImage(GL3 gl, int glMultitexUnit, TGridPoint[] tGridPoints,
+            GlobeState state, int dsWidth, int dsHeight, int imgHeight, int blankStartRows) {
         // If the state was used already, retrieve the image for re-use
-        if (storedStates.containsKey(glMultitexUnit)
-                && storedStates.get(glMultitexUnit).equals(state)) {
+        if (storedStates.containsKey(glMultitexUnit) && storedStates.get(glMultitexUnit).equals(state)) {
             return storedTextures.get(glMultitexUnit);
         }
 
         // Either the state has changed, or the glMultitexUnit was not used yet,
         // so change the image.
 
-        HDRTexture2D image = getImage(gl, glMultitexUnit, tGridPoints, state,
-                dsWidth, dsHeight, imgHeight, blankStartRows);
+        HDRTexture2D image = getImage(gl, glMultitexUnit, tGridPoints, state, dsWidth, dsHeight, imgHeight,
+                blankStartRows);
         storedTextures.put(glMultitexUnit, image);
         storedStates.put(glMultitexUnit, state);
 
         return image;
     }
 
-    public static HDRTexture2D efficientGetImage(GL3 gl, int glMultitexUnit,
-            TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
-            GlobeState state, int dsWidth, int dsHeight, int imgHeight,
-            int blankStartRows) {
+    public static HDRTexture2D efficientGetImage(GL3 gl, int glMultitexUnit, TGridPoint[] tGridPoints1,
+            TGridPoint[] tGridPoints2, GlobeState state, int dsWidth, int dsHeight, int imgHeight, int blankStartRows) {
         // If the state was used already, retrieve the image for re-use
-        if (storedStates.containsKey(glMultitexUnit)
-                && storedStates.get(glMultitexUnit).equals(state)) {
+        if (storedStates.containsKey(glMultitexUnit) && storedStates.get(glMultitexUnit).equals(state)) {
             return storedTextures.get(glMultitexUnit);
         }
 
         // Either the state has changed, or the glMultitexUnit was not used
         // before, so change the image.
 
-        HDRTexture2D image = ImageMaker.getImage(gl, glMultitexUnit,
-                tGridPoints1, tGridPoints2, state, dsWidth, dsHeight,
-                imgHeight, blankStartRows);
+        HDRTexture2D image = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints1, tGridPoints2, state, dsWidth,
+                dsHeight, imgHeight, blankStartRows);
         storedTextures.put(glMultitexUnit, image);
         storedStates.put(glMultitexUnit, state);
 
         return image;
     }
 
-    public static HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
-            TGridPoint[] tGridPoints, GlobeState state, int width, int height,
-            boolean verticalOriented) {
+    public static HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit, TGridPoint[] tGridPoints, GlobeState state,
+            int width, int height, boolean verticalOriented) {
         Variable variable = state.getVariable();
         String colorMapName = state.getColorMap();
 
@@ -243,9 +224,8 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, width, height);
     }
 
-    public static HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
-            TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
-            GlobeState state, int width, int height, boolean verticalOriented) {
+    public static HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit, TGridPoint[] tGridPoints1,
+            TGridPoint[] tGridPoints2, GlobeState state, int width, int height, boolean verticalOriented) {
 
         Variable variable = state.getVariable();
         String colorMapName = state.getColorMap();
@@ -296,9 +276,8 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, width, height);
     }
 
-    public static HDRTexture2D getImage(GL3 gl, int glMultitexUnit,
-            TGridPoint[] tGridPoints, GlobeState state, int dsWidth,
-            int dsHeight, int imgHeight, int blankStartRows) {
+    public static HDRTexture2D getImage(GL3 gl, int glMultitexUnit, TGridPoint[] tGridPoints, GlobeState state,
+            int dsWidth, int dsHeight, int imgHeight, int blankStartRows) {
         Variable variable = state.getVariable();
         String colorMapName = state.getColorMap();
 
@@ -381,10 +360,8 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgHeight);
     }
 
-    public static HDRTexture2D getImage(GL3 gl, int glMultitexUnit,
-            TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
-            GlobeState state, int dsWidth, int dsHeight, int imgHeight,
-            int blankStartRows) {
+    public static HDRTexture2D getImage(GL3 gl, int glMultitexUnit, TGridPoint[] tGridPoints1,
+            TGridPoint[] tGridPoints2, GlobeState state, int dsWidth, int dsHeight, int imgHeight, int blankStartRows) {
         Variable variable = state.getVariable();
         String colorMapName = state.getColorMap();
 
@@ -416,44 +393,31 @@ public class ImageMaker {
 
                 Color c = null;
                 if (variable == GlobeState.Variable.SSH) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].ssh,
-                            tGridPoints2[i].ssh);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].ssh, tGridPoints2[i].ssh);
                 } else if (variable == GlobeState.Variable.SHF) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].shf,
-                            tGridPoints2[i].shf);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].shf, tGridPoints2[i].shf);
                 } else if (variable == GlobeState.Variable.SFWF) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].sfwf,
-                            tGridPoints2[i].sfwf);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].sfwf, tGridPoints2[i].sfwf);
                 } else if (variable == GlobeState.Variable.HMXL) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].hmxl,
-                            tGridPoints2[i].hmxl);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].hmxl, tGridPoints2[i].hmxl);
                 } else if (variable == GlobeState.Variable.SALT) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].salinity,
-                            tGridPoints2[i].salinity);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].salinity, tGridPoints2[i].salinity);
                 } else if (variable == GlobeState.Variable.TEMP) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].temp,
-                            tGridPoints2[i].temp);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].temp, tGridPoints2[i].temp);
                 } else if (variable == GlobeState.Variable.UVEL) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].uvel,
-                            tGridPoints2[i].uvel);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].uvel, tGridPoints2[i].uvel);
                 } else if (variable == GlobeState.Variable.VVEL) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].vvel,
-                            tGridPoints2[i].vvel);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].vvel, tGridPoints2[i].vvel);
                 } else if (variable == GlobeState.Variable.KE) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].ke,
-                            tGridPoints2[i].ke);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].ke, tGridPoints2[i].ke);
                 } else if (variable == GlobeState.Variable.PD) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].pd,
-                            tGridPoints2[i].pd);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].pd, tGridPoints2[i].pd);
                 } else if (variable == GlobeState.Variable.TAUX) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].taux,
-                            tGridPoints2[i].taux);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].taux, tGridPoints2[i].taux);
                 } else if (variable == GlobeState.Variable.TAUY) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].tauy,
-                            tGridPoints2[i].tauy);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].tauy, tGridPoints2[i].tauy);
                 } else if (variable == GlobeState.Variable.H2) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].h2,
-                            tGridPoints2[i].h2);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].h2, tGridPoints2[i].h2);
                 }
 
                 if (c != null) {
@@ -479,9 +443,8 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgHeight);
     }
 
-    public static HDRTexture2D getDepthImage(GL3 gl, int glMultitexUnit,
-            TGridPoint[] tGridPoints, GlobeState state, int dsWidth,
-            int dsHeight, int imgHeight, int blankStartRows) {
+    public static HDRTexture2D getDepthImage(GL3 gl, int glMultitexUnit, TGridPoint[] tGridPoints, GlobeState state,
+            int dsWidth, int dsHeight, int imgHeight, int blankStartRows) {
         Variable variable = state.getVariable();
         String colorMapName = state.getColorMap();
 
@@ -564,10 +527,8 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgHeight);
     }
 
-    public static HDRTexture2D getDepthImage(GL3 gl, int glMultitexUnit,
-            TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
-            GlobeState state, int dsWidth, int dsHeight, int imgWidth,
-            int blankStartRows) {
+    public static HDRTexture2D getDepthImage(GL3 gl, int glMultitexUnit, TGridPoint[] tGridPoints1,
+            TGridPoint[] tGridPoints2, GlobeState state, int dsWidth, int dsHeight, int imgWidth, int blankStartRows) {
         Variable variable = state.getVariable();
         String colorMapName = state.getColorMap();
 
@@ -599,44 +560,31 @@ public class ImageMaker {
 
                 Color c = null;
                 if (variable == GlobeState.Variable.SSH) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].ssh,
-                            tGridPoints2[i].ssh);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].ssh, tGridPoints2[i].ssh);
                 } else if (variable == GlobeState.Variable.SHF) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].shf,
-                            tGridPoints2[i].shf);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].shf, tGridPoints2[i].shf);
                 } else if (variable == GlobeState.Variable.SFWF) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].sfwf,
-                            tGridPoints2[i].sfwf);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].sfwf, tGridPoints2[i].sfwf);
                 } else if (variable == GlobeState.Variable.HMXL) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].hmxl,
-                            tGridPoints2[i].hmxl);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].hmxl, tGridPoints2[i].hmxl);
                 } else if (variable == GlobeState.Variable.SALT) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].salinity,
-                            tGridPoints2[i].salinity);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].salinity, tGridPoints2[i].salinity);
                 } else if (variable == GlobeState.Variable.TEMP) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].temp,
-                            tGridPoints2[i].temp);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].temp, tGridPoints2[i].temp);
                 } else if (variable == GlobeState.Variable.UVEL) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].uvel,
-                            tGridPoints2[i].uvel);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].uvel, tGridPoints2[i].uvel);
                 } else if (variable == GlobeState.Variable.VVEL) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].vvel,
-                            tGridPoints2[i].vvel);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].vvel, tGridPoints2[i].vvel);
                 } else if (variable == GlobeState.Variable.KE) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].ke,
-                            tGridPoints2[i].ke);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].ke, tGridPoints2[i].ke);
                 } else if (variable == GlobeState.Variable.PD) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].pd,
-                            tGridPoints2[i].pd);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].pd, tGridPoints2[i].pd);
                 } else if (variable == GlobeState.Variable.TAUX) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].taux,
-                            tGridPoints2[i].taux);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].taux, tGridPoints2[i].taux);
                 } else if (variable == GlobeState.Variable.TAUY) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].tauy,
-                            tGridPoints2[i].tauy);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].tauy, tGridPoints2[i].tauy);
                 } else if (variable == GlobeState.Variable.H2) {
-                    c = getColor(colorMapName, dims, tGridPoints1[i].h2,
-                            tGridPoints2[i].h2);
+                    c = getColor(colorMapName, dims, tGridPoints1[i].h2, tGridPoints2[i].h2);
                 }
 
                 if (c != null) {
@@ -662,11 +610,9 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgWidth);
     }
 
-    public synchronized static Color getColor(String colorMapName,
-            Dimensions dim, float var) {
+    public synchronized static Color getColor(String colorMapName, Dimensions dim, float var) {
         if (!colorMapMaps.containsKey(colorMapName)) {
-            System.err.println("Unregistered color map requested: "
-                    + colorMapName);
+            System.err.println("Unregistered color map requested: " + colorMapName);
             colorMapMaps.get("default");
         }
 
@@ -721,11 +667,9 @@ public class ImageMaker {
         return color;
     }
 
-    public synchronized static Color getColor(String colorMapName,
-            Dimensions dim, float var1, float var2) {
+    public synchronized static Color getColor(String colorMapName, Dimensions dim, float var1, float var2) {
         if (!colorMapMaps.containsKey(colorMapName)) {
-            System.err.println("Unregistered color map requested: "
-                    + colorMapName);
+            System.err.println("Unregistered color map requested: " + colorMapName);
             colorMapMaps.get("default");
         }
 
@@ -779,8 +723,7 @@ public class ImageMaker {
         return color;
     }
 
-    private static float getInterpolatedColor(float high, float low,
-            float colorInterval) {
+    private static float getInterpolatedColor(float high, float low, float colorInterval) {
         float result = 0f;
 
         if (low > high) {
@@ -798,8 +741,7 @@ public class ImageMaker {
         return result;
     }
 
-    private static Dimensions getDynamicDimensions(TGridPoint[] tGridPoints,
-            GlobeState state) {
+    public static Dimensions getDynamicDimensions(TGridPoint[] tGridPoints, GlobeState state) {
         int pixels = tGridPoints.length;
         float max = Float.MIN_VALUE;
         float min = Float.MAX_VALUE;
@@ -946,8 +888,7 @@ public class ImageMaker {
         return dim;
     }
 
-    private static Dimensions getDynamicDimensions(TGridPoint[] tGridPoints1,
-            TGridPoint[] tGridPoints2, GlobeState state) {
+    public static Dimensions getDynamicDimensions(TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2, GlobeState state) {
         int pixels = tGridPoints1.length;
         float max = Float.MIN_VALUE;
         float min = Float.MAX_VALUE;
@@ -1164,8 +1105,7 @@ public class ImageMaker {
         float max = 0;
         float min = 0;
         if (state.getDataMode() == DataMode.DIFF) {
-            if (state.isDynamicDimensions()
-                    && doubleDimensionMap.containsKey(state)) {
+            if (state.isDynamicDimensions() && doubleDimensionMap.containsKey(state)) {
                 Dimensions dims = doubleDimensionMap.get(state);
                 max = dims.max;
                 min = dims.min;
