@@ -51,7 +51,7 @@ public class NetCDFFrame implements Runnable {
     private final HashMap<GlobeState, NetCDFDataGrid> dataGrids;
     private final ArrayList<GlobeState>               currentStates;
 
-    public NetCDFFrame(File ncFile, int indexNumber, Variable[] variables) {
+    public NetCDFFrame(File ncFile, int indexNumber) {
         this.file = ncFile;
         this.frameNumber = indexNumber;
 

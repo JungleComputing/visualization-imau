@@ -1,7 +1,6 @@
 package imau.visualization.adaptor;
 
 import imau.visualization.ImauSettings;
-import imau.visualization.netcdf.NetCDFNoSuchVariableException;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
@@ -12,10 +11,6 @@ import java.util.LinkedList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import ucar.nc2.Dimension;
-import ucar.nc2.NetcdfFile;
-import ucar.nc2.Variable;
 
 public class NetCDFDatasetManager {
     private final ImauSettings            settings = ImauSettings.getInstance();
@@ -31,8 +26,6 @@ public class NetCDFDatasetManager {
     private final LinkedList<Runnable>    queue;
 
     private final File                    ncfile;
-
-    private Variable[]                    variables;
 
     public void execute(Runnable r) {
         synchronized (queue) {
@@ -84,20 +77,6 @@ public class NetCDFDatasetManager {
             threads[i].start();
         }
 
-        NetcdfFile ncfile = NetCDFUtil.open(file);
-
-        try {
-            Dimension[] yDims = NetCDFUtil.getUsedDimensionsBySubstring(ncfile,
-                    "lat");
-            Dimension[] xDims = NetCDFUtil.getUsedDimensionsBySubstring(ncfile,
-                    "lon");
-
-            variables = NetCDFUtil.getQualifyingVariables(ncfile, yDims, xDims);
-        } catch (NetCDFNoSuchVariableException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
         resetModels();
     }
 
@@ -112,8 +91,7 @@ public class NetCDFDatasetManager {
             currentFile = NetCDFUtil.getSeqNextFile(currentFile);
         }
 
-        this.frame0 = new NetCDFFrame(NetCDFUtil.getSeqLowestFile(ncfile), 0,
-                variables);
+        this.frame0 = new NetCDFFrame(NetCDFUtil.getSeqLowestFile(ncfile), 0);
         this.frameWindow = new HashMap<Integer, NetCDFFrame>();
 
     }
@@ -131,7 +109,7 @@ public class NetCDFDatasetManager {
                     frame = frameWindow.get(i);
                 } else if (i > 0 && i < availableFrameSequenceNumbers.size()) {
                     frame = new NetCDFFrame(NetCDFUtil.getSeqFile(ncfile,
-                            availableFrameSequenceNumbers.get(i)), i, variables);
+                            availableFrameSequenceNumbers.get(i)), i);
                 }
                 if (frame != null) {
                     newFrameWindow.put(i, frame);
