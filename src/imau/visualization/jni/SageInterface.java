@@ -1,10 +1,12 @@
 package imau.visualization.jni;
 
+import java.nio.ByteBuffer;
+
 public class SageInterface {
     // public native int swapBuffers(int[] rgb);
     public native int setup(int width, int height, int fps);
 
-    public native int start(int[] rgb, int size);
+    public native int start(ByteBuffer rgb);
 
     boolean setupDone = false;
 
@@ -24,7 +26,7 @@ public class SageInterface {
         setup(width, height, fps);
     }
 
-    public void display(int[] rgb) {
-        start(rgb, rgb.length);
+    public void display(ByteBuffer rgb) {
+        start(rgb);
     }
 }
