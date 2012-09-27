@@ -1,9 +1,11 @@
 package imau.visualization;
 
+import imau.visualization.adaptor.FBO;
 import imau.visualization.adaptor.GlobeState;
 import imau.visualization.adaptor.IntPBO;
 import imau.visualization.adaptor.NetCDFTexture;
 import imau.visualization.adaptor.NetCDFTimedPlayer;
+import imau.visualization.adaptor.Texture2D;
 import imau.visualization.adaptor.WrongFrameException;
 import imau.visualization.jni.SageInterface;
 
@@ -22,7 +24,6 @@ import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 
 import openglCommon.CommonWindow;
-import openglCommon.datastructures.FBO;
 import openglCommon.datastructures.Material;
 import openglCommon.datastructures.Picture;
 import openglCommon.exceptions.CompilationFailedException;
@@ -40,7 +41,6 @@ import openglCommon.models.Text;
 import openglCommon.models.base.Quad;
 import openglCommon.models.base.Sphere;
 import openglCommon.shaders.Program;
-import openglCommon.textures.Texture2D;
 import util.ImauInputHandler;
 
 import com.jogamp.opengl.util.awt.Screenshot;
@@ -70,7 +70,7 @@ public class ImauWindow extends CommonWindow {
             legendTextRBmin, legendTextLTmax, legendTextRTmax, legendTextLBmax,
             legendTextRBmax;
 
-    private final int          fontSize     = 40;
+    private final int          fontSize     = 80;
 
     private GlobeState         ltState, rtState, lbState, rbState;
     private ByteBuffer         ltSurface, rtSurface, lbSurface, rbSurface;
@@ -171,8 +171,6 @@ public class ImauWindow extends CommonWindow {
         drawAtmosphere(gl, mv, atmProgram, atmosphereFBO);
         blur(gl, atmosphereFBO, fsq, 1, 2, 4);
 
-        setHUDVarNames(gl);
-
         GlobeState state;
         Texture2D surface, heightMap, legend;
 
@@ -181,6 +179,8 @@ public class ImauWindow extends CommonWindow {
             ltSurface = timer.getSurfaceImage(state);
             ltLegend = timer.getLegendImage(state);
             ltState = state;
+            setHUDVars(gl, timer, state, varNameTextLT, legendTextLTmin,
+                    legendTextLTmax);
         }
 
         surface = new NetCDFTexture(GL3.GL_TEXTURE8, ltSurface, 900, 643);
@@ -202,6 +202,8 @@ public class ImauWindow extends CommonWindow {
             rtSurface = timer.getSurfaceImage(state);
             rtLegend = timer.getLegendImage(state);
             rtState = state;
+            setHUDVars(gl, timer, state, varNameTextRT, legendTextRTmin,
+                    legendTextRTmax);
         }
 
         surface = new NetCDFTexture(GL3.GL_TEXTURE8, rtSurface, 900, 643);
@@ -223,6 +225,8 @@ public class ImauWindow extends CommonWindow {
             lbSurface = timer.getSurfaceImage(state);
             lbLegend = timer.getLegendImage(state);
             lbState = state;
+            setHUDVars(gl, timer, state, varNameTextLB, legendTextLBmin,
+                    legendTextLBmax);
         }
 
         surface = new NetCDFTexture(GL3.GL_TEXTURE8, lbSurface, 900, 643);
@@ -244,6 +248,8 @@ public class ImauWindow extends CommonWindow {
             rbSurface = timer.getSurfaceImage(state);
             rbLegend = timer.getLegendImage(state);
             rbState = state;
+            setHUDVars(gl, timer, state, varNameTextRB, legendTextRBmin,
+                    legendTextRBmax);
         }
 
         surface = new NetCDFTexture(GL3.GL_TEXTURE8, rbSurface, 900, 643);
@@ -709,8 +715,6 @@ public class ImauWindow extends CommonWindow {
         legendTextLBmax.init(gl);
         legendTextRBmax.init(gl);
 
-        setHUDVarNames(gl);
-
         // varNameTextLT.finalizeColorScheme(gl);
         // varNameTextRT.finalizeColorScheme(gl);
         // varNameTextLB.finalizeColorScheme(gl);
@@ -774,49 +778,18 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void setHUDVarNames(final GL3 gl) {
-        String variableName, units, min, max;
-        GlobeState state;
-
-        state = settings.getLTState();
-        variableName = GlobeState.verbalizeVariable(state.getVariableIndex());
-        units = GlobeState.verbalizeUnits(state.getVariableIndex());
+    private void setHUDVars(final GL3 gl, NetCDFTimedPlayer timer,
+            GlobeState state, MultiColorText txtVar, MultiColorText txtMin,
+            MultiColorText txtMax) throws WrongFrameException {
+        String variableName = GlobeState.verbalizeVariable(state
+                .getVariableIndex());
+        String units = GlobeState.verbalizeUnits(state.getVariableIndex());
         variableName += " in " + units;
-        min = settings.verbalizeMin(state);
-        max = settings.verbalizeMax(state);
-        varNameTextLT.setString(gl, variableName, Color4.white);
-        legendTextLTmin.setString(gl, min, Color4.white);
-        legendTextLTmax.setString(gl, max, Color4.white);
-
-        state = settings.getRTState();
-        variableName = GlobeState.verbalizeVariable(state.getVariableIndex());
-        units = GlobeState.verbalizeUnits(state.getVariableIndex());
-        variableName += " in " + units;
-        min = settings.verbalizeMin(state);
-        max = settings.verbalizeMax(state);
-        varNameTextRT.setString(gl, variableName, Color4.white);
-        legendTextRTmin.setString(gl, min, Color4.white);
-        legendTextRTmax.setString(gl, max, Color4.white);
-
-        state = settings.getLBState();
-        variableName = GlobeState.verbalizeVariable(state.getVariableIndex());
-        units = GlobeState.verbalizeUnits(state.getVariableIndex());
-        variableName += " in " + units;
-        min = settings.verbalizeMin(state);
-        max = settings.verbalizeMax(state);
-        varNameTextLB.setString(gl, variableName, Color4.white);
-        legendTextLBmin.setString(gl, min, Color4.white);
-        legendTextLBmax.setString(gl, max, Color4.white);
-
-        state = settings.getRBState();
-        variableName = GlobeState.verbalizeVariable(state.getVariableIndex());
-        units = GlobeState.verbalizeUnits(state.getVariableIndex());
-        variableName += " in " + units;
-        min = settings.verbalizeMin(state);
-        max = settings.verbalizeMax(state);
-        varNameTextRB.setString(gl, variableName, Color4.white);
-        legendTextRBmin.setString(gl, min, Color4.white);
-        legendTextRBmax.setString(gl, max, Color4.white);
+        String min = Float.toString(timer.getLegendDimensions(state).min);
+        String max = Float.toString(timer.getLegendDimensions(state).max);
+        txtVar.setString(gl, variableName, Color4.white);
+        txtMin.setString(gl, min, Color4.white);
+        txtMax.setString(gl, max, Color4.white);
     }
 
     @Override

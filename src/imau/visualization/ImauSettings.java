@@ -2,7 +2,6 @@ package imau.visualization;
 
 import imau.visualization.adaptor.GlobeState;
 import imau.visualization.adaptor.GlobeState.Variable;
-import imau.visualization.adaptor.ImageMaker;
 import openglCommon.util.Settings;
 import openglCommon.util.TypedProperties;
 
@@ -22,32 +21,32 @@ public class ImauSettings extends Settings {
     };
 
     private static GlobeState    globeStateLT              = new GlobeState(
-                                                                   GlobeState.DataMode.FIRST_DATASET,
-                                                                   false,
-                                                                   GlobeState.Variable.SALT,
-                                                                   75, 0,
-                                                                   "default");
-    private static GlobeState    globeStateRT              = new GlobeState(
-                                                                   GlobeState.DataMode.FIRST_DATASET,
+                                                                   GlobeState.DataMode.SECOND_DATASET,
                                                                    false,
                                                                    GlobeState.Variable.TEMP,
                                                                    75, 0,
                                                                    "default");
-    private static GlobeState    globeStateLB              = new GlobeState(
-                                                                   GlobeState.DataMode.FIRST_DATASET,
+    private static GlobeState    globeStateRT              = new GlobeState(
+                                                                   GlobeState.DataMode.SECOND_DATASET,
                                                                    false,
                                                                    GlobeState.Variable.SSH,
                                                                    75, 0,
                                                                    "default");
-    private static GlobeState    globeStateRB              = new GlobeState(
-                                                                   GlobeState.DataMode.FIRST_DATASET,
+    private static GlobeState    globeStateLB              = new GlobeState(
+                                                                   GlobeState.DataMode.SECOND_DATASET,
                                                                    false,
-                                                                   GlobeState.Variable.SFWF,
+                                                                   GlobeState.Variable.SALT,
                                                                    75, 0,
-                                                                   "default");
+                                                                   "inv_diff");
+    private static GlobeState    globeStateRB              = new GlobeState(
+                                                                   GlobeState.DataMode.SECOND_DATASET,
+                                                                   false,
+                                                                   GlobeState.Variable.HMXL,
+                                                                   75, 0,
+                                                                   "hotres");
 
     private static long          WAITTIME_FOR_RETRY        = 10000;
-    private static long          WAITTIME_FOR_MOVIE        = 500;
+    private static long          WAITTIME_FOR_MOVIE        = 1000;
     private static float         EPSILON                   = 1.0E-7f;
 
     private static int           FILE_EXTENSION_LENGTH     = 2;
@@ -60,69 +59,69 @@ public class ImauSettings extends Settings {
     private static int           PREPROCESSING_AMOUNT      = 2;
 
     private static float         MIN_SSH                   = -200f;
-    private static float         MAX_SSH                   = 200f;
-    private static float         MIN_DIFF_SSH              = -125f;
-    private static float         MAX_DIFF_SSH              = 125f;
+    private static float         MAX_SSH                   = 100f;
+    private static float         MIN_DIFF_SSH              = -100f;
+    private static float         MAX_DIFF_SSH              = 100f;
 
     private static float         MIN_SHF                   = -400f;
     private static float         MAX_SHF                   = 250f;
-    private static float         MIN_DIFF_SHF              = -400f;
-    private static float         MAX_DIFF_SHF              = 250f;
+    private static float         MIN_DIFF_SHF              = -150f;
+    private static float         MAX_DIFF_SHF              = 150f;
 
     private static float         MIN_SFWF                  = -3E-4f;
     private static float         MAX_SFWF                  = 3E-4f;
-    private static float         MIN_DIFF_SFWF             = -5E-5f;
-    private static float         MAX_DIFF_SFWF             = 3.5E-4f;
+    private static float         MIN_DIFF_SFWF             = -1E-4f;
+    private static float         MAX_DIFF_SFWF             = 1E-4f;
 
-    private static float         MIN_HMXL                  = 750f;
-    private static float         MAX_HMXL                  = 100000f;
-    private static float         MIN_DIFF_HMXL             = 750f;
-    private static float         MAX_DIFF_HMXL             = 100000f;
+    private static float         MIN_HMXL                  = 0f;
+    private static float         MAX_HMXL                  = 150000f;
+    private static float         MIN_DIFF_HMXL             = -50000f;
+    private static float         MAX_DIFF_HMXL             = 50000f;
 
-    private static float         MIN_SALT                  = 0.00f;
-    private static float         MAX_SALT                  = 0.05f;
-    private static float         MIN_DIFF_SALT             = 0.00f;
-    private static float         MAX_DIFF_SALT             = 0.05f;
+    private static float         MIN_SALT                  = 0.03f;
+    private static float         MAX_SALT                  = 0.04f;
+    private static float         MIN_DIFF_SALT             = -0.025f;
+    private static float         MAX_DIFF_SALT             = 0.025f;
 
-    private static float         MIN_TEMP                  = -7.5f;
-    private static float         MAX_TEMP                  = 35f;
-    private static float         MIN_DIFF_TEMP             = -7.5f;
-    private static float         MAX_DIFF_TEMP             = 35f;
+    private static float         MIN_TEMP                  = -2f;
+    private static float         MAX_TEMP                  = 30f;
+    private static float         MIN_DIFF_TEMP             = -15f;
+    private static float         MAX_DIFF_TEMP             = 15f;
 
     private static float         MIN_UVEL                  = -200f;
     private static float         MAX_UVEL                  = 200f;
-    private static float         MIN_DIFF_UVEL             = -200f;
-    private static float         MAX_DIFF_UVEL             = 200f;
+    private static float         MIN_DIFF_UVEL             = -100f;
+    private static float         MAX_DIFF_UVEL             = 100f;
 
     private static float         MIN_VVEL                  = -200f;
     private static float         MAX_VVEL                  = 200f;
-    private static float         MIN_DIFF_VVEL             = -200f;
-    private static float         MAX_DIFF_VVEL             = 200f;
+    private static float         MIN_DIFF_VVEL             = -100f;
+    private static float         MAX_DIFF_VVEL             = 100f;
 
     private static float         MIN_KE                    = 0f;
     private static float         MAX_KE                    = 17000f;
-    private static float         MIN_DIFF_KE               = 0f;
-    private static float         MAX_DIFF_KE               = 17000f;
+    private static float         MIN_DIFF_KE               = -5000f;
+    private static float         MAX_DIFF_KE               = 5000f;
 
     private static float         MIN_PD                    = 1f;
     private static float         MAX_PD                    = 1.04f;
-    private static float         MIN_DIFF_PD               = 1f;
-    private static float         MAX_DIFF_PD               = 1.04f;
+    private static float         MIN_DIFF_PD               = -0.01f;
+    private static float         MAX_DIFF_PD               = 0.01f;
 
     private static float         MIN_TAUX                  = -1f;
     private static float         MAX_TAUX                  = 1f;
-    private static float         MIN_DIFF_TAUX             = -1f;
-    private static float         MAX_DIFF_TAUX             = 1f;
+    private static float         MIN_DIFF_TAUX             = -.5f;
+    private static float         MAX_DIFF_TAUX             = .5f;
 
     private static float         MIN_TAUY                  = -1f;
     private static float         MAX_TAUY                  = 1f;
-    private static float         MIN_DIFF_TAUY             = -1f;
-    private static float         MAX_DIFF_TAUY             = 1f;
+    private static float         MIN_DIFF_TAUY             = -.5f;
+    private static float         MAX_DIFF_TAUY             = .5f;
 
     private static float         MIN_H2                    = 0f;
     private static float         MAX_H2                    = 100000f;
-    private static float         MIN_DIFF_H2               = 0f;
-    private static float         MAX_DIFF_H2               = 100000f;
+    private static float         MIN_DIFF_H2               = -50000f;
+    private static float         MAX_DIFF_H2               = 50000f;
 
     private static int           DEPTH_MIN                 = 0;
     private static int           DEPTH_DEF                 = 0;
@@ -544,32 +543,6 @@ public class ImauSettings extends Settings {
 
     public int getDepthMin() {
         return DEPTH_MIN;
-    }
-
-    public String verbalizeMax(GlobeState state) {
-        Variable var = state.getVariable();
-        String result = "";
-
-        if (state.isDynamicDimensions()) {
-            result = Float.toString(ImageMaker.getDimensions(state).max);
-        } else {
-            result = Float.toString(getVarMax(var));
-        }
-
-        return result;
-    }
-
-    public String verbalizeMin(GlobeState state) {
-        Variable var = state.getVariable();
-        String result = "";
-
-        if (state.isDynamicDimensions()) {
-            result = Float.toString(ImageMaker.getDimensions(state).min);
-        } else {
-            result = Float.toString(getVarMin(var));
-        }
-
-        return result;
     }
 
     public void setDepthMin(int value) {

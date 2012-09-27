@@ -419,6 +419,28 @@ public class NetCDFFrame implements Runnable {
         return errMessage;
     }
 
+    public Dimensions getLegendDimensions(GlobeState state) {
+        Dimensions dims;
+        if (settings.isDynamicDimensions()) {
+            dims = ImageMaker.getDynamicDimensions(tGridPoints, state);
+        } else {
+            dims = ImageMaker.getDimensions(state);
+        }
+        return dims;
+    }
+
+    public Dimensions getLegendDimensions(GlobeState state,
+            NetCDFFrame otherFrame) {
+        Dimensions dims;
+        if (settings.isDynamicDimensions()) {
+            dims = ImageMaker.getDynamicDimensions(tGridPoints,
+                    otherFrame.getGridPoints(), state);
+        } else {
+            dims = ImageMaker.getDimensions(state);
+        }
+        return dims;
+    }
+
     public ByteBuffer getLegendImage(GlobeState state) {
         Dimensions dims;
         if (settings.isDynamicDimensions()) {

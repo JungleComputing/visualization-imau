@@ -3,6 +3,7 @@ package imau.visualization.adaptor;
 import imau.visualization.ImauSettings;
 import imau.visualization.ImauWindow;
 import imau.visualization.adaptor.GlobeState.DataMode;
+import imau.visualization.adaptor.ImageMaker.Dimensions;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -237,11 +238,11 @@ public class NetCDFTimedPlayer implements Runnable {
 
                         // Wait for the _rest_ of the timeframe
                         stopTime = System.currentTimeMillis();
-                        if (((startTime - stopTime) < settings
-                                .getWaittimeMovie())
-                                && (currentState != states.MOVIEMAKING)) {
+                        long spentTime = stopTime - startTime;
+
+                        if (spentTime < settings.getWaittimeMovie()) {
                             Thread.sleep(settings.getWaittimeMovie()
-                                    - (startTime - stopTime));
+                                    - spentTime);
                         }
                     }
                 } catch (final InterruptedException e) {
@@ -326,6 +327,20 @@ public class NetCDFTimedPlayer implements Runnable {
             return true;
         }
         return false;
+    }
+
+    public synchronized Dimensions getLegendDimensions(GlobeState state)
+            throws WrongFrameException {
+        Dimensions dims = null;
+        if (state.getDataMode() == DataMode.FIRST_DATASET) {
+            dims = currentFrameDS1.getLegendDimensions(state);
+        } else if (state.getDataMode() == DataMode.SECOND_DATASET) {
+            dims = currentFrameDS2.getLegendDimensions(state);
+        } else if (state.getDataMode() == DataMode.DIFF) {
+            dims = currentFrameDS1.getLegendDimensions(state, currentFrameDS2);
+        }
+
+        return dims;
     }
 
     public synchronized ByteBuffer getLegendImage(GlobeState state)
