@@ -8,7 +8,7 @@ import imau.visualization.netcdf.NetCDFUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -419,7 +419,7 @@ public class NetCDFFrame implements Runnable {
         return errMessage;
     }
 
-    public FloatBuffer getLegendImage(GlobeState state) {
+    public ByteBuffer getLegendImage(GlobeState state) {
         Dimensions dims;
         if (settings.isDynamicDimensions()) {
             dims = ImageMaker.getDynamicDimensions(tGridPoints, state);
@@ -430,7 +430,7 @@ public class NetCDFFrame implements Runnable {
         return calcLegendImage(state, dims);
     }
 
-    public FloatBuffer getLegendImage(GlobeState state, NetCDFFrame otherFrame) {
+    public ByteBuffer getLegendImage(GlobeState state, NetCDFFrame otherFrame) {
         Dimensions dims;
         if (settings.isDynamicDimensions()) {
             dims = ImageMaker.getDynamicDimensions(tGridPoints,
@@ -442,7 +442,7 @@ public class NetCDFFrame implements Runnable {
         return calcLegendImage(state, dims);
     }
 
-    private FloatBuffer calcLegendImage(GlobeState state, Dimensions dims) {
+    private ByteBuffer calcLegendImage(GlobeState state, Dimensions dims) {
         if (state.getDepth() != selectedDepth) {
             selectedDepth = state.getDepth();
             initialized = false;
@@ -455,7 +455,7 @@ public class NetCDFFrame implements Runnable {
         String colorMapName = state.getColorMap();
         int height = 500;
         int width = 1;
-        FloatBuffer outBuf = FloatBuffer.allocate(500 * 1 * 4);
+        ByteBuffer outBuf = ByteBuffer.allocate(500 * 1 * 4);
 
         for (int row = height - 1; row >= 0; row--) {
             float index = row / (float) height;
@@ -464,10 +464,10 @@ public class NetCDFFrame implements Runnable {
             Color c = ImageMaker.getColor(colorMapName, dims, var);
 
             for (int col = 0; col < width; col++) {
-                outBuf.put(c.red);
-                outBuf.put(c.green);
-                outBuf.put(c.blue);
-                outBuf.put(1f);
+                outBuf.put((byte) (255 * c.red));
+                outBuf.put((byte) (255 * c.green));
+                outBuf.put((byte) (255 * c.blue));
+                outBuf.put((byte) 1);
             }
         }
 
@@ -476,7 +476,7 @@ public class NetCDFFrame implements Runnable {
         return outBuf;
     }
 
-    public FloatBuffer getSurfaceImage(GlobeState state) {
+    public ByteBuffer getSurfaceImage(GlobeState state) {
         if (state.getDepth() != selectedDepth) {
             selectedDepth = state.getDepth();
             initialized = false;
@@ -496,16 +496,16 @@ public class NetCDFFrame implements Runnable {
 
         int pixels = newHeight * globeTextureWidth;
 
-        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        ByteBuffer outBuf = ByteBuffer.allocate(pixels * 4);
         outBuf.clear();
         outBuf.rewind();
 
         for (int i = 0; i < blankRows; i++) {
             for (int w = 0; w < globeTextureWidth; w++) {
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
             }
         }
 
@@ -564,21 +564,21 @@ public class NetCDFFrame implements Runnable {
                 }
 
                 if (c != null) {
-                    outBuf.put(c.red);
-                    outBuf.put(c.green);
-                    outBuf.put(c.blue);
-                    outBuf.put(0f);
+                    outBuf.put((byte) (255 * c.red));
+                    outBuf.put((byte) (255 * c.green));
+                    outBuf.put((byte) (255 * c.blue));
+                    outBuf.put((byte) 0);
                 } else {
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
                 }
             }
         }
 
         while (outBuf.hasRemaining()) {
-            outBuf.put(0f);
+            outBuf.put((byte) 0);
         }
 
         outBuf.flip();
@@ -586,7 +586,7 @@ public class NetCDFFrame implements Runnable {
         return outBuf;
     }
 
-    public FloatBuffer getSurfaceImage(GlobeState state, NetCDFFrame otherFrame) {
+    public ByteBuffer getSurfaceImage(GlobeState state, NetCDFFrame otherFrame) {
         if (!currentStates.contains(state)) {
             getCurrentStates();
             processed = false;
@@ -611,16 +611,16 @@ public class NetCDFFrame implements Runnable {
 
         int pixels = newHeight * globeTextureWidth;
 
-        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        ByteBuffer outBuf = ByteBuffer.allocate(pixels * 4);
         outBuf.clear();
         outBuf.rewind();
 
         for (int i = 0; i < blankRows; i++) {
             for (int w = 0; w < globeTextureWidth; w++) {
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
             }
         }
 
@@ -683,21 +683,21 @@ public class NetCDFFrame implements Runnable {
                 }
 
                 if (c != null) {
-                    outBuf.put(c.red);
-                    outBuf.put(c.green);
-                    outBuf.put(c.blue);
-                    outBuf.put(0f);
+                    outBuf.put((byte) (255 * c.red));
+                    outBuf.put((byte) (255 * c.green));
+                    outBuf.put((byte) (255 * c.blue));
+                    outBuf.put((byte) 0);
                 } else {
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
                 }
             }
         }
 
         while (outBuf.hasRemaining()) {
-            outBuf.put(0f);
+            outBuf.put((byte) 0);
         }
 
         outBuf.flip();

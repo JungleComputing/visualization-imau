@@ -132,7 +132,7 @@ public class ImauSettings extends Settings {
 
     private static boolean       DYNAMIC_DIMENSIONS        = false;
 
-    private static boolean       IMAGE_STREAM_OUTPUT       = true;
+    private static boolean       IMAGE_STREAM_OUTPUT       = false;
     private static boolean       IMAGE_STREAM_GL_ONLY      = true;
 
     private static float         HEIGHT_DISTORION          = 0f;

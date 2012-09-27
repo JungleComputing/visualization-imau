@@ -1,12 +1,12 @@
 package imau.visualization.adaptor;
 
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 
-import openglCommon.textures.HDRTexture2D;
+import openglCommon.textures.Texture2D;
 
-public class NetCDFTexture extends HDRTexture2D {
-    public NetCDFTexture(int glMultitexUnit, FloatBuffer pixelBuffer,
-            int width, int height) {
+public class NetCDFTexture extends Texture2D {
+    public NetCDFTexture(int glMultitexUnit, ByteBuffer pixelBuffer, int width,
+            int height) {
         super(glMultitexUnit);
 
         this.pixelBuffer = pixelBuffer;

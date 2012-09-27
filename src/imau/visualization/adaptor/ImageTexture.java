@@ -12,7 +12,8 @@ import javax.imageio.ImageIO;
 import openglCommon.textures.Texture2D;
 
 public class ImageTexture extends Texture2D {
-    public ImageTexture(String filename, int w_offSet, int h_offSet, int glMultiTexUnit) {
+    public ImageTexture(String filename, int w_offSet, int h_offSet,
+            int glMultiTexUnit) {
         super(glMultiTexUnit);
 
         BufferedImage bi = null;
@@ -30,7 +31,8 @@ public class ImageTexture extends Texture2D {
         this.height = height;
 
         int[] pixels = new int[width * height];
-        PixelGrabber pg = new PixelGrabber(bi, x, y, width, height, pixels, 0, width);
+        PixelGrabber pg = new PixelGrabber(bi, x, y, width, height, pixels, 0,
+                width);
         try {
             pg.grabPixels();
         } catch (InterruptedException e) {
@@ -52,9 +54,9 @@ public class ImageTexture extends Texture2D {
                     j = col - width;
                 }
 
-                tempBuffer.put((byte) ((pixels[i * width + j] >> 16) & 0xff)); // red
-                tempBuffer.put((byte) ((pixels[i * width + j] >> 8) & 0xff)); // green
                 tempBuffer.put((byte) ((pixels[i * width + j]) & 0xff)); // blue
+                tempBuffer.put((byte) ((pixels[i * width + j] >> 8) & 0xff)); // green
+                tempBuffer.put((byte) ((pixels[i * width + j] >> 16) & 0xff)); // red
                 tempBuffer.put((byte) ((pixels[i * width + j] >> 24) & 0xff)); // alpha
             }
         }

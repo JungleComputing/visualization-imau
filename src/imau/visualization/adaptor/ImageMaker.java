@@ -8,12 +8,12 @@ import imau.visualization.netcdf.NetCDFUtil;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.FloatBuffer;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 import javax.media.opengl.GL3;
 
-import openglCommon.textures.HDRTexture2D;
+import openglCommon.textures.Texture2D;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +58,8 @@ public class ImageMaker {
     private static HashMap<GlobeState, Dimensions>          doubleDimensionMap;
 
     private static HashMap<Integer, GlobeState>             storedStates;
-    private static HashMap<Integer, HDRTexture2D>           storedTextures;
-    private static HashMap<Integer, HDRTexture2D>           storedLegends;
+    private static HashMap<Integer, Texture2D>              storedTextures;
+    private static HashMap<Integer, Texture2D>              storedLegends;
 
     static {
         rebuild();
@@ -70,8 +70,8 @@ public class ImageMaker {
         dimensionMap = new HashMap<GlobeState, ImageMaker.Dimensions>();
         doubleDimensionMap = new HashMap<GlobeState, ImageMaker.Dimensions>();
         storedStates = new HashMap<Integer, GlobeState>();
-        storedTextures = new HashMap<Integer, HDRTexture2D>();
-        storedLegends = new HashMap<Integer, HDRTexture2D>();
+        storedTextures = new HashMap<Integer, Texture2D>();
+        storedLegends = new HashMap<Integer, Texture2D>();
 
         try {
             String[] colorMapFileNames = NetCDFUtil.getColorMaps();
@@ -104,16 +104,16 @@ public class ImageMaker {
         }
     }
 
-    public static HDRTexture2D efficientGetLegendImage(GL3 gl,
-            int glMultitexUnit, TGridPoint[] tGridPoints, GlobeState state,
-            int width, int height, boolean verticalOriented) {
+    public static Texture2D efficientGetLegendImage(GL3 gl, int glMultitexUnit,
+            TGridPoint[] tGridPoints, GlobeState state, int width, int height,
+            boolean verticalOriented) {
         // If the state was used already, retrieve the image for re-use
         if (storedStates.containsKey(glMultitexUnit)
                 && storedStates.get(glMultitexUnit).equals(state)) {
             return storedLegends.get(glMultitexUnit);
         }
 
-        HDRTexture2D image = getLegendImage(gl, glMultitexUnit, tGridPoints,
+        Texture2D image = getLegendImage(gl, glMultitexUnit, tGridPoints,
                 state, 1, 500, true);
 
         // Either the state has changed, or the glMultitexUnit was not used
@@ -126,10 +126,9 @@ public class ImageMaker {
 
     }
 
-    public static HDRTexture2D efficientGetLegendImage(GL3 gl,
-            int glMultitexUnit, TGridPoint[] tGridPoints1,
-            TGridPoint[] tGridPoints2, GlobeState state, int width, int height,
-            boolean verticalOriented) {
+    public static Texture2D efficientGetLegendImage(GL3 gl, int glMultitexUnit,
+            TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
+            GlobeState state, int width, int height, boolean verticalOriented) {
         // If the state was used already, retrieve the image for re-use
         if (storedStates.containsKey(glMultitexUnit)
                 && storedStates.get(glMultitexUnit).equals(state)) {
@@ -139,7 +138,7 @@ public class ImageMaker {
         // Either the state has changed, or the glMultitexUnit was not used
         // before, so change the image.
 
-        HDRTexture2D image = getLegendImage(gl, glMultitexUnit, tGridPoints1,
+        Texture2D image = getLegendImage(gl, glMultitexUnit, tGridPoints1,
                 tGridPoints2, state, 1, 500, true);
 
         storedLegends.put(glMultitexUnit, image);
@@ -148,7 +147,7 @@ public class ImageMaker {
         return image;
     }
 
-    public static HDRTexture2D efficientGetImage(GL3 gl, int glMultitexUnit,
+    public static Texture2D efficientGetImage(GL3 gl, int glMultitexUnit,
             TGridPoint[] tGridPoints, GlobeState state, int dsWidth,
             int dsHeight, int imgHeight, int blankStartRows) {
         // If the state was used already, retrieve the image for re-use
@@ -160,7 +159,7 @@ public class ImageMaker {
         // Either the state has changed, or the glMultitexUnit was not used yet,
         // so change the image.
 
-        HDRTexture2D image = getImage(gl, glMultitexUnit, tGridPoints, state,
+        Texture2D image = getImage(gl, glMultitexUnit, tGridPoints, state,
                 dsWidth, dsHeight, imgHeight, blankStartRows);
         storedTextures.put(glMultitexUnit, image);
         storedStates.put(glMultitexUnit, state);
@@ -168,7 +167,7 @@ public class ImageMaker {
         return image;
     }
 
-    public static HDRTexture2D efficientGetImage(GL3 gl, int glMultitexUnit,
+    public static Texture2D efficientGetImage(GL3 gl, int glMultitexUnit,
             TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
             GlobeState state, int dsWidth, int dsHeight, int imgHeight,
             int blankStartRows) {
@@ -181,16 +180,16 @@ public class ImageMaker {
         // Either the state has changed, or the glMultitexUnit was not used
         // before, so change the image.
 
-        HDRTexture2D image = ImageMaker.getImage(gl, glMultitexUnit,
-                tGridPoints1, tGridPoints2, state, dsWidth, dsHeight,
-                imgHeight, blankStartRows);
+        Texture2D image = ImageMaker.getImage(gl, glMultitexUnit, tGridPoints1,
+                tGridPoints2, state, dsWidth, dsHeight, imgHeight,
+                blankStartRows);
         storedTextures.put(glMultitexUnit, image);
         storedStates.put(glMultitexUnit, state);
 
         return image;
     }
 
-    public static HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
+    public static Texture2D getLegendImage(GL3 gl, int glMultitexUnit,
             TGridPoint[] tGridPoints, GlobeState state, int width, int height,
             boolean verticalOriented) {
         Variable variable = state.getVariable();
@@ -198,7 +197,7 @@ public class ImageMaker {
 
         int pixels = height * width;
 
-        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        ByteBuffer outBuf = ByteBuffer.allocate(pixels * 4);
 
         Dimensions dims;
 
@@ -216,10 +215,10 @@ public class ImageMaker {
                 Color c = getColor(colorMapName, dims, var);
 
                 for (int col = 0; col < width; col++) {
-                    outBuf.put(c.red);
-                    outBuf.put(c.green);
-                    outBuf.put(c.blue);
-                    outBuf.put(0f);
+                    outBuf.put((byte) (255 * c.red));
+                    outBuf.put((byte) (255 * c.green));
+                    outBuf.put((byte) (255 * c.blue));
+                    outBuf.put((byte) 0);
                 }
             }
         } else {
@@ -230,10 +229,10 @@ public class ImageMaker {
                 Color c = getColor(colorMapName, dims, var);
 
                 for (int row = 0; row < height; row++) {
-                    outBuf.put(c.red);
-                    outBuf.put(c.green);
-                    outBuf.put(c.blue);
-                    outBuf.put(0f);
+                    outBuf.put((byte) (255 * c.red));
+                    outBuf.put((byte) (255 * c.green));
+                    outBuf.put((byte) (255 * c.blue));
+                    outBuf.put((byte) 0);
                 }
             }
         }
@@ -243,7 +242,7 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, width, height);
     }
 
-    public static HDRTexture2D getLegendImage(GL3 gl, int glMultitexUnit,
+    public static Texture2D getLegendImage(GL3 gl, int glMultitexUnit,
             TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
             GlobeState state, int width, int height, boolean verticalOriented) {
 
@@ -252,7 +251,7 @@ public class ImageMaker {
 
         int pixels = height * width;
 
-        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        ByteBuffer outBuf = ByteBuffer.allocate(pixels * 4);
 
         Dimensions dims;
         if (settings.isDynamicDimensions()) {
@@ -269,10 +268,10 @@ public class ImageMaker {
                 Color c = getColor(colorMapName, dims, var);
 
                 for (int col = 0; col < width; col++) {
-                    outBuf.put(c.red);
-                    outBuf.put(c.green);
-                    outBuf.put(c.blue);
-                    outBuf.put(0f);
+                    outBuf.put((byte) (255 * c.red));
+                    outBuf.put((byte) (255 * c.green));
+                    outBuf.put((byte) (255 * c.blue));
+                    outBuf.put((byte) 0);
                 }
             }
         } else {
@@ -283,10 +282,10 @@ public class ImageMaker {
                 Color c = getColor(colorMapName, dims, var);
 
                 for (int row = 0; row < height; row++) {
-                    outBuf.put(c.red);
-                    outBuf.put(c.green);
-                    outBuf.put(c.blue);
-                    outBuf.put(0f);
+                    outBuf.put((byte) (255 * c.red));
+                    outBuf.put((byte) (255 * c.green));
+                    outBuf.put((byte) (255 * c.blue));
+                    outBuf.put((byte) 0);
                 }
             }
         }
@@ -296,7 +295,7 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, width, height);
     }
 
-    public static HDRTexture2D getImage(GL3 gl, int glMultitexUnit,
+    public static Texture2D getImage(GL3 gl, int glMultitexUnit,
             TGridPoint[] tGridPoints, GlobeState state, int dsWidth,
             int dsHeight, int imgHeight, int blankStartRows) {
         Variable variable = state.getVariable();
@@ -304,16 +303,16 @@ public class ImageMaker {
 
         int pixels = imgHeight * dsWidth;
 
-        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        ByteBuffer outBuf = ByteBuffer.allocate(pixels * 4);
         outBuf.clear();
         outBuf.rewind();
 
         for (int i = 0; i < blankStartRows; i++) {
             for (int w = 0; w < dsWidth; w++) {
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
             }
         }
 
@@ -359,21 +358,21 @@ public class ImageMaker {
                 }
 
                 if (c != null) {
-                    outBuf.put(c.red);
-                    outBuf.put(c.green);
-                    outBuf.put(c.blue);
-                    outBuf.put(0f);
+                    outBuf.put((byte) (255 * c.red));
+                    outBuf.put((byte) (255 * c.green));
+                    outBuf.put((byte) (255 * c.blue));
+                    outBuf.put((byte) 0);
                 } else {
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
                 }
             }
         }
 
         while (outBuf.hasRemaining()) {
-            outBuf.put(0f);
+            outBuf.put((byte) 0);
         }
 
         outBuf.flip();
@@ -381,7 +380,7 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgHeight);
     }
 
-    public static HDRTexture2D getImage(GL3 gl, int glMultitexUnit,
+    public static Texture2D getImage(GL3 gl, int glMultitexUnit,
             TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
             GlobeState state, int dsWidth, int dsHeight, int imgHeight,
             int blankStartRows) {
@@ -390,16 +389,16 @@ public class ImageMaker {
 
         int pixels = imgHeight * dsWidth;
 
-        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        ByteBuffer outBuf = ByteBuffer.allocate(pixels * 4);
         outBuf.clear();
         outBuf.rewind();
 
         for (int i = 0; i < blankStartRows; i++) {
             for (int w = 0; w < dsWidth; w++) {
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
             }
         }
 
@@ -457,21 +456,21 @@ public class ImageMaker {
                 }
 
                 if (c != null) {
-                    outBuf.put(c.red);
-                    outBuf.put(c.green);
-                    outBuf.put(c.blue);
-                    outBuf.put(0f);
+                    outBuf.put((byte) (255 * c.red));
+                    outBuf.put((byte) (255 * c.green));
+                    outBuf.put((byte) (255 * c.blue));
+                    outBuf.put((byte) 0);
                 } else {
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
                 }
             }
         }
 
         while (outBuf.hasRemaining()) {
-            outBuf.put(0f);
+            outBuf.put((byte) 0);
         }
 
         outBuf.flip();
@@ -479,7 +478,7 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgHeight);
     }
 
-    public static HDRTexture2D getDepthImage(GL3 gl, int glMultitexUnit,
+    public static Texture2D getDepthImage(GL3 gl, int glMultitexUnit,
             TGridPoint[] tGridPoints, GlobeState state, int dsWidth,
             int dsHeight, int imgHeight, int blankStartRows) {
         Variable variable = state.getVariable();
@@ -487,16 +486,16 @@ public class ImageMaker {
 
         int pixels = imgHeight * dsWidth;
 
-        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        ByteBuffer outBuf = ByteBuffer.allocate(pixels * 4);
         outBuf.clear();
         outBuf.rewind();
 
         for (int i = 0; i < blankStartRows; i++) {
             for (int w = 0; w < dsWidth; w++) {
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
             }
         }
 
@@ -542,21 +541,21 @@ public class ImageMaker {
                 }
 
                 if (c != null) {
-                    outBuf.put(c.red);
-                    outBuf.put(c.green);
-                    outBuf.put(c.blue);
-                    outBuf.put(0f);
+                    outBuf.put((byte) (255 * c.red));
+                    outBuf.put((byte) (255 * c.green));
+                    outBuf.put((byte) (255 * c.blue));
+                    outBuf.put((byte) 0);
                 } else {
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
                 }
             }
         }
 
         while (outBuf.hasRemaining()) {
-            outBuf.put(0f);
+            outBuf.put((byte) 0);
         }
 
         outBuf.flip();
@@ -564,7 +563,7 @@ public class ImageMaker {
         return new NetCDFTexture(glMultitexUnit, outBuf, dsWidth, imgHeight);
     }
 
-    public static HDRTexture2D getDepthImage(GL3 gl, int glMultitexUnit,
+    public static Texture2D getDepthImage(GL3 gl, int glMultitexUnit,
             TGridPoint[] tGridPoints1, TGridPoint[] tGridPoints2,
             GlobeState state, int dsWidth, int dsHeight, int imgWidth,
             int blankStartRows) {
@@ -573,16 +572,16 @@ public class ImageMaker {
 
         int pixels = imgWidth * dsHeight;
 
-        FloatBuffer outBuf = FloatBuffer.allocate(pixels * 4);
+        ByteBuffer outBuf = ByteBuffer.allocate(pixels * 4);
         outBuf.clear();
         outBuf.rewind();
 
         for (int i = 0; i < blankStartRows; i++) {
             for (int w = 0; w < dsWidth; w++) {
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
-                outBuf.put(0f);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
+                outBuf.put((byte) 0);
             }
         }
 
@@ -640,21 +639,21 @@ public class ImageMaker {
                 }
 
                 if (c != null) {
-                    outBuf.put(c.red);
-                    outBuf.put(c.green);
-                    outBuf.put(c.blue);
-                    outBuf.put(0f);
+                    outBuf.put((byte) (255 * c.red));
+                    outBuf.put((byte) (255 * c.green));
+                    outBuf.put((byte) (255 * c.blue));
+                    outBuf.put((byte) 0);
                 } else {
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
-                    outBuf.put(0f);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
+                    outBuf.put((byte) 0);
                 }
             }
         }
 
         while (outBuf.hasRemaining()) {
-            outBuf.put(0f);
+            outBuf.put((byte) 0);
         }
 
         outBuf.flip();

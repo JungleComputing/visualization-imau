@@ -1,9 +1,7 @@
 package imau.visualization;
 
 import imau.visualization.adaptor.GlobeState;
-import imau.visualization.adaptor.IntFBO;
 import imau.visualization.adaptor.IntPBO;
-import imau.visualization.adaptor.NetCDFFrame;
 import imau.visualization.adaptor.NetCDFTexture;
 import imau.visualization.adaptor.NetCDFTimedPlayer;
 import imau.visualization.adaptor.WrongFrameException;
@@ -15,7 +13,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2GL3;
@@ -25,7 +22,7 @@ import javax.media.opengl.GLContext;
 import javax.media.opengl.GLException;
 
 import openglCommon.CommonWindow;
-import openglCommon.datastructures.HDRFBO;
+import openglCommon.datastructures.FBO;
 import openglCommon.datastructures.Material;
 import openglCommon.datastructures.Picture;
 import openglCommon.exceptions.CompilationFailedException;
@@ -43,7 +40,7 @@ import openglCommon.models.Text;
 import openglCommon.models.base.Quad;
 import openglCommon.models.base.Sphere;
 import openglCommon.shaders.Program;
-import openglCommon.textures.HDRTexture2D;
+import openglCommon.textures.Texture2D;
 import util.ImauInputHandler;
 
 import com.jogamp.opengl.util.awt.Screenshot;
@@ -57,16 +54,12 @@ public class ImauWindow extends CommonWindow {
             textProgram;
     // private Texture2D worldTex;
 
-    private Model              sphereModel, legendModel, atmModel, cutModel;
+    private Model              sphereModel, legendModel, atmModel;
 
-    private HDRFBO             ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO,
+    private FBO                ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO,
             hudTextFBO, legendTextureFBO, sphereTextureFBO;
 
     private IntPBO             finalPBO;
-
-    private HDRFBO[]           windows;
-
-    private NetCDFFrame        currentFrame1, currentFrame2;
 
     private BufferedImage      currentImage = null;
 
@@ -80,8 +73,8 @@ public class ImauWindow extends CommonWindow {
     private final int          fontSize     = 40;
 
     private GlobeState         ltState, rtState, lbState, rbState;
-    private FloatBuffer        ltSurface, rtSurface, lbSurface, rbSurface;
-    private FloatBuffer        ltLegend, rtLegend, lbLegend, rbLegend;
+    private ByteBuffer         ltSurface, rtSurface, lbSurface, rbSurface;
+    private ByteBuffer         ltLegend, rtLegend, lbLegend, rbLegend;
 
     public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
@@ -145,9 +138,9 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void displayContext(NetCDFTimedPlayer timer, HDRFBO ltFBO,
-            HDRFBO rtFBO, HDRFBO lbFBO, HDRFBO rbFBO, HDRFBO atmosphereFBO,
-            HDRFBO hudTextFBO, HDRFBO legendTextureFBO, HDRFBO sphereTextureFBO)
+    private void displayContext(NetCDFTimedPlayer timer, FBO ltFBO, FBO rtFBO,
+            FBO lbFBO, FBO rbFBO, FBO atmosphereFBO, FBO hudTextFBO,
+            FBO legendTextureFBO, FBO sphereTextureFBO)
             throws WrongFrameException {
         final int width = GLContext.getCurrent().getGLDrawable().getWidth();
         final int height = GLContext.getCurrent().getGLDrawable().getHeight();
@@ -181,7 +174,7 @@ public class ImauWindow extends CommonWindow {
         setHUDVarNames(gl);
 
         GlobeState state;
-        HDRTexture2D surface, heightMap, legend;
+        Texture2D surface, heightMap, legend;
 
         state = settings.getLTState();
         if (state != ltState || ltSurface == null || ltLegend == null) {
@@ -269,16 +262,16 @@ public class ImauWindow extends CommonWindow {
 
         if (post_process) {
             renderTexturesToScreen(gl, width, height, ltFBO, rtFBO, lbFBO,
-                    rbFBO, null);
+                    rbFBO);
         }
     }
 
-    private void drawSingleWindow(HDRFBO atmosphereFBO, HDRFBO hudTextFBO,
-            HDRFBO hudLegendTextureFBO, HDRFBO sphereTextureFBO,
-            final int width, final int height, final GL3 gl, MatF4 mv,
-            HDRTexture2D legend, HDRTexture2D globe, HDRTexture2D heightMap,
-            MultiColorText varNameText, MultiColorText legendTextMin,
-            MultiColorText legendTextMax, HDRFBO target) {
+    private void drawSingleWindow(FBO atmosphereFBO, FBO hudTextFBO,
+            FBO hudLegendTextureFBO, FBO sphereTextureFBO, final int width,
+            final int height, final GL3 gl, MatF4 mv, Texture2D legend,
+            Texture2D globe, Texture2D heightMap, MultiColorText varNameText,
+            MultiColorText legendTextMin, MultiColorText legendTextMax,
+            FBO target) {
         drawHUDText(gl, width, height, varNameText, legendTextMin,
                 legendTextMax, textProgram, hudTextFBO);
         drawHUDLegend(gl, width, height, legend, legendProgram,
@@ -352,7 +345,7 @@ public class ImauWindow extends CommonWindow {
 
     private void drawHUDText(GL3 gl, int width, int height,
             MultiColorText varNameText, MultiColorText legendTextMin,
-            MultiColorText legendTextMax, Program textProgram, HDRFBO target) {
+            MultiColorText legendTextMax, Program textProgram, FBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -390,7 +383,7 @@ public class ImauWindow extends CommonWindow {
     }
 
     private void drawHUDLegend(GL3 gl, int width, int height,
-            HDRTexture2D legendTexture, Program legendProgram, HDRFBO target) {
+            Texture2D legendTexture, Program legendProgram, FBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -412,8 +405,8 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void drawSphere(GL3 gl, MatF4 mv, HDRTexture2D surfaceTexture,
-            HDRTexture2D heightMap, Program program, HDRFBO target) {
+    private void drawSphere(GL3 gl, MatF4 mv, Texture2D surfaceTexture,
+            Texture2D heightMap, Program program, FBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -436,7 +429,7 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void drawAtmosphere(GL3 gl, MatF4 mv, Program program, HDRFBO target) {
+    private void drawAtmosphere(GL3 gl, MatF4 mv, Program program, FBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -455,9 +448,9 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void flattenLayers(GL3 gl, int width, int height,
-            HDRFBO hudTextFBO, HDRFBO hudLegendFBO, HDRFBO sphereTextureFBO,
-            HDRFBO atmosphereFBO, HDRFBO target) {
+    private void flattenLayers(GL3 gl, int width, int height, FBO hudTextFBO,
+            FBO hudLegendFBO, FBO sphereTextureFBO, FBO atmosphereFBO,
+            FBO target) {
         try {
             target.bind(gl);
             gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
@@ -489,20 +482,15 @@ public class ImauWindow extends CommonWindow {
     }
 
     private void renderTexturesToScreen(GL3 gl, int width, int height,
-            HDRFBO sphereHDRFBOLT, HDRFBO sphereHDRFBORT,
-            HDRFBO sphereHDRFBOLB, HDRFBO sphereHDRFBORB, IntFBO target) {
+            FBO sphereFBOLT, FBO sphereFBORT, FBO sphereFBOLB, FBO sphereFBORB) {
         try {
-            if (target != null) {
-                target.bind(gl);
-                gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
-            }
-            postprocessShader.setUniform("sphereTextureLT", sphereHDRFBOLT
+            postprocessShader.setUniform("sphereTextureLT", sphereFBOLT
                     .getTexture().getMultitexNumber());
-            postprocessShader.setUniform("sphereTextureRT", sphereHDRFBORT
+            postprocessShader.setUniform("sphereTextureRT", sphereFBORT
                     .getTexture().getMultitexNumber());
-            postprocessShader.setUniform("sphereTextureLB", sphereHDRFBOLB
+            postprocessShader.setUniform("sphereTextureLB", sphereFBOLB
                     .getTexture().getMultitexNumber());
-            postprocessShader.setUniform("sphereTextureRB", sphereHDRFBORB
+            postprocessShader.setUniform("sphereTextureRB", sphereFBORB
                     .getTexture().getMultitexNumber());
 
             postprocessShader.setUniform("sphereBrightness", 1f);
@@ -527,16 +515,12 @@ public class ImauWindow extends CommonWindow {
 
             gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
             fsq.draw(gl, postprocessShader, new MatF4());
-
-            if (target != null) {
-                target.unBind(gl);
-            }
         } catch (final UninitializedException e) {
             e.printStackTrace();
         }
     }
 
-    private void blur(GL3 gl, HDRFBO target, Quad fullScreenQuad, int passes,
+    private void blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes,
             int blurType, float blurSize) {
         gaussianBlurShader.setUniform("Texture", target.getTexture()
                 .getMultitexNumber());
@@ -592,21 +576,22 @@ public class ImauWindow extends CommonWindow {
         hudTextFBO.delete(gl);
         legendTextureFBO.delete(gl);
 
-        finalPBO.delete(gl);
+        ltFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE0);
+        rtFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE1);
+        lbFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE2);
+        rbFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE3);
 
-        ltFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE0);
-        rtFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE1);
-        lbFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE2);
-        rbFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE3);
+        atmosphereFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE4);
 
-        atmosphereFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE4);
+        hudTextFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE5);
+        legendTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE6);
+        sphereTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE7);
 
-        hudTextFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE5);
-        legendTextureFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE6);
-        sphereTextureFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE7);
-
-        finalPBO = new IntPBO(canvasWidth, canvasHeight);
-        finalPBO.init(gl);
+        if (settings.isIMAGE_STREAM_OUTPUT()) {
+            finalPBO.delete(gl);
+            finalPBO = new IntPBO(canvasWidth, canvasHeight);
+            finalPBO.init(gl);
+        }
 
         ltFBO.init(gl);
         rtFBO.init(gl);
@@ -646,18 +631,20 @@ public class ImauWindow extends CommonWindow {
         drawable.getContext().makeCurrent();
         final GL3 gl = drawable.getGL().getGL3();
 
-        ltFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE0);
-        rtFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE1);
-        lbFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE2);
-        rbFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE3);
+        ltFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE0);
+        rtFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE1);
+        lbFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE2);
+        rbFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE3);
 
-        atmosphereFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE4);
-        hudTextFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE5);
-        legendTextureFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE6);
-        sphereTextureFBO = new HDRFBO(canvasWidth, canvasHeight, GL.GL_TEXTURE7);
+        atmosphereFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE4);
+        hudTextFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE5);
+        legendTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE6);
+        sphereTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE7);
 
-        finalPBO = new IntPBO(canvasWidth, canvasHeight);
-        finalPBO.init(gl);
+        if (settings.isIMAGE_STREAM_OUTPUT()) {
+            finalPBO = new IntPBO(canvasWidth, canvasHeight);
+            finalPBO.init(gl);
+        }
 
         ltFBO.init(gl);
         rtFBO.init(gl);
@@ -939,15 +926,6 @@ public class ImauWindow extends CommonWindow {
         result.setRGB(0, 0, width, height, input, 0, width);
 
         return result;
-    }
-
-    private void adjustOutputWindows(int amount, int width, int height) {
-        windows = new HDRFBO[amount];
-        int i = 0;
-        for (HDRFBO fbo : windows) {
-            fbo = new HDRFBO(width, height, GL.GL_TEXTURE4 + i);
-            i++;
-        }
     }
 
     public BufferedImage getScreenshot() {
