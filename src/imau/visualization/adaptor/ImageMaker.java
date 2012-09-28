@@ -29,6 +29,25 @@ public class ImageMaker {
         public float getDiff() {
             return max - min;
         }
+
+        @Override
+        public int hashCode() {
+            return (int) (min + max);
+        }
+
+        @Override
+        public boolean equals(Object thatObject) {
+            if (this == thatObject)
+                return true;
+            if (!(thatObject instanceof GlobeState))
+                return false;
+
+            // cast to native object is now safe
+            Dimensions that = (Dimensions) thatObject;
+
+            // now a proper field-by-field evaluation can be made
+            return (min == that.min && max == that.max);
+        }
     }
 
     public static class Color {
@@ -51,6 +70,8 @@ public class ImageMaker {
 
     private static HashMap<String, HashMap<Integer, Color>> colorMapMaps;
     private static HashMap<GlobeState, Dimensions>          dimensionMap;
+    private static HashMap<String, Dimensions>              dimension2Map;
+
     private static HashMap<GlobeState, Dimensions>          doubleDimensionMap;
 
     private static HashMap<Integer, GlobeState>             storedStates;
@@ -63,6 +84,7 @@ public class ImageMaker {
 
     public static void rebuild() {
         colorMapMaps = new HashMap<String, HashMap<Integer, Color>>();
+        dimension2Map = new HashMap<String, ImageMaker.Dimensions>();
         dimensionMap = new HashMap<GlobeState, ImageMaker.Dimensions>();
         doubleDimensionMap = new HashMap<GlobeState, ImageMaker.Dimensions>();
         storedStates = new HashMap<Integer, GlobeState>();
@@ -627,4 +649,38 @@ public class ImageMaker {
 
         return new Dimensions(min, max);
     }
+
+    public static Dimensions getDimensions(String varName) {
+        float max = 0;
+        float min = 0;
+
+        max = settings.getVarMax(varName);
+        min = settings.getVarMin(varName);
+
+        return new Dimensions(min, max);
+    }
+
+    public static Dimensions getDynamicDimensions(String varName,
+            float[] gridPoints) {
+        float max = Float.MIN_VALUE;
+        float min = Float.MAX_VALUE;
+
+        if (dimension2Map.containsKey(varName)) {
+            return dimension2Map.get(varName);
+        }
+
+        for (int i = 0; i < gridPoints.length; i++) {
+            float val = gridPoints[i];
+            if (val > max) {
+                max = val;
+            }
+            if (val < min && val > -1E33) {
+                min = val;
+            }
+        }
+        Dimensions dims = new Dimensions(min, max);
+        dimension2Map.put(varName, dims);
+        return dims;
+    }
+
 }

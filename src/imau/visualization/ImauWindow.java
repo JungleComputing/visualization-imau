@@ -2,10 +2,13 @@ package imau.visualization;
 
 import imau.visualization.adaptor.FBO;
 import imau.visualization.adaptor.GlobeState;
+import imau.visualization.adaptor.ImageMaker;
 import imau.visualization.adaptor.IntPBO;
 import imau.visualization.adaptor.NetCDFTexture;
-import imau.visualization.adaptor.NetCDFTimedPlayer;
+import imau.visualization.adaptor.NetCDFTimedPlayer2;
+import imau.visualization.adaptor.SurfaceTextureDescription;
 import imau.visualization.adaptor.Texture2D;
+import imau.visualization.adaptor.TextureStorage;
 import imau.visualization.adaptor.WrongFrameException;
 import imau.visualization.jni.SageInterface;
 
@@ -76,6 +79,8 @@ public class ImauWindow extends CommonWindow {
     private ByteBuffer         ltSurface, rtSurface, lbSurface, rbSurface;
     private ByteBuffer         ltLegend, rtLegend, lbLegend, rbLegend;
 
+    private TextureStorage     texStorage;
+
     public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
 
@@ -101,7 +106,7 @@ public class ImauWindow extends CommonWindow {
         final GL3 gl = drawable.getContext().getGL().getGL3();
         gl.glViewport(0, 0, canvasWidth, canvasHeight);
 
-        NetCDFTimedPlayer timer = ImauPanel.getTimer();
+        NetCDFTimedPlayer2 timer = ImauPanel.getTimer();
         if (timer.isInitialized()) {
             try {
                 displayContext(timer, ltFBO, rtFBO, lbFBO, rbFBO,
@@ -138,7 +143,7 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void displayContext(NetCDFTimedPlayer timer, FBO ltFBO, FBO rtFBO,
+    private void displayContext(NetCDFTimedPlayer2 timer, FBO ltFBO, FBO rtFBO,
             FBO lbFBO, FBO rbFBO, FBO atmosphereFBO, FBO hudTextFBO,
             FBO legendTextureFBO, FBO sphereTextureFBO)
             throws WrongFrameException {
@@ -175,17 +180,23 @@ public class ImauWindow extends CommonWindow {
         Texture2D surface, heightMap, legend;
 
         state = settings.getLTState();
-        if (state != ltState || ltSurface == null || ltLegend == null) {
-            ltSurface = timer.getSurfaceImage(state);
-            ltLegend = timer.getLegendImage(state);
+        if (state != ltState) {
+            SurfaceTextureDescription desc = new SurfaceTextureDescription(
+                    state.getFrameNumber(), state.getDepth(), state
+                            .getVariable().toString(), state.getColorMap(),
+                    settings.isDynamicDimensions());
+            timer.getTextureStorage().requestNewConfiguration(0, desc);
+            setHUDVars(gl, timer.getTextureStorage().getDimensions(0), desc,
+                    varNameTextLT, legendTextLTmin, legendTextLTmax);
+
             ltState = state;
-            setHUDVars(gl, timer, state, varNameTextLT, legendTextLTmin,
-                    legendTextLTmax);
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, ltSurface, 900, 643);
+        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
+                .getSurfaceImage(0), 900, 643);
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, ltLegend, 1, 500);
+        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
+                .getLegendImage(0), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
@@ -198,17 +209,22 @@ public class ImauWindow extends CommonWindow {
         legend.delete(gl);
 
         state = settings.getRTState();
-        if (state != rtState || rtSurface == null || rtLegend == null) {
-            rtSurface = timer.getSurfaceImage(state);
-            rtLegend = timer.getLegendImage(state);
+        if (state != rtState) {
+            SurfaceTextureDescription desc = new SurfaceTextureDescription(
+                    state.getFrameNumber(), state.getDepth(), state
+                            .getVariable().toString(), state.getColorMap(),
+                    settings.isDynamicDimensions());
+            timer.getTextureStorage().requestNewConfiguration(1, desc);
             rtState = state;
-            setHUDVars(gl, timer, state, varNameTextRT, legendTextRTmin,
-                    legendTextRTmax);
+            // setHUDVars(gl, timer.getTextureStorage().getDimensions(1), desc,
+            // varNameTextRT, legendTextRTmin, legendTextRTmax);
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, rtSurface, 900, 643);
+        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
+                .getSurfaceImage(1), 900, 643);
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, rtLegend, 1, 500);
+        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
+                .getLegendImage(1), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
@@ -221,17 +237,22 @@ public class ImauWindow extends CommonWindow {
         legend.delete(gl);
 
         state = settings.getLBState();
-        if (state != lbState || lbSurface == null || lbLegend == null) {
-            lbSurface = timer.getSurfaceImage(state);
-            lbLegend = timer.getLegendImage(state);
+        if (state != lbState) {
+            SurfaceTextureDescription desc = new SurfaceTextureDescription(
+                    state.getFrameNumber(), state.getDepth(), state
+                            .getVariable().toString(), state.getColorMap(),
+                    settings.isDynamicDimensions());
+            timer.getTextureStorage().requestNewConfiguration(2, desc);
             lbState = state;
-            setHUDVars(gl, timer, state, varNameTextLB, legendTextLBmin,
-                    legendTextLBmax);
+            // setHUDVars(gl, timer.getTextureStorage().getDimensions(2), desc,
+            // varNameTextLB, legendTextLBmin, legendTextLBmax);
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, lbSurface, 900, 643);
+        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
+                .getSurfaceImage(2), 900, 643);
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, lbLegend, 1, 500);
+        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
+                .getLegendImage(2), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
@@ -244,17 +265,22 @@ public class ImauWindow extends CommonWindow {
         legend.delete(gl);
 
         state = settings.getRBState();
-        if (state != rbState || rbSurface == null || rbLegend == null) {
-            rbSurface = timer.getSurfaceImage(state);
-            rbLegend = timer.getLegendImage(state);
+        if (state != rbState) {
+            SurfaceTextureDescription desc = new SurfaceTextureDescription(
+                    state.getFrameNumber(), state.getDepth(), state
+                            .getVariable().toString(), state.getColorMap(),
+                    settings.isDynamicDimensions());
+            timer.getTextureStorage().requestNewConfiguration(3, desc);
             rbState = state;
-            setHUDVars(gl, timer, state, varNameTextRB, legendTextRBmin,
-                    legendTextRBmax);
+            // setHUDVars(gl, timer.getTextureStorage().getDimensions(3), desc,
+            // varNameTextRB, legendTextRBmin, legendTextRBmax);
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, rbSurface, 900, 643);
+        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
+                .getSurfaceImage(3), 900, 643);
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, rbLegend, 1, 500);
+        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
+                .getLegendImage(3), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
@@ -778,15 +804,15 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void setHUDVars(final GL3 gl, NetCDFTimedPlayer timer,
-            GlobeState state, MultiColorText txtVar, MultiColorText txtMin,
-            MultiColorText txtMax) throws WrongFrameException {
-        String variableName = GlobeState.verbalizeVariable(state
-                .getVariableIndex());
-        String units = GlobeState.verbalizeUnits(state.getVariableIndex());
-        variableName += " in " + units;
-        String min = Float.toString(timer.getLegendDimensions(state).min);
-        String max = Float.toString(timer.getLegendDimensions(state).max);
+    private void setHUDVars(final GL3 gl, ImageMaker.Dimensions dims,
+            SurfaceTextureDescription desc, MultiColorText txtVar,
+            MultiColorText txtMin, MultiColorText txtMax)
+            throws WrongFrameException {
+        String variableName = desc.getVarName();
+        // String units = GlobeState.verbalizeUnits(state.getVariableIndex());
+        // variableName += " in " + units;
+        String min = Float.toString(dims.min);
+        String max = Float.toString(dims.max);
         txtVar.setString(gl, variableName, Color4.white);
         txtMin.setString(gl, min, Color4.white);
         txtMax.setString(gl, max, Color4.white);

@@ -901,4 +901,68 @@ public class ImauSettings extends Settings {
     public String[] getDepthNamePermutations() {
         return POSSIBLE_DEPTH_AXIS_NAMES;
     }
+
+    public float getVarMax(String varName) {
+        float result = 0f;
+        if (varName.compareTo("SSH") == 0) {
+            result = MAX_SSH;
+        } else if (varName.compareTo("SHF") == 0) {
+            result = MAX_SHF;
+        } else if (varName.compareTo("SFWF") == 0) {
+            result = MAX_SFWF;
+        } else if (varName.compareTo("HMXL") == 0) {
+            result = MAX_HMXL;
+        } else if (varName.compareTo("SALT") == 0) {
+            result = MAX_SALT;
+        } else if (varName.compareTo("TEMP") == 0) {
+            result = MAX_TEMP;
+        } else if (varName.compareTo("UVEL") == 0) {
+            result = MAX_UVEL;
+        } else if (varName.compareTo("VVEL") == 0) {
+            result = MAX_VVEL;
+        } else if (varName.compareTo("KE") == 0) {
+            result = MAX_KE;
+        } else if (varName.compareTo("PD") == 0) {
+            result = MAX_PD;
+        } else if (varName.compareTo("TAUX") == 0) {
+            result = MAX_TAUX;
+        } else if (varName.compareTo("TAUY") == 0) {
+            result = MAX_TAUY;
+        } else if (varName.compareTo("H2") == 0) {
+            result = MAX_H2;
+        }
+        return result;
+    }
+
+    public float getVarMin(String varName) {
+        float result = 0f;
+        if (varName.compareTo("SSH") == 0) {
+            result = MIN_SSH;
+        } else if (varName.compareTo("SHF") == 0) {
+            result = MIN_SHF;
+        } else if (varName.compareTo("SFWF") == 0) {
+            result = MIN_SFWF;
+        } else if (varName.compareTo("HMXL") == 0) {
+            result = MIN_HMXL;
+        } else if (varName.compareTo("SALT") == 0) {
+            result = MIN_SALT;
+        } else if (varName.compareTo("TEMP") == 0) {
+            result = MIN_TEMP;
+        } else if (varName.compareTo("UVEL") == 0) {
+            result = MIN_UVEL;
+        } else if (varName.compareTo("VVEL") == 0) {
+            result = MIN_VVEL;
+        } else if (varName.compareTo("KE") == 0) {
+            result = MIN_KE;
+        } else if (varName.compareTo("PD") == 0) {
+            result = MIN_PD;
+        } else if (varName.compareTo("TAUX") == 0) {
+            result = MIN_TAUX;
+        } else if (varName.compareTo("TAUY") == 0) {
+            result = MIN_TAUY;
+        } else if (varName.compareTo("H2") == 0) {
+            result = MIN_H2;
+        }
+        return result;
+    }
 }

@@ -1,7 +1,7 @@
 package imau.visualization;
 
 import imau.visualization.adaptor.GlobeState;
-import imau.visualization.adaptor.NetCDFTimedPlayer;
+import imau.visualization.adaptor.NetCDFTimedPlayer2;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.awt.BorderLayout;
@@ -38,6 +38,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import openglCommon.CommonPanel;
+import openglCommon.util.CustomJSlider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,26 +51,29 @@ public class ImauPanel extends CommonPanel {
         NONE, DATA, VISUAL, MOVIE
     }
 
-    private final ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger logger = LoggerFactory.getLogger(ImauPanel.class);
+    private final ImauSettings        settings           = ImauSettings
+                                                                 .getInstance();
+    private final static Logger       logger             = LoggerFactory
+                                                                 .getLogger(ImauPanel.class);
 
-    private static final long serialVersionUID = 1L;
+    private static final long         serialVersionUID   = 1L;
 
-    protected JSlider timeBar;
+    protected CustomJSlider           timeBar;
 
-    protected JFormattedTextField frameCounter;
-    private TweakState currentConfigState = TweakState.NONE;
+    protected JFormattedTextField     frameCounter;
+    private TweakState                currentConfigState = TweakState.NONE;
 
-    private final JPanel configPanel;
+    private final JPanel              configPanel;
 
-    private final JPanel dataConfig, visualConfig, movieConfig;
+    private final JPanel              dataConfig, visualConfig, movieConfig;
 
-    private final ImauWindow imauWindow;
-    private static NetCDFTimedPlayer timer;
+    private final ImauWindow          imauWindow;
+    private static NetCDFTimedPlayer2 timer;
 
-    private File file1;
+    private File                      file1;
 
-    public ImauPanel(ImauWindow imauWindow, String path, String cmdlnfileName, String cmdlnfileName2) {
+    public ImauPanel(ImauWindow imauWindow, String path, String cmdlnfileName,
+            String cmdlnfileName2) {
         super(imauWindow, ImauInputHandler.getInstance());
         this.imauWindow = imauWindow;
 
@@ -82,7 +86,7 @@ public class ImauPanel extends CommonPanel {
         timeBar.setPaintTicks(true);
         timeBar.setSnapToTicks(true);
 
-        timer = new NetCDFTimedPlayer(imauWindow, timeBar, frameCounter);
+        timer = new NetCDFTimedPlayer2(timeBar, frameCounter);
 
         // Make the menu bar
         final JMenuBar menuBar = new JMenuBar();
@@ -97,15 +101,15 @@ public class ImauPanel extends CommonPanel {
             }
         });
         file.add(open);
-        final JMenuItem open2 = new JMenuItem("Open Second");
-        open2.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                final File file = openFile();
-                handleFile(file1, file);
-            }
-        });
-        file.add(open2);
+        // final JMenuItem open2 = new JMenuItem("Open Second");
+        // open2.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // final File file = openFile();
+        // handleFile(file1, file);
+        // }
+        // });
+        // file.add(open2);
         menuBar.add(file);
         final JMenu options = new JMenu("Options");
 
@@ -118,7 +122,8 @@ public class ImauPanel extends CommonPanel {
         });
         options.add(makeMovie);
 
-        final JMenuItem showDataTweakPanel = new JMenuItem("Show data configuration panel.");
+        final JMenuItem showDataTweakPanel = new JMenuItem(
+                "Show data configuration panel.");
         showDataTweakPanel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
@@ -127,7 +132,8 @@ public class ImauPanel extends CommonPanel {
         });
         options.add(showDataTweakPanel);
 
-        final JMenuItem showVisualTweakPanel = new JMenuItem("Show visual configuration panel.");
+        final JMenuItem showVisualTweakPanel = new JMenuItem(
+                "Show visual configuration panel.");
         showVisualTweakPanel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
@@ -167,11 +173,7 @@ public class ImauPanel extends CommonPanel {
         add(bottomPanel, BorderLayout.SOUTH);
 
         // Read command line file information
-        if (cmdlnfileName != null && cmdlnfileName2 != null) {
-            final File cmdlnfile = new File(cmdlnfileName);
-            final File cmdlnfile2 = new File(cmdlnfileName2);
-            handleFile(cmdlnfile, cmdlnfile2);
-        } else if (cmdlnfileName != null) {
+        if (cmdlnfileName != null) {
             final File cmdlnfile = new File(cmdlnfileName);
             handleFile(cmdlnfile);
         }
@@ -191,12 +193,14 @@ public class ImauPanel extends CommonPanel {
         bottomPanel.setFocusCycleRoot(true);
         bottomPanel.setFocusTraversalPolicy(new FocusTraversalPolicy() {
             @Override
-            public Component getComponentAfter(Container aContainer, Component aComponent) {
+            public Component getComponentAfter(Container aContainer,
+                    Component aComponent) {
                 return null;
             }
 
             @Override
-            public Component getComponentBefore(Container aContainer, Component aComponent) {
+            public Component getComponentBefore(Container aContainer,
+                    Component aComponent) {
                 return null;
             }
 
@@ -218,15 +222,20 @@ public class ImauPanel extends CommonPanel {
             }
         });
 
-        final JButton oneForwardButton = GoggleSwing.createImageButton("images/media-playback-oneforward.png", "Next",
-                null);
-        final JButton oneBackButton = GoggleSwing.createImageButton("images/media-playback-onebackward.png",
-                "Previous", null);
-        final JButton rewindButton = GoggleSwing.createImageButton("images/media-playback-rewind.png", "Rewind", null);
-        final JButton screenshotButton = GoggleSwing.createImageButton("images/camera.png", "Screenshot", null);
-        final JButton playButton = GoggleSwing.createImageButton("images/media-playback-start.png", "Start", null);
-        final ImageIcon playIcon = GoggleSwing.createImageIcon("images/media-playback-start.png", "Start");
-        final ImageIcon stopIcon = GoggleSwing.createImageIcon("images/media-playback-stop.png", "Start");
+        final JButton oneForwardButton = GoggleSwing.createImageButton(
+                "images/media-playback-oneforward.png", "Next", null);
+        final JButton oneBackButton = GoggleSwing.createImageButton(
+                "images/media-playback-onebackward.png", "Previous", null);
+        final JButton rewindButton = GoggleSwing.createImageButton(
+                "images/media-playback-rewind.png", "Rewind", null);
+        final JButton screenshotButton = GoggleSwing.createImageButton(
+                "images/camera.png", "Screenshot", null);
+        final JButton playButton = GoggleSwing.createImageButton(
+                "images/media-playback-start.png", "Start", null);
+        final ImageIcon playIcon = GoggleSwing.createImageIcon(
+                "images/media-playback-start.png", "Start");
+        final ImageIcon stopIcon = GoggleSwing.createImageIcon(
+                "images/media-playback-stop.png", "Start");
 
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 
@@ -234,9 +243,12 @@ public class ImauPanel extends CommonPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // timer.stop();
-                final ImauInputHandler inputHandler = ImauInputHandler.getInstance();
-                final String fileName = "" + timer.getFrameNumber() + " {" + inputHandler.getRotation().get(0) + ","
-                        + inputHandler.getRotation().get(1) + " - " + Float.toString(inputHandler.getViewDist()) + "} ";
+                final ImauInputHandler inputHandler = ImauInputHandler
+                        .getInstance();
+                final String fileName = "screenshot: " + "{"
+                        + inputHandler.getRotation().get(0) + ","
+                        + inputHandler.getRotation().get(1) + " - "
+                        + Float.toString(inputHandler.getViewDist()) + "} ";
                 imauWindow.makeSnapshot(fileName);
             }
         });
@@ -303,11 +315,13 @@ public class ImauPanel extends CommonPanel {
         frameCounter.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
-                final JFormattedTextField source = (JFormattedTextField) e.getSource();
+                final JFormattedTextField source = (JFormattedTextField) e
+                        .getSource();
                 if (source.hasFocus()) {
                     if (source == frameCounter) {
                         if (timer.isInitialized()) {
-                            timer.setFrame(((Number) frameCounter.getValue()).intValue(), false);
+                            timer.setFrame(((Number) frameCounter.getValue())
+                                    .intValue(), false);
                         }
                         playButton.setIcon(playIcon);
                     }
@@ -336,25 +350,33 @@ public class ImauPanel extends CommonPanel {
                 timer.redraw();
             }
         };
-        movieConfig.add(GoggleSwing.checkboxBox("", new GoggleSwing.CheckBoxItem("Rotation", settings.getMovieRotate(),
-                checkBoxListener)));
+        movieConfig.add(GoggleSwing.checkboxBox(
+                "",
+                new GoggleSwing.CheckBoxItem("Rotation", settings
+                        .getMovieRotate(), checkBoxListener)));
 
-        final JLabel rotationSetting = new JLabel("" + settings.getMovieRotationSpeedDef());
+        final JLabel rotationSetting = new JLabel(""
+                + settings.getMovieRotationSpeedDef());
         final ChangeListener movieRotationSpeedListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
                     settings.setMovieRotationSpeed(source.getValue() * .25f);
-                    rotationSetting.setText("" + settings.getMovieRotationSpeedDef());
+                    rotationSetting.setText(""
+                            + settings.getMovieRotationSpeedDef());
                 }
             }
         };
-        movieConfig.add(GoggleSwing.sliderBox("Rotation Speed", movieRotationSpeedListener,
-                (int) (settings.getMovieRotationSpeedMin() * 4f), (int) (settings.getMovieRotationSpeedMax() * 4f), 1,
-                (int) (settings.getMovieRotationSpeedDef() * 4f), rotationSetting));
+        movieConfig.add(GoggleSwing.sliderBox("Rotation Speed",
+                movieRotationSpeedListener,
+                (int) (settings.getMovieRotationSpeedMin() * 4f),
+                (int) (settings.getMovieRotationSpeedMax() * 4f), 1,
+                (int) (settings.getMovieRotationSpeedDef() * 4f),
+                rotationSetting));
 
-        movieConfig.add(GoggleSwing.buttonBox("", new String[] { "Start Recording" },
+        movieConfig.add(GoggleSwing.buttonBox("",
+                new String[] { "Start Recording" },
                 new ActionListener[] { new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -383,8 +405,9 @@ public class ImauPanel extends CommonPanel {
                 }
             }
         };
-        dataConfig.add(GoggleSwing.sliderBox("Depth setting", depthListener, settings.getDepthMin(),
-                settings.getDepthMax(), 1, settings.getDepthDef(), depthSetting));
+        dataConfig.add(GoggleSwing.sliderBox("Depth setting", depthListener,
+                settings.getDepthMin(), settings.getDepthMax(), 1,
+                settings.getDepthDef(), depthSetting));
 
         final ArrayList<Component> vcomponents = new ArrayList<Component>();
         JLabel windowlabel = new JLabel("Window Selection");
@@ -394,8 +417,8 @@ public class ImauPanel extends CommonPanel {
         vcomponents.add(windowlabel);
         vcomponents.add(Box.createHorizontalGlue());
 
-        final JComboBox comboBox = new JComboBox(new String[] { "All", "Left Top", "Right Top", "Left Bottom",
-                "Right Bottom" });
+        final JComboBox comboBox = new JComboBox(new String[] { "All",
+                "Left Top", "Right Top", "Left Bottom", "Right Bottom" });
         comboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -409,13 +432,22 @@ public class ImauPanel extends CommonPanel {
 
         dataConfig.add(GoggleSwing.vBoxedComponents(vcomponents, true));
 
-        String[] dataModes = { GlobeState.verbalizeDataMode(0), GlobeState.verbalizeDataMode(1),
+        String[] dataModes = { GlobeState.verbalizeDataMode(0),
+                GlobeState.verbalizeDataMode(1),
                 GlobeState.verbalizeDataMode(2) };
-        String[] variables = { GlobeState.verbalizeVariable(0), GlobeState.verbalizeVariable(1),
-                GlobeState.verbalizeVariable(2), GlobeState.verbalizeVariable(3), GlobeState.verbalizeVariable(4),
-                GlobeState.verbalizeVariable(5), GlobeState.verbalizeVariable(6), GlobeState.verbalizeVariable(7),
-                GlobeState.verbalizeVariable(8), GlobeState.verbalizeVariable(9), GlobeState.verbalizeVariable(10),
-                GlobeState.verbalizeVariable(11), GlobeState.verbalizeVariable(12) };
+        String[] variables = { GlobeState.verbalizeVariable(0),
+                GlobeState.verbalizeVariable(1),
+                GlobeState.verbalizeVariable(2),
+                GlobeState.verbalizeVariable(3),
+                GlobeState.verbalizeVariable(4),
+                GlobeState.verbalizeVariable(5),
+                GlobeState.verbalizeVariable(6),
+                GlobeState.verbalizeVariable(7),
+                GlobeState.verbalizeVariable(8),
+                GlobeState.verbalizeVariable(9),
+                GlobeState.verbalizeVariable(10),
+                GlobeState.verbalizeVariable(11),
+                GlobeState.verbalizeVariable(12) };
         final String[] colorMaps = NetCDFUtil.getColorMaps();
 
         final JComboBox dataModeComboBoxLT = new JComboBox(dataModes);
@@ -518,25 +550,29 @@ public class ImauPanel extends CommonPanel {
         comboBoxLTColorMaps.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                settings.setLTColorMap(colorMaps[comboBoxLTColorMaps.getSelectedIndex()]);
+                settings.setLTColorMap(colorMaps[comboBoxLTColorMaps
+                        .getSelectedIndex()]);
             }
         });
         comboBoxRTColorMaps.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                settings.setRTColorMap(colorMaps[comboBoxRTColorMaps.getSelectedIndex()]);
+                settings.setRTColorMap(colorMaps[comboBoxRTColorMaps
+                        .getSelectedIndex()]);
             }
         });
         comboBoxLBColorMaps.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                settings.setLBColorMap(colorMaps[comboBoxLBColorMaps.getSelectedIndex()]);
+                settings.setLBColorMap(colorMaps[comboBoxLBColorMaps
+                        .getSelectedIndex()]);
             }
         });
         comboBoxRBColorMaps.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                settings.setRBColorMap(colorMaps[comboBoxRBColorMaps.getSelectedIndex()]);
+                settings.setRBColorMap(colorMaps[comboBoxRBColorMaps
+                        .getSelectedIndex()]);
             }
         });
 
@@ -628,19 +664,23 @@ public class ImauPanel extends CommonPanel {
 
     private void createVisualTweakPanel() {
         final float heightDistortionSpacing = 0.001f;
-        final JLabel heightDistortionSetting = new JLabel("" + settings.getHeightDistortion());
+        final JLabel heightDistortionSetting = new JLabel(""
+                + settings.getHeightDistortion());
         final ChangeListener heightDistortionListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    settings.setHeightDistortion(source.getValue() * heightDistortionSpacing);
-                    heightDistortionSetting.setText("" + settings.getHeightDistortion());
+                    settings.setHeightDistortion(source.getValue()
+                            * heightDistortionSpacing);
+                    heightDistortionSetting.setText(""
+                            + settings.getHeightDistortion());
                 }
             }
         };
-        visualConfig.add(GoggleSwing.sliderBox("Height Distortion", heightDistortionListener,
-                settings.getHeightDistortionMin(), settings.getHeightDistortionMax(), heightDistortionSpacing,
+        visualConfig.add(GoggleSwing.sliderBox("Height Distortion",
+                heightDistortionListener, settings.getHeightDistortionMin(),
+                settings.getHeightDistortionMax(), heightDistortionSpacing,
                 settings.getHeightDistortion(), heightDistortionSetting));
 
         final ItemListener checkBoxListener = new ItemListener() {
@@ -654,8 +694,10 @@ public class ImauPanel extends CommonPanel {
                 timer.redraw();
             }
         };
-        visualConfig.add(GoggleSwing.checkboxBox("",
-                new GoggleSwing.CheckBoxItem("Dynamic dimensions", settings.isDynamicDimensions(), checkBoxListener)));
+        visualConfig.add(GoggleSwing.checkboxBox(
+                "",
+                new GoggleSwing.CheckBoxItem("Dynamic dimensions", settings
+                        .isDynamicDimensions(), checkBoxListener)));
     }
 
     protected void handleFile(File file) {
@@ -663,7 +705,7 @@ public class ImauPanel extends CommonPanel {
             if (timer.isInitialized()) {
                 timer.close();
             }
-            timer = new NetCDFTimedPlayer(imauWindow, timeBar, frameCounter);
+            timer = new NetCDFTimedPlayer2(timeBar, frameCounter);
 
             timer.init(file);
             new Thread(timer).start();
@@ -673,31 +715,6 @@ public class ImauPanel extends CommonPanel {
             settings.setScreenshotPath(path);
         } else {
             if (null != file) {
-                final JOptionPane pane = new JOptionPane();
-                pane.setMessage("Tried to open invalid file type.");
-                final JDialog dialog = pane.createDialog("Alert");
-                dialog.setVisible(true);
-            } else {
-                logger.error("File is null");
-                System.exit(1);
-            }
-        }
-    }
-
-    protected void handleFile(File file1, File file2) {
-        if (file1 != null && NetCDFUtil.isAcceptableFile(file1) && file2 != null && NetCDFUtil.isAcceptableFile(file2)) {
-            if (timer.isInitialized()) {
-                timer.close();
-            }
-            timer = new NetCDFTimedPlayer(imauWindow, timeBar, frameCounter);
-            timer.init(file1, file2);
-            new Thread(timer).start();
-
-            final String path = NetCDFUtil.getPath(file1);
-
-            settings.setScreenshotPath(path);
-        } else {
-            if (null != file1) {
                 final JOptionPane pane = new JOptionPane();
                 pane.setMessage("Tried to open invalid file type.");
                 final JDialog dialog = pane.createDialog("Alert");
@@ -745,7 +762,7 @@ public class ImauPanel extends CommonPanel {
         }
     }
 
-    public static NetCDFTimedPlayer getTimer() {
+    public static NetCDFTimedPlayer2 getTimer() {
         return timer;
     }
 }
