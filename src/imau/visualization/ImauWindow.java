@@ -52,15 +52,14 @@ public class ImauWindow extends CommonWindow {
     private final ImauSettings settings     = ImauSettings.getInstance();
 
     private Quad               fsq;
-    private Program            texturedSphereProgram, legendProgram,
-            atmProgram, gaussianBlurShader, flatten3Shader, postprocessShader,
-            textProgram;
+    private Program            texturedSphereProgram, legendProgram, atmProgram, gaussianBlurShader, flatten3Shader,
+            postprocessShader, textProgram;
     // private Texture2D worldTex;
 
     private Model              sphereModel, legendModel, atmModel;
 
-    private FBO                ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO,
-            hudTextFBO, legendTextureFBO, sphereTextureFBO;
+    private FBO                ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO, legendTextureFBO,
+            sphereTextureFBO;
 
     private IntPBO             finalPBO;
 
@@ -68,9 +67,8 @@ public class ImauWindow extends CommonWindow {
 
     private SageInterface      sage;
 
-    private MultiColorText     varNameTextLT, varNameTextRT, varNameTextLB,
-            varNameTextRB, legendTextLTmin, legendTextRTmin, legendTextLBmin,
-            legendTextRBmin, legendTextLTmax, legendTextRTmax, legendTextLBmax,
+    private MultiColorText     varNameTextLT, varNameTextRT, varNameTextLB, varNameTextRB, legendTextLTmin,
+            legendTextRTmin, legendTextLBmin, legendTextRBmin, legendTextLTmax, legendTextRTmax, legendTextLBmax,
             legendTextRBmax;
 
     private final int          fontSize     = 80;
@@ -90,8 +88,7 @@ public class ImauWindow extends CommonWindow {
     public void display(GLAutoDrawable drawable) {
         try {
             final int status = drawable.getContext().makeCurrent();
-            if ((status != GLContext.CONTEXT_CURRENT)
-                    && (status != GLContext.CONTEXT_CURRENT_NEW)) {
+            if ((status != GLContext.CONTEXT_CURRENT) && (status != GLContext.CONTEXT_CURRENT_NEW)) {
                 System.err.println("Error swapping context to onscreen.");
             }
         } catch (final GLException e) {
@@ -109,8 +106,7 @@ public class ImauWindow extends CommonWindow {
         NetCDFTimedPlayer2 timer = ImauPanel.getTimer();
         if (timer.isInitialized()) {
             try {
-                displayContext(timer, ltFBO, rtFBO, lbFBO, rbFBO,
-                        atmosphereFBO, hudTextFBO, legendTextureFBO,
+                displayContext(timer, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO, hudTextFBO, legendTextureFBO,
                         sphereTextureFBO);
             } catch (WrongFrameException e) {
                 System.out.println(e.getMessage());
@@ -131,8 +127,7 @@ public class ImauWindow extends CommonWindow {
             }
 
             if (timer.isScreenshotNeeded()) {
-                currentImage = Screenshot.readToBufferedImage(canvasWidth,
-                        canvasHeight);
+                currentImage = Screenshot.readToBufferedImage(canvasWidth, canvasHeight);
 
                 ImauApp.writeImageToDisk(timer.getScreenshotFileName());
                 timer.setScreenshotNeeded(false);
@@ -143,10 +138,8 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void displayContext(NetCDFTimedPlayer2 timer, FBO ltFBO, FBO rtFBO,
-            FBO lbFBO, FBO rbFBO, FBO atmosphereFBO, FBO hudTextFBO,
-            FBO legendTextureFBO, FBO sphereTextureFBO)
-            throws WrongFrameException {
+    private void displayContext(NetCDFTimedPlayer2 timer, FBO ltFBO, FBO rtFBO, FBO lbFBO, FBO rbFBO,
+            FBO atmosphereFBO, FBO hudTextFBO, FBO legendTextureFBO, FBO sphereTextureFBO) throws WrongFrameException {
         final int width = GLContext.getCurrent().getGLDrawable().getWidth();
         final int height = GLContext.getCurrent().getGLDrawable().getHeight();
         final float aspect = (float) width / (float) height;
@@ -157,16 +150,13 @@ public class ImauWindow extends CommonWindow {
 
         final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
 
-        final Point4 eye = new Point4(
-                (float) (radius * Math.sin(ftheta) * Math.cos(phi)),
-                (float) (radius * Math.sin(ftheta) * Math.sin(phi)),
-                (float) (radius * Math.cos(ftheta)), 1.0f);
+        final Point4 eye = new Point4((float) (radius * Math.sin(ftheta) * Math.cos(phi)), (float) (radius
+                * Math.sin(ftheta) * Math.sin(phi)), (float) (radius * Math.cos(ftheta)), 1.0f);
         final Point4 at = new Point4(0.0f, 0.0f, 0.0f, 1.0f);
         final VecF4 up = new VecF4(0.0f, 1.0f, 0.0f, 0.0f);
 
         MatF4 mv = MatrixFMath.lookAt(eye, at, up);
-        mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler
-                .getViewDist())));
+        mv = mv.mul(MatrixFMath.translate(new VecF3(0f, 0f, inputHandler.getViewDist())));
         mv = mv.mul(MatrixFMath.rotationX(inputHandler.getRotation().get(0)));
         mv = mv.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
 
@@ -181,138 +171,111 @@ public class ImauWindow extends CommonWindow {
 
         state = settings.getLTState();
         if (state != ltState) {
-            SurfaceTextureDescription desc = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(), state
-                            .getVariable().toString(), state.getColorMap(),
-                    settings.isDynamicDimensions());
-            timer.getTextureStorage().requestNewConfiguration(0, desc);
-            setHUDVars(gl, timer.getTextureStorage().getDimensions(0), desc,
-                    varNameTextLT, legendTextLTmin, legendTextLTmax);
+            SurfaceTextureDescription desc = new SurfaceTextureDescription(state.getFrameNumber(), state.getDepth(),
+                    state.getVariable().toString(), state.getColorMap(), settings.isDynamicDimensions());
 
+            timer.getTextureStorage().requestNewConfiguration(0, desc);
             ltState = state;
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
-                .getSurfaceImage(0), 900, 643);
+        // setHUDVars(gl, timer.getTextureStorage().getDimensions(0), desc,
+        // varNameTextLT, legendTextLTmin,
+        // legendTextLTmax);
+
+        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage().getSurfaceImage(0), 900, 643);
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
-                .getLegendImage(0), 1, 500);
+        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage().getLegendImage(0), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
-        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
-                sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextLT, legendTextLTmin, legendTextLTmax,
-                ltFBO);
+        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO, sphereTextureFBO, width, height, gl, mv, legend,
+                surface, heightMap, varNameTextLT, legendTextLTmin, legendTextLTmax, ltFBO);
 
         surface.delete(gl);
         legend.delete(gl);
 
         state = settings.getRTState();
         if (state != rtState) {
-            SurfaceTextureDescription desc = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(), state
-                            .getVariable().toString(), state.getColorMap(),
-                    settings.isDynamicDimensions());
+            SurfaceTextureDescription desc = new SurfaceTextureDescription(state.getFrameNumber(), state.getDepth(),
+                    state.getVariable().toString(), state.getColorMap(), settings.isDynamicDimensions());
             timer.getTextureStorage().requestNewConfiguration(1, desc);
-            rtState = state;
+
             // setHUDVars(gl, timer.getTextureStorage().getDimensions(1), desc,
-            // varNameTextRT, legendTextRTmin, legendTextRTmax);
+            // varNameTextRT, legendTextRTmin,
+            // legendTextRTmax);
+            rtState = state;
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
-                .getSurfaceImage(1), 900, 643);
+        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage().getSurfaceImage(1), 900, 643);
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
-                .getLegendImage(1), 1, 500);
+        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage().getLegendImage(1), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
-        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
-                sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextRT, legendTextRTmin, legendTextRTmax,
-                rtFBO);
+        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO, sphereTextureFBO, width, height, gl, mv, legend,
+                surface, heightMap, varNameTextRT, legendTextRTmin, legendTextRTmax, rtFBO);
 
         surface.delete(gl);
         legend.delete(gl);
 
         state = settings.getLBState();
         if (state != lbState) {
-            SurfaceTextureDescription desc = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(), state
-                            .getVariable().toString(), state.getColorMap(),
-                    settings.isDynamicDimensions());
+            SurfaceTextureDescription desc = new SurfaceTextureDescription(state.getFrameNumber(), state.getDepth(),
+                    state.getVariable().toString(), state.getColorMap(), settings.isDynamicDimensions());
             timer.getTextureStorage().requestNewConfiguration(2, desc);
             lbState = state;
             // setHUDVars(gl, timer.getTextureStorage().getDimensions(2), desc,
             // varNameTextLB, legendTextLBmin, legendTextLBmax);
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
-                .getSurfaceImage(2), 900, 643);
+        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage().getSurfaceImage(2), 900, 643);
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
-                .getLegendImage(2), 1, 500);
+        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage().getLegendImage(2), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
-        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
-                sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextLB, legendTextLBmin, legendTextLBmax,
-                lbFBO);
+        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO, sphereTextureFBO, width, height, gl, mv, legend,
+                surface, heightMap, varNameTextLB, legendTextLBmin, legendTextLBmax, lbFBO);
 
         surface.delete(gl);
         legend.delete(gl);
 
         state = settings.getRBState();
         if (state != rbState) {
-            SurfaceTextureDescription desc = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(), state
-                            .getVariable().toString(), state.getColorMap(),
-                    settings.isDynamicDimensions());
+            SurfaceTextureDescription desc = new SurfaceTextureDescription(state.getFrameNumber(), state.getDepth(),
+                    state.getVariable().toString(), state.getColorMap(), settings.isDynamicDimensions());
             timer.getTextureStorage().requestNewConfiguration(3, desc);
             rbState = state;
             // setHUDVars(gl, timer.getTextureStorage().getDimensions(3), desc,
             // varNameTextRB, legendTextRBmin, legendTextRBmax);
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
-                .getSurfaceImage(3), 900, 643);
+        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage().getSurfaceImage(3), 900, 643);
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
-                .getLegendImage(3), 1, 500);
+        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage().getLegendImage(3), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
-        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
-                sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextRB, legendTextRBmin, legendTextRBmax,
-                rbFBO);
+        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO, sphereTextureFBO, width, height, gl, mv, legend,
+                surface, heightMap, varNameTextRB, legendTextRBmin, legendTextRBmax, rbFBO);
 
         surface.delete(gl);
         legend.delete(gl);
 
         if (post_process) {
-            renderTexturesToScreen(gl, width, height, ltFBO, rtFBO, lbFBO,
-                    rbFBO);
+            renderTexturesToScreen(gl, width, height, ltFBO, rtFBO, lbFBO, rbFBO);
         }
     }
 
-    private void drawSingleWindow(FBO atmosphereFBO, FBO hudTextFBO,
-            FBO hudLegendTextureFBO, FBO sphereTextureFBO, final int width,
-            final int height, final GL3 gl, MatF4 mv, Texture2D legend,
-            Texture2D globe, Texture2D heightMap, MultiColorText varNameText,
-            MultiColorText legendTextMin, MultiColorText legendTextMax,
-            FBO target) {
-        drawHUDText(gl, width, height, varNameText, legendTextMin,
-                legendTextMax, textProgram, hudTextFBO);
-        drawHUDLegend(gl, width, height, legend, legendProgram,
-                hudLegendTextureFBO);
-        drawSphere(gl, mv, globe, heightMap, texturedSphereProgram,
-                sphereTextureFBO);
+    private void drawSingleWindow(FBO atmosphereFBO, FBO hudTextFBO, FBO hudLegendTextureFBO, FBO sphereTextureFBO,
+            final int width, final int height, final GL3 gl, MatF4 mv, Texture2D legend, Texture2D globe,
+            Texture2D heightMap, MultiColorText varNameText, MultiColorText legendTextMin,
+            MultiColorText legendTextMax, FBO target) {
+        drawHUDText(gl, width, height, varNameText, legendTextMin, legendTextMax, textProgram, hudTextFBO);
+        drawHUDLegend(gl, width, height, legend, legendProgram, hudLegendTextureFBO);
+        drawSphere(gl, mv, globe, heightMap, texturedSphereProgram, sphereTextureFBO);
 
-        flattenLayers(gl, width, height, hudTextFBO, hudLegendTextureFBO,
-                sphereTextureFBO, atmosphereFBO, target);
+        flattenLayers(gl, width, height, hudTextFBO, hudLegendTextureFBO, sphereTextureFBO, atmosphereFBO, target);
     }
 
     // private HDRTexture2D getGlobeTexture(NetCDFFrame frame1,
@@ -375,8 +338,7 @@ public class ImauWindow extends CommonWindow {
     // return legendTex;
     // }
 
-    private void drawHUDText(GL3 gl, int width, int height,
-            MultiColorText varNameText, MultiColorText legendTextMin,
+    private void drawHUDText(GL3 gl, int width, int height, MultiColorText varNameText, MultiColorText legendTextMin,
             MultiColorText legendTextMax, Program textProgram, FBO target) {
         try {
             if (post_process) {
@@ -386,25 +348,15 @@ public class ImauWindow extends CommonWindow {
 
             // Draw text
             int textLength = varNameText.toString().length() * fontSize;
-            varNameText.draw(
-                    gl,
-                    textProgram,
-                    Text.getPMVForHUD(width, height, 2 * width - textLength
-                            - 150, 40));
+            varNameText.draw(gl, textProgram, Text.getPMVForHUD(width, height, 2 * width - textLength - 150, 40));
 
             textLength = legendTextMin.toString().length() * fontSize;
-            legendTextMin.draw(
-                    gl,
-                    textProgram,
-                    Text.getPMVForHUD(width, height, 2 * width - textLength
-                            - 100, .2f * height));
+            legendTextMin.draw(gl, textProgram,
+                    Text.getPMVForHUD(width, height, 2 * width - textLength - 100, .2f * height));
 
             textLength = legendTextMax.toString().length() * fontSize;
-            legendTextMax.draw(
-                    gl,
-                    textProgram,
-                    Text.getPMVForHUD(width, height, 2 * width - textLength
-                            - 100, 1.75f * height));
+            legendTextMax.draw(gl, textProgram,
+                    Text.getPMVForHUD(width, height, 2 * width - textLength - 100, 1.75f * height));
 
             if (post_process) {
                 target.unBind(gl);
@@ -414,8 +366,7 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void drawHUDLegend(GL3 gl, int width, int height,
-            Texture2D legendTexture, Program legendProgram, FBO target) {
+    private void drawHUDLegend(GL3 gl, int width, int height, Texture2D legendTexture, Program legendProgram, FBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -423,8 +374,7 @@ public class ImauWindow extends CommonWindow {
             }
 
             // Draw legend texture
-            legendProgram.setUniform("texture_map",
-                    legendTexture.getMultitexNumber());
+            legendProgram.setUniform("texture_map", legendTexture.getMultitexNumber());
             legendProgram.setUniformMatrix("PMatrix", new MatF4());
 
             legendModel.draw(gl, legendProgram, new MatF4());
@@ -437,18 +387,15 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void drawSphere(GL3 gl, MatF4 mv, Texture2D surfaceTexture,
-            Texture2D heightMap, Program program, FBO target) {
+    private void drawSphere(GL3 gl, MatF4 mv, Texture2D surfaceTexture, Texture2D heightMap, Program program, FBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
                 gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
             }
 
-            program.setUniform("height_distortion_intensity",
-                    settings.getHeightDistortion());
-            program.setUniform("texture_map",
-                    surfaceTexture.getMultitexNumber());
+            program.setUniform("height_distortion_intensity", settings.getHeightDistortion());
+            program.setUniform("texture_map", surfaceTexture.getMultitexNumber());
             program.setUniform("height_map", surfaceTexture.getMultitexNumber());
 
             sphereModel.draw(gl, program, mv);
@@ -468,8 +415,7 @@ public class ImauWindow extends CommonWindow {
                 gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
             }
 
-            program.setUniformMatrix("NormalMatrix",
-                    MatrixFMath.getNormalMatrix(mv));
+            program.setUniformMatrix("NormalMatrix", MatrixFMath.getNormalMatrix(mv));
             atmModel.draw(gl, program, mv);
 
             if (post_process) {
@@ -480,21 +426,16 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void flattenLayers(GL3 gl, int width, int height, FBO hudTextFBO,
-            FBO hudLegendFBO, FBO sphereTextureFBO, FBO atmosphereFBO,
-            FBO target) {
+    private void flattenLayers(GL3 gl, int width, int height, FBO hudTextFBO, FBO hudLegendFBO, FBO sphereTextureFBO,
+            FBO atmosphereFBO, FBO target) {
         try {
             target.bind(gl);
             gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
-            flatten3Shader.setUniform("textTex", hudTextFBO.getTexture()
-                    .getMultitexNumber());
-            flatten3Shader.setUniform("legendTex", hudLegendFBO.getTexture()
-                    .getMultitexNumber());
-            flatten3Shader.setUniform("dataTex", sphereTextureFBO.getTexture()
-                    .getMultitexNumber());
-            flatten3Shader.setUniform("atmosphereTex", atmosphereFBO
-                    .getTexture().getMultitexNumber());
+            flatten3Shader.setUniform("textTex", hudTextFBO.getTexture().getMultitexNumber());
+            flatten3Shader.setUniform("legendTex", hudLegendFBO.getTexture().getMultitexNumber());
+            flatten3Shader.setUniform("dataTex", sphereTextureFBO.getTexture().getMultitexNumber());
+            flatten3Shader.setUniform("atmosphereTex", atmosphereFBO.getTexture().getMultitexNumber());
 
             flatten3Shader.setUniformMatrix("MVMatrix", new MatF4());
             flatten3Shader.setUniformMatrix("PMatrix", new MatF4());
@@ -513,17 +454,13 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void renderTexturesToScreen(GL3 gl, int width, int height,
-            FBO sphereFBOLT, FBO sphereFBORT, FBO sphereFBOLB, FBO sphereFBORB) {
+    private void renderTexturesToScreen(GL3 gl, int width, int height, FBO sphereFBOLT, FBO sphereFBORT,
+            FBO sphereFBOLB, FBO sphereFBORB) {
         try {
-            postprocessShader.setUniform("sphereTextureLT", sphereFBOLT
-                    .getTexture().getMultitexNumber());
-            postprocessShader.setUniform("sphereTextureRT", sphereFBORT
-                    .getTexture().getMultitexNumber());
-            postprocessShader.setUniform("sphereTextureLB", sphereFBOLB
-                    .getTexture().getMultitexNumber());
-            postprocessShader.setUniform("sphereTextureRB", sphereFBORB
-                    .getTexture().getMultitexNumber());
+            postprocessShader.setUniform("sphereTextureLT", sphereFBOLT.getTexture().getMultitexNumber());
+            postprocessShader.setUniform("sphereTextureRT", sphereFBORT.getTexture().getMultitexNumber());
+            postprocessShader.setUniform("sphereTextureLB", sphereFBOLB.getTexture().getMultitexNumber());
+            postprocessShader.setUniform("sphereTextureRB", sphereFBORB.getTexture().getMultitexNumber());
 
             postprocessShader.setUniform("sphereBrightness", 1f);
 
@@ -552,20 +489,16 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes,
-            int blurType, float blurSize) {
-        gaussianBlurShader.setUniform("Texture", target.getTexture()
-                .getMultitexNumber());
+    private void blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes, int blurType, float blurSize) {
+        gaussianBlurShader.setUniform("Texture", target.getTexture().getMultitexNumber());
 
         gaussianBlurShader.setUniformMatrix("PMatrix", new MatF4());
         gaussianBlurShader.setUniformMatrix("MVMatrix", new MatF4());
 
         gaussianBlurShader.setUniform("blurType", blurType);
         gaussianBlurShader.setUniform("blurSize", blurSize);
-        gaussianBlurShader.setUniform("scrWidth", target.getTexture()
-                .getWidth());
-        gaussianBlurShader.setUniform("scrHeight", target.getTexture()
-                .getHeight());
+        gaussianBlurShader.setUniform("scrWidth", target.getTexture().getWidth());
+        gaussianBlurShader.setUniform("scrHeight", target.getTexture().getHeight());
         gaussianBlurShader.setUniform("Alpha", 1f);
 
         gaussianBlurShader.setUniform("blurDirection", 0);
@@ -699,18 +632,16 @@ public class ImauWindow extends CommonWindow {
         // cutModel = new GeoSphereCutEdge(Material.random(), 120, 50f);
         // cutModel.init(gl);
 
-        legendModel = new Quad(Material.random(), 1.5f, .1f, new VecF3(1, 0,
-                0.1f));
+        legendModel = new Quad(Material.random(), 1.5f, .1f, new VecF3(1, 0, 0.1f));
         legendModel.init(gl);
 
         Color4 atmosphereColor = new Color4(0.0f, 1.0f, 1.0f, 0.005f);
 
-        atmModel = new Sphere(new Material(atmosphereColor, atmosphereColor,
-                atmosphereColor), 5, 53f, new VecF3(), false);
+        atmModel = new Sphere(new Material(atmosphereColor, atmosphereColor, atmosphereColor), 5, 53f, new VecF3(),
+                false);
         atmModel.init(gl);
 
-        Material textMaterial = new Material(Color4.white, Color4.white,
-                Color4.white);
+        Material textMaterial = new Material(Color4.white, Color4.white, Color4.white);
         varNameTextLT = new MultiColorText(textMaterial, font, fontSize);
         varNameTextRT = new MultiColorText(textMaterial, font, fontSize);
         varNameTextLB = new MultiColorText(textMaterial, font, fontSize);
@@ -759,33 +690,25 @@ public class ImauWindow extends CommonWindow {
         inputHandler.setViewDist(-130f);
 
         try {
-            texturedSphereProgram = loader.createProgram(gl,
-                    "texturedSphereProgram", new File("shaders/vs_pplTex2.vp"),
-                    new File("shaders/fs_pplTex2.fp"));
+            texturedSphereProgram = loader.createProgram(gl, "texturedSphereProgram",
+                    new File("shaders/vs_pplTex2.vp"), new File("shaders/fs_pplTex2.fp"));
 
-            legendProgram = loader
-                    .createProgram(gl, "legendProgram", new File(
-                            "shaders/vs_texture.vp"), new File(
-                            "shaders/fs_texture.fp"));
+            legendProgram = loader.createProgram(gl, "legendProgram", new File("shaders/vs_texture.vp"), new File(
+                    "shaders/fs_texture.fp"));
 
-            textProgram = loader.createProgram(gl, "textProgram", new File(
-                    "shaders/vs_multiColorTextShader.vp"), new File(
-                    "shaders/fs_multiColorTextShader.fp"));
+            textProgram = loader.createProgram(gl, "textProgram", new File("shaders/vs_multiColorTextShader.vp"),
+                    new File("shaders/fs_multiColorTextShader.fp"));
 
-            atmProgram = loader.createProgram(gl, "atmProgram", new File(
-                    "shaders/vs_atmosphere.vp"), new File(
+            atmProgram = loader.createProgram(gl, "atmProgram", new File("shaders/vs_atmosphere.vp"), new File(
                     "shaders/fs_atmosphere.fp"));
 
-            gaussianBlurShader = loader.createProgram(gl, "gaussianBlur",
-                    new File("shaders/vs_postprocess.vp"), new File(
-                            "shaders/fs_gaussian_blur.fp"));
+            gaussianBlurShader = loader.createProgram(gl, "gaussianBlur", new File("shaders/vs_postprocess.vp"),
+                    new File("shaders/fs_gaussian_blur.fp"));
 
-            postprocessShader = loader.createProgram(gl, "postprocess",
-                    new File("shaders/vs_postprocess.vp"), new File(
-                            "shaders/fs_eSalsaPostprocess.fp"));
+            postprocessShader = loader.createProgram(gl, "postprocess", new File("shaders/vs_postprocess.vp"),
+                    new File("shaders/fs_eSalsaPostprocess.fp"));
 
-            flatten3Shader = loader.createProgram(gl, "flatten3", new File(
-                    "shaders/vs_flatten3.vp"), new File(
+            flatten3Shader = loader.createProgram(gl, "flatten3", new File("shaders/vs_flatten3.vp"), new File(
                     "shaders/fs_flatten3.fp"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -804,10 +727,8 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void setHUDVars(final GL3 gl, ImageMaker.Dimensions dims,
-            SurfaceTextureDescription desc, MultiColorText txtVar,
-            MultiColorText txtMin, MultiColorText txtMax)
-            throws WrongFrameException {
+    private void setHUDVars(final GL3 gl, ImageMaker.Dimensions dims, SurfaceTextureDescription desc,
+            MultiColorText txtVar, MultiColorText txtMin, MultiColorText txtMax) throws WrongFrameException {
         String variableName = desc.getVarName();
         // String units = GlobeState.verbalizeUnits(state.getVariableIndex());
         // variableName += " in " + units;
@@ -822,13 +743,11 @@ public class ImauWindow extends CommonWindow {
     public void makeSnapshot(String fileName) {
         try {
             final int status = offScreenContext.makeCurrent();
-            if ((status != GLContext.CONTEXT_CURRENT)
-                    && (status != GLContext.CONTEXT_CURRENT_NEW)) {
+            if ((status != GLContext.CONTEXT_CURRENT) && (status != GLContext.CONTEXT_CURRENT_NEW)) {
                 System.err.println("Error swapping context to offscreen.");
             }
         } catch (final GLException e) {
-            System.err
-                    .println("Exception while swapping context to offscreen.");
+            System.err.println("Exception while swapping context to offscreen.");
             e.printStackTrace();
         }
 
@@ -909,18 +828,15 @@ public class ImauWindow extends CommonWindow {
 
             for (int y = p.y; y < p.y + glHeight; y++) {
                 int offset = (y - p.y) * glWidth;
-                System.arraycopy(glRGB, offset, frameRGB, y * frameWidth + p.x,
-                        glWidth);
+                System.arraycopy(glRGB, offset, frameRGB, y * frameWidth + p.x, glWidth);
             }
         }
 
         return frameRGB;
     }
 
-    private BufferedImage produceBufferedImage(int[] input, int width,
-            int height) {
-        BufferedImage result = new BufferedImage(width, height,
-                BufferedImage.TYPE_INT_RGB);
+    private BufferedImage produceBufferedImage(int[] input, int width, int height) {
+        BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         result.setRGB(0, 0, width, height, input, 0, width);
 
@@ -946,15 +862,12 @@ public class ImauWindow extends CommonWindow {
 
         for (int y = p.y; y < p.y + glHeight; y++) {
             int offset = (y - p.y) * glWidth;
-            System.arraycopy(glRGB, offset, frameRGB, y * frameWidth + p.x,
-                    glWidth);
+            System.arraycopy(glRGB, offset, frameRGB, y * frameWidth + p.x, glWidth);
         }
 
-        BufferedImage result = new BufferedImage(frame.getWidth(),
-                frame.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage result = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_INT_RGB);
 
-        result.setRGB(0, 0, result.getWidth(), result.getHeight(), frameRGB, 0,
-                result.getWidth());
+        result.setRGB(0, 0, result.getWidth(), result.getHeight(), frameRGB, 0, result.getWidth());
 
         return result;
     }

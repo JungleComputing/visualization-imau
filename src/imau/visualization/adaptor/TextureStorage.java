@@ -30,33 +30,44 @@ public class TextureStorage {
     }
 
     public synchronized ByteBuffer getSurfaceImage(int screenNumber) {
+        ByteBuffer result = null;
         if (newScreen.containsKey(screenNumber)) {
             if (surfaceStorage.containsKey(newScreen.get(screenNumber))) {
                 SurfaceTextureDescription desc = oldScreen.remove(screenNumber);
                 surfaceStorage.remove(desc);
 
-                return surfaceStorage.get(newScreen.get(screenNumber));
+                result = surfaceStorage.get(newScreen.get(screenNumber));
             } else {
-                return surfaceStorage.get(oldScreen.get(screenNumber));
+                result = surfaceStorage.get(oldScreen.get(screenNumber));
             }
         }
 
-        return ByteBuffer.allocate(width * height * 4);
+        if (result != null) {
+            return result;
+        } else {
+            return ByteBuffer.allocate(width * height * 4);
+        }
+
     }
 
     public synchronized ByteBuffer getLegendImage(int screenNumber) {
+        ByteBuffer result = null;
         if (newScreen.containsKey(screenNumber)) {
             if (legendStorage.containsKey(newScreen.get(screenNumber))) {
                 SurfaceTextureDescription desc = oldScreen.remove(screenNumber);
                 legendStorage.remove(desc);
 
-                return legendStorage.get(newScreen.get(screenNumber));
+                result = legendStorage.get(newScreen.get(screenNumber));
             } else {
-                return legendStorage.get(oldScreen.get(screenNumber));
+                result = legendStorage.get(oldScreen.get(screenNumber));
             }
         }
 
-        return ByteBuffer.allocate(1 * 500 * 4);
+        if (result != null) {
+            return result;
+        } else {
+            return ByteBuffer.allocate(1 * 500 * 4);
+        }
     }
 
     public synchronized Dimensions getDimensions(int screenNumber) {
@@ -74,8 +85,7 @@ public class TextureStorage {
         return new Dimensions(0, 0);
     }
 
-    public synchronized void requestNewConfiguration(int screenNumber,
-            SurfaceTextureDescription desc) {
+    public synchronized void requestNewConfiguration(int screenNumber, SurfaceTextureDescription desc) {
         SurfaceTextureDescription oldDesc = newScreen.get(screenNumber);
         oldScreen.put(screenNumber, oldDesc);
 
@@ -89,9 +99,8 @@ public class TextureStorage {
                 SurfaceTextureDescription oldDesc = newScreen.get(i);
                 oldScreen.put(i, oldDesc);
 
-                SurfaceTextureDescription newDesc = new SurfaceTextureDescription(
-                        frameNumber, oldDesc.getDepth(), oldDesc.getVarName(),
-                        oldDesc.getColorMap(), oldDesc.isDynamicDimensions());
+                SurfaceTextureDescription newDesc = new SurfaceTextureDescription(frameNumber, oldDesc.getDepth(),
+                        oldDesc.getVarName(), oldDesc.getColorMap(), oldDesc.isDynamicDimensions());
 
                 newScreen.put(i, newDesc);
                 manager.buildImages(newDesc);
@@ -99,8 +108,7 @@ public class TextureStorage {
         }
     }
 
-    public synchronized void setSurfaceImage(SurfaceTextureDescription desc,
-            ByteBuffer data) {
+    public synchronized void setSurfaceImage(SurfaceTextureDescription desc, ByteBuffer data) {
         if (newScreen.containsValue(desc)) {
             surfaceStorage.put(desc, data);
         }
