@@ -8,6 +8,7 @@ import java.util.HashMap;
 public class TextureStorage {
     private final HashMap<Integer, SurfaceTextureDescription>    oldScreen;
     private final HashMap<Integer, SurfaceTextureDescription>    newScreen;
+    private final HashMap<Integer, SurfaceTextureDescription>    futureScreen;
     private final HashMap<SurfaceTextureDescription, ByteBuffer> surfaceStorage;
     private final HashMap<SurfaceTextureDescription, ByteBuffer> legendStorage;
     private final HashMap<SurfaceTextureDescription, Dimensions> dimensionsStorage;
@@ -20,6 +21,7 @@ public class TextureStorage {
     public TextureStorage(NetCDFDatasetManager2 manager, int width, int height) {
         oldScreen = new HashMap<Integer, SurfaceTextureDescription>();
         newScreen = new HashMap<Integer, SurfaceTextureDescription>();
+        futureScreen = new HashMap<Integer, SurfaceTextureDescription>();
         surfaceStorage = new HashMap<SurfaceTextureDescription, ByteBuffer>();
         legendStorage = new HashMap<SurfaceTextureDescription, ByteBuffer>();
         dimensionsStorage = new HashMap<SurfaceTextureDescription, Dimensions>();
@@ -103,7 +105,16 @@ public class TextureStorage {
                         oldDesc.getVarName(), oldDesc.getColorMap(), oldDesc.isDynamicDimensions());
 
                 newScreen.put(i, newDesc);
-                manager.buildImages(newDesc);
+                if (!surfaceStorage.containsValue(newDesc) || !legendStorage.containsValue(newDesc)
+                        || !dimensionsStorage.containsValue(newDesc)) {
+                    manager.buildImages(newDesc);
+                }
+
+                SurfaceTextureDescription futureDesc = new SurfaceTextureDescription(frameNumber + 1,
+                        oldDesc.getDepth(), oldDesc.getVarName(), oldDesc.getColorMap(), oldDesc.isDynamicDimensions());
+
+                futureScreen.put(i, futureDesc);
+                manager.buildImages(futureDesc);
             }
         }
     }
