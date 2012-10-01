@@ -87,12 +87,15 @@ public class TextureStorage {
         return new Dimensions(0, 0);
     }
 
-    public synchronized void requestNewConfiguration(int screenNumber, SurfaceTextureDescription desc) {
+    public synchronized void requestNewConfiguration(int screenNumber, SurfaceTextureDescription newDesc) {
         SurfaceTextureDescription oldDesc = newScreen.get(screenNumber);
         oldScreen.put(screenNumber, oldDesc);
 
-        newScreen.put(screenNumber, desc);
-        manager.buildImages(desc);
+        newScreen.put(screenNumber, newDesc);
+        if (!surfaceStorage.containsValue(newDesc) || !legendStorage.containsValue(newDesc)
+                || !dimensionsStorage.containsValue(newDesc)) {
+            manager.buildImages(newDesc);
+        }
     }
 
     public synchronized void requestNewFrame(int frameNumber) {
@@ -104,11 +107,7 @@ public class TextureStorage {
                 SurfaceTextureDescription newDesc = new SurfaceTextureDescription(frameNumber, oldDesc.getDepth(),
                         oldDesc.getVarName(), oldDesc.getColorMap(), oldDesc.isDynamicDimensions());
 
-                newScreen.put(i, newDesc);
-                if (!surfaceStorage.containsValue(newDesc) || !legendStorage.containsValue(newDesc)
-                        || !dimensionsStorage.containsValue(newDesc)) {
-                    manager.buildImages(newDesc);
-                }
+                requestNewConfiguration(i, newDesc);
 
                 SurfaceTextureDescription futureDesc = new SurfaceTextureDescription(frameNumber + 1,
                         oldDesc.getDepth(), oldDesc.getVarName(), oldDesc.getColorMap(), oldDesc.isDynamicDimensions());

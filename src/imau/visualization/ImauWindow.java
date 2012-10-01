@@ -175,6 +175,16 @@ public class ImauWindow extends CommonWindow {
                     state.getVariable().toString(), state.getColorMap(), settings.isDynamicDimensions());
 
             timer.getTextureStorage().requestNewConfiguration(0, desc);
+
+            String variableName = settings.bandNameToString(state.getVariable());
+            String units = GlobeState.verbalizeUnits(state.getVariableIndex());
+            variableName += " in " + units;
+            String min = Float.toString(settings.getVarMin(state.getVariable()));
+            String max = Float.toString(settings.getVarMax(state.getVariable()));
+            varNameTextLT.setString(gl, variableName, Color4.white);
+            legendTextLTmin.setString(gl, min, Color4.white);
+            legendTextLTmax.setString(gl, max, Color4.white);
+
             ltState = state;
         }
 
@@ -203,6 +213,15 @@ public class ImauWindow extends CommonWindow {
             // setHUDVars(gl, timer.getTextureStorage().getDimensions(1), desc,
             // varNameTextRT, legendTextRTmin,
             // legendTextRTmax);
+
+            String variableName = settings.bandNameToString(state.getVariable());
+            String units = GlobeState.verbalizeUnits(state.getVariableIndex());
+            variableName += " in " + units;
+            String min = Float.toString(settings.getVarMin(state.getVariable()));
+            String max = Float.toString(settings.getVarMax(state.getVariable()));
+            varNameTextRT.setString(gl, variableName, Color4.white);
+            legendTextRTmin.setString(gl, min, Color4.white);
+            legendTextRTmax.setString(gl, max, Color4.white);
             rtState = state;
         }
 
@@ -223,6 +242,16 @@ public class ImauWindow extends CommonWindow {
             SurfaceTextureDescription desc = new SurfaceTextureDescription(state.getFrameNumber(), state.getDepth(),
                     state.getVariable().toString(), state.getColorMap(), settings.isDynamicDimensions());
             timer.getTextureStorage().requestNewConfiguration(2, desc);
+
+            String variableName = settings.bandNameToString(state.getVariable());
+            String units = GlobeState.verbalizeUnits(state.getVariableIndex());
+            variableName += " in " + units;
+            String min = Float.toString(settings.getVarMin(state.getVariable()));
+            String max = Float.toString(settings.getVarMax(state.getVariable()));
+            varNameTextLB.setString(gl, variableName, Color4.white);
+            legendTextLBmin.setString(gl, min, Color4.white);
+            legendTextLBmax.setString(gl, max, Color4.white);
+
             lbState = state;
             // setHUDVars(gl, timer.getTextureStorage().getDimensions(2), desc,
             // varNameTextLB, legendTextLBmin, legendTextLBmax);
@@ -245,6 +274,16 @@ public class ImauWindow extends CommonWindow {
             SurfaceTextureDescription desc = new SurfaceTextureDescription(state.getFrameNumber(), state.getDepth(),
                     state.getVariable().toString(), state.getColorMap(), settings.isDynamicDimensions());
             timer.getTextureStorage().requestNewConfiguration(3, desc);
+
+            String variableName = settings.bandNameToString(state.getVariable());
+            String units = GlobeState.verbalizeUnits(state.getVariableIndex());
+            variableName += " in " + units;
+            String min = Float.toString(settings.getVarMin(state.getVariable()));
+            String max = Float.toString(settings.getVarMax(state.getVariable()));
+            varNameTextRB.setString(gl, variableName, Color4.white);
+            legendTextRBmin.setString(gl, min, Color4.white);
+            legendTextRBmax.setString(gl, max, Color4.white);
+
             rbState = state;
             // setHUDVars(gl, timer.getTextureStorage().getDimensions(3), desc,
             // varNameTextRB, legendTextRBmin, legendTextRBmax);

@@ -21,8 +21,7 @@ public class NetCDFArray implements Runnable {
     private int                         width;
     private int                         height;
 
-    public NetCDFArray(NetcdfFile frameFile,
-            SurfaceTextureDescription description) throws IOException {
+    public NetCDFArray(NetcdfFile frameFile, SurfaceTextureDescription description) throws IOException {
         this.description = description;
 
         this.ncFile = frameFile;
@@ -32,13 +31,12 @@ public class NetCDFArray implements Runnable {
     public void run() {
         if (!initialized) {
             try {
-                Variable ncdfVar = ncFile
-                        .findVariable(description.getVarName());
+                Variable ncdfVar = ncFile.findVariable(description.getVarName());
                 List<Dimension> dims = ncdfVar.getDimensions();
                 for (Dimension d : dims) {
-                    if (d.getName().compareTo("t_lat") == 0) {
+                    if (d.getName().compareTo("t_lat") == 0 || d.getName().compareTo("u_lat") == 0) {
                         height = d.getLength();
-                    } else if (d.getName().compareTo("t_lon") == 0) {
+                    } else if (d.getName().compareTo("t_lon") == 0 || d.getName().compareTo("u_lon") == 0) {
                         width = d.getLength();
                     }
                 }
@@ -47,14 +45,12 @@ public class NetCDFArray implements Runnable {
                 if (dims.size() > 3) {
                     if (dims.get(0).getLength() == 1 || dims.size() > 4) {
                         // Peel off the time 'dimension'
-                        int[] origin = new int[] { 0, description.getDepth(),
-                                0, 0 };
+                        int[] origin = new int[] { 0, description.getDepth(), 0, 0 };
                         int[] size = new int[] { 1, 1, height, width };
 
                         ncdfArray2D = ncdfVar.read(origin, size).reduce();
                     } else {
-                        throw new IOException(
-                                "Unanticipated NetCDF variable dimensions.");
+                        throw new IOException("Unanticipated NetCDF variable dimensions.");
                     }
                 } else if (dims.size() > 2) {
                     // Select the correct the depth
@@ -66,8 +62,7 @@ public class NetCDFArray implements Runnable {
                     ncdfArray2D = ncdfVar.read();
                 }
 
-                float[] result = (float[]) ncdfArray2D
-                        .get1DJavaArray(float.class);
+                float[] result = (float[]) ncdfArray2D.get1DJavaArray(float.class);
 
                 data = result;
 
