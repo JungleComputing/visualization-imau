@@ -75,6 +75,8 @@ public class ImauWindow extends CommonWindow {
 
     private int                fontSize     = 80;
 
+    private boolean            reshaped     = false;
+
     private GlobeState         ltState, rtState, lbState, rbState;
 
     public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
@@ -137,6 +139,8 @@ public class ImauWindow extends CommonWindow {
         } catch (final GLException e) {
             e.printStackTrace();
         }
+
+        reshaped = false;
     }
 
     private void displayContext(NetCDFTimedPlayer2 timer, FBO ltFBO, FBO rtFBO,
@@ -176,7 +180,7 @@ public class ImauWindow extends CommonWindow {
         Texture2D surface, heightMap, legend;
 
         state = settings.getLTState();
-        if (state != ltState) {
+        if (state != ltState || reshaped) {
             SurfaceTextureDescription desc = new SurfaceTextureDescription(
                     state.getFrameNumber(), state.getDepth(), state
                             .getVariable().toString(), state.getColorMap(),
@@ -201,11 +205,11 @@ public class ImauWindow extends CommonWindow {
                 min = Float.toString(settings.getVarMin(state.getVariable()));
                 max = Float.toString(settings.getVarMax(state.getVariable()));
             }
-            varNameTextLT.setString(gl, variableName, Color4.white);
+            varNameTextLT.setString(gl, variableName, Color4.white, fontSize);
             dateTextLT.setString(gl, settings.getMonth(state.getFrameNumber()),
-                    Color4.white);
-            legendTextLTmin.setString(gl, min, Color4.white);
-            legendTextLTmax.setString(gl, max, Color4.white);
+                    Color4.white, fontSize);
+            legendTextLTmin.setString(gl, min, Color4.white, fontSize);
+            legendTextLTmax.setString(gl, max, Color4.white, fontSize);
 
             ltState = state;
         }
@@ -231,7 +235,7 @@ public class ImauWindow extends CommonWindow {
         legend.delete(gl);
 
         state = settings.getRTState();
-        if (state != rtState) {
+        if (state != rtState || reshaped) {
             SurfaceTextureDescription desc = new SurfaceTextureDescription(
                     state.getFrameNumber(), state.getDepth(), state
                             .getVariable().toString(), state.getColorMap(),
@@ -259,11 +263,11 @@ public class ImauWindow extends CommonWindow {
                 min = Float.toString(settings.getVarMin(state.getVariable()));
                 max = Float.toString(settings.getVarMax(state.getVariable()));
             }
-            varNameTextRT.setString(gl, variableName, Color4.white);
+            varNameTextRT.setString(gl, variableName, Color4.white, fontSize);
             dateTextRT.setString(gl, settings.getMonth(state.getFrameNumber()),
-                    Color4.white);
-            legendTextRTmin.setString(gl, min, Color4.white);
-            legendTextRTmax.setString(gl, max, Color4.white);
+                    Color4.white, fontSize);
+            legendTextRTmin.setString(gl, min, Color4.white, fontSize);
+            legendTextRTmax.setString(gl, max, Color4.white, fontSize);
             rtState = state;
         }
 
@@ -284,7 +288,7 @@ public class ImauWindow extends CommonWindow {
         legend.delete(gl);
 
         state = settings.getLBState();
-        if (state != lbState) {
+        if (state != lbState || reshaped) {
             SurfaceTextureDescription desc = new SurfaceTextureDescription(
                     state.getFrameNumber(), state.getDepth(), state
                             .getVariable().toString(), state.getColorMap(),
@@ -308,11 +312,11 @@ public class ImauWindow extends CommonWindow {
                 min = Float.toString(settings.getVarMin(state.getVariable()));
                 max = Float.toString(settings.getVarMax(state.getVariable()));
             }
-            varNameTextLB.setString(gl, variableName, Color4.white);
+            varNameTextLB.setString(gl, variableName, Color4.white, fontSize);
             dateTextLB.setString(gl, settings.getMonth(state.getFrameNumber()),
-                    Color4.white);
-            legendTextLBmin.setString(gl, min, Color4.white);
-            legendTextLBmax.setString(gl, max, Color4.white);
+                    Color4.white, fontSize);
+            legendTextLBmin.setString(gl, min, Color4.white, fontSize);
+            legendTextLBmax.setString(gl, max, Color4.white, fontSize);
 
             lbState = state;
             // setHUDVars(gl, timer.getTextureStorage().getDimensions(2), desc,
@@ -336,7 +340,7 @@ public class ImauWindow extends CommonWindow {
         legend.delete(gl);
 
         state = settings.getRBState();
-        if (state != rbState) {
+        if (state != rbState || reshaped) {
             SurfaceTextureDescription desc = new SurfaceTextureDescription(
                     state.getFrameNumber(), state.getDepth(), state
                             .getVariable().toString(), state.getColorMap(),
@@ -360,11 +364,11 @@ public class ImauWindow extends CommonWindow {
                 min = Float.toString(settings.getVarMin(state.getVariable()));
                 max = Float.toString(settings.getVarMax(state.getVariable()));
             }
-            varNameTextRB.setString(gl, variableName, Color4.white);
+            varNameTextRB.setString(gl, variableName, Color4.white, fontSize);
             dateTextRB.setString(gl, settings.getMonth(state.getFrameNumber()),
-                    Color4.white);
-            legendTextRBmin.setString(gl, min, Color4.white);
-            legendTextRBmax.setString(gl, max, Color4.white);
+                    Color4.white, fontSize);
+            legendTextRBmin.setString(gl, min, Color4.white, fontSize);
+            legendTextRBmax.setString(gl, max, Color4.white, fontSize);
 
             rbState = state;
             // setHUDVars(gl, timer.getTextureStorage().getDimensions(3), desc,
@@ -736,70 +740,9 @@ public class ImauWindow extends CommonWindow {
         legendTextureFBO.init(gl);
         sphereTextureFBO.init(gl);
 
-        Material textMaterial = new Material(Color4.white, Color4.white,
-                Color4.white);
+        fontSize = (int) Math.round(w / 37.5);
 
-        varNameTextLT.delete(gl);
-        varNameTextRT.delete(gl);
-        varNameTextLB.delete(gl);
-        varNameTextRB.delete(gl);
-
-        legendTextLTmin.delete(gl);
-        legendTextRTmin.delete(gl);
-        legendTextLBmin.delete(gl);
-        legendTextRBmin.delete(gl);
-
-        legendTextLTmax.delete(gl);
-        legendTextRTmax.delete(gl);
-        legendTextLBmax.delete(gl);
-        legendTextRBmax.delete(gl);
-
-        dateTextLT.delete(gl);
-        dateTextRT.delete(gl);
-        dateTextLB.delete(gl);
-        dateTextRB.delete(gl);
-
-        fontSize = (int) Math.round(canvasWidth / 37.5);
-
-        varNameTextLT = new MultiColorText(textMaterial, font, fontSize);
-        varNameTextRT = new MultiColorText(textMaterial, font, fontSize);
-        varNameTextLB = new MultiColorText(textMaterial, font, fontSize);
-        varNameTextRB = new MultiColorText(textMaterial, font, fontSize);
-
-        legendTextLTmin = new MultiColorText(textMaterial, font, fontSize);
-        legendTextRTmin = new MultiColorText(textMaterial, font, fontSize);
-        legendTextLBmin = new MultiColorText(textMaterial, font, fontSize);
-        legendTextRBmin = new MultiColorText(textMaterial, font, fontSize);
-
-        legendTextLTmax = new MultiColorText(textMaterial, font, fontSize);
-        legendTextRTmax = new MultiColorText(textMaterial, font, fontSize);
-        legendTextLBmax = new MultiColorText(textMaterial, font, fontSize);
-        legendTextRBmax = new MultiColorText(textMaterial, font, fontSize);
-
-        dateTextLT = new MultiColorText(textMaterial, font, fontSize);
-        dateTextRT = new MultiColorText(textMaterial, font, fontSize);
-        dateTextLB = new MultiColorText(textMaterial, font, fontSize);
-        dateTextRB = new MultiColorText(textMaterial, font, fontSize);
-
-        varNameTextLT.init(gl);
-        varNameTextRT.init(gl);
-        varNameTextLB.init(gl);
-        varNameTextRB.init(gl);
-
-        legendTextLTmin.init(gl);
-        legendTextRTmin.init(gl);
-        legendTextLBmin.init(gl);
-        legendTextRBmin.init(gl);
-
-        legendTextLTmax.init(gl);
-        legendTextRTmax.init(gl);
-        legendTextLBmax.init(gl);
-        legendTextRBmax.init(gl);
-
-        dateTextLT.init(gl);
-        dateTextRT.init(gl);
-        dateTextLB.init(gl);
-        dateTextRB.init(gl);
+        reshaped = true;
     }
 
     @Override
@@ -877,25 +820,25 @@ public class ImauWindow extends CommonWindow {
         Material textMaterial = new Material(Color4.white, Color4.white,
                 Color4.white);
 
-        varNameTextLT = new MultiColorText(textMaterial, font, fontSize);
-        varNameTextRT = new MultiColorText(textMaterial, font, fontSize);
-        varNameTextLB = new MultiColorText(textMaterial, font, fontSize);
-        varNameTextRB = new MultiColorText(textMaterial, font, fontSize);
+        varNameTextLT = new MultiColorText(textMaterial, font);
+        varNameTextRT = new MultiColorText(textMaterial, font);
+        varNameTextLB = new MultiColorText(textMaterial, font);
+        varNameTextRB = new MultiColorText(textMaterial, font);
 
-        legendTextLTmin = new MultiColorText(textMaterial, font, fontSize);
-        legendTextRTmin = new MultiColorText(textMaterial, font, fontSize);
-        legendTextLBmin = new MultiColorText(textMaterial, font, fontSize);
-        legendTextRBmin = new MultiColorText(textMaterial, font, fontSize);
+        legendTextLTmin = new MultiColorText(textMaterial, font);
+        legendTextRTmin = new MultiColorText(textMaterial, font);
+        legendTextLBmin = new MultiColorText(textMaterial, font);
+        legendTextRBmin = new MultiColorText(textMaterial, font);
 
-        legendTextLTmax = new MultiColorText(textMaterial, font, fontSize);
-        legendTextRTmax = new MultiColorText(textMaterial, font, fontSize);
-        legendTextLBmax = new MultiColorText(textMaterial, font, fontSize);
-        legendTextRBmax = new MultiColorText(textMaterial, font, fontSize);
+        legendTextLTmax = new MultiColorText(textMaterial, font);
+        legendTextRTmax = new MultiColorText(textMaterial, font);
+        legendTextLBmax = new MultiColorText(textMaterial, font);
+        legendTextRBmax = new MultiColorText(textMaterial, font);
 
-        dateTextLT = new MultiColorText(textMaterial, font, fontSize);
-        dateTextRT = new MultiColorText(textMaterial, font, fontSize);
-        dateTextLB = new MultiColorText(textMaterial, font, fontSize);
-        dateTextRB = new MultiColorText(textMaterial, font, fontSize);
+        dateTextLT = new MultiColorText(textMaterial, font);
+        dateTextRT = new MultiColorText(textMaterial, font);
+        dateTextLB = new MultiColorText(textMaterial, font);
+        dateTextRB = new MultiColorText(textMaterial, font);
 
         varNameTextLT.init(gl);
         varNameTextRT.init(gl);
@@ -989,9 +932,9 @@ public class ImauWindow extends CommonWindow {
         // variableName += " in " + units;
         String min = Float.toString(dims.min);
         String max = Float.toString(dims.max);
-        txtVar.setString(gl, variableName, Color4.white);
-        txtMin.setString(gl, min, Color4.white);
-        txtMax.setString(gl, max, Color4.white);
+        txtVar.setString(gl, variableName, Color4.white, fontSize);
+        txtMin.setString(gl, min, Color4.white, fontSize);
+        txtMax.setString(gl, max, Color4.white, fontSize);
     }
 
     @Override
