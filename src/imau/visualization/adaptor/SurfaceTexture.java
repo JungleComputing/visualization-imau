@@ -54,8 +54,8 @@ public class SurfaceTexture implements Runnable {
                     dims = ImageMaker.getDynamicDimensions(
                             description.getVarName(), inputArray.getData());
                 } else {
-                    dims = ImageMaker.getDimensions(inputArray.getDescription()
-                            .getVarName());
+                    dims = ImageMaker
+                            .getDimensions(inputArray.getDescription());
                 }
 
                 String mapName = description.getColorMap();

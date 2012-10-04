@@ -30,8 +30,8 @@ public class LegendTexture implements Runnable {
                     dims = ImageMaker.getDynamicDimensions(
                             description.getVarName(), inputArray.getData());
                 } else {
-                    dims = ImageMaker.getDimensions(inputArray.getDescription()
-                            .getVarName());
+                    dims = ImageMaker
+                            .getDimensions(inputArray.getDescription());
                 }
 
                 int height = 500;

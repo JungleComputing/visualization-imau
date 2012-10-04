@@ -174,8 +174,14 @@ public class ImauPanel extends CommonPanel {
 
         // Read command line file information
         if (cmdlnfileName != null) {
-            final File cmdlnfile = new File(cmdlnfileName);
-            handleFile(cmdlnfile);
+            if (cmdlnfileName2 != null) {
+                final File cmdlnfile1 = new File(cmdlnfileName);
+                final File cmdlnfile2 = new File(cmdlnfileName2);
+                handleFile(cmdlnfile1, cmdlnfile2);
+            } else {
+                final File cmdlnfile = new File(cmdlnfileName);
+                handleFile(cmdlnfile);
+            }
         }
     }
 
@@ -426,7 +432,7 @@ public class ImauPanel extends CommonPanel {
                 settings.setWindowSelection(selection);
             }
         });
-        comboBox.setMaximumSize(new Dimension(300, 25));
+        comboBox.setMaximumSize(new Dimension(200, 25));
         vcomponents.add(comboBox);
         vcomponents.add(GoggleSwing.verticalStrut(5));
 
@@ -621,15 +627,30 @@ public class ImauPanel extends CommonPanel {
         comboBoxLBColorMaps.setSelectedItem(LBC.getColorMap());
         comboBoxRBColorMaps.setSelectedItem(RBC.getColorMap());
 
+        dataModeComboBoxLT.setMinimumSize(new Dimension(100, 25));
+        dataModeComboBoxRT.setMinimumSize(new Dimension(100, 25));
+        dataModeComboBoxLB.setMinimumSize(new Dimension(100, 25));
+        dataModeComboBoxRB.setMinimumSize(new Dimension(100, 25));
+
         dataModeComboBoxLT.setMaximumSize(new Dimension(200, 25));
         dataModeComboBoxRT.setMaximumSize(new Dimension(200, 25));
         dataModeComboBoxLB.setMaximumSize(new Dimension(200, 25));
         dataModeComboBoxRB.setMaximumSize(new Dimension(200, 25));
 
+        comboBoxLT.setMinimumSize(new Dimension(100, 25));
+        comboBoxRT.setMinimumSize(new Dimension(100, 25));
+        comboBoxLB.setMinimumSize(new Dimension(100, 25));
+        comboBoxRB.setMinimumSize(new Dimension(100, 25));
+
         comboBoxLT.setMaximumSize(new Dimension(200, 25));
         comboBoxRT.setMaximumSize(new Dimension(200, 25));
         comboBoxLB.setMaximumSize(new Dimension(200, 25));
         comboBoxRB.setMaximumSize(new Dimension(200, 25));
+
+        comboBoxLTColorMaps.setMinimumSize(new Dimension(100, 25));
+        comboBoxRTColorMaps.setMinimumSize(new Dimension(100, 25));
+        comboBoxLBColorMaps.setMinimumSize(new Dimension(100, 25));
+        comboBoxRBColorMaps.setMinimumSize(new Dimension(100, 25));
 
         comboBoxLTColorMaps.setMaximumSize(new Dimension(200, 25));
         comboBoxRTColorMaps.setMaximumSize(new Dimension(200, 25));
@@ -698,6 +719,34 @@ public class ImauPanel extends CommonPanel {
                 "",
                 new GoggleSwing.CheckBoxItem("Dynamic dimensions", settings
                         .isDynamicDimensions(), checkBoxListener)));
+    }
+
+    protected void handleFile(File file1, File file2) {
+        if (file1 != null && file2 != null
+                && NetCDFUtil.isAcceptableFile(file1)
+                && NetCDFUtil.isAcceptableFile(file2)) {
+            if (timer.isInitialized()) {
+                timer.close();
+            }
+            timer = new NetCDFTimedPlayer2(timeBar, frameCounter);
+
+            timer.init(file1, file2);
+            new Thread(timer).start();
+
+            final String path = NetCDFUtil.getPath(file1);
+
+            settings.setScreenshotPath(path);
+        } else {
+            if (null != file1 && null != file2) {
+                final JOptionPane pane = new JOptionPane();
+                pane.setMessage("Tried to open invalid file type.");
+                final JDialog dialog = pane.createDialog("Alert");
+                dialog.setVisible(true);
+            } else {
+                logger.error("File is null");
+                System.exit(1);
+            }
+        }
     }
 
     protected void handleFile(File file) {

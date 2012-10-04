@@ -311,6 +311,8 @@ public class GoggleSwing {
         }
         hrzBox.add(vrtBox);
 
+        hrzBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         hrzBox.add(GoggleSwing.horizontalStrut(2));
         return hrzBox;
     }

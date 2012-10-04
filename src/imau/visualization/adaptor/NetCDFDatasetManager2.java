@@ -25,7 +25,9 @@ public class NetCDFDatasetManager2 {
     private final LinkedList<Runnable>    cpuQueue;
     private final LinkedList<NetCDFArray> ioQueue;
 
-    private final File                    ncfile;
+    private final File                    ncfile1;
+    private final File                    ncfile2;
+
     private final TextureStorage          texStorage;
 
     private final int                     imageHeight;
@@ -104,10 +106,18 @@ public class NetCDFDatasetManager2 {
         }
     }
 
-    public NetCDFDatasetManager2(File file, int numIOThreads, int numCPUThreads) {
-        logger.debug("Opening dataset with initial file: "
-                + file.getAbsolutePath());
-        this.ncfile = file;
+    public NetCDFDatasetManager2(File file1, File file2, int numIOThreads,
+            int numCPUThreads) {
+        if (file2 == null) {
+            logger.debug("Opening dataset with initial file: "
+                    + file1.getAbsolutePath());
+        } else {
+            logger.debug("Opening dataset with initial files: "
+                    + file1.getAbsolutePath() + " and "
+                    + file1.getAbsolutePath());
+        }
+        this.ncfile1 = file1;
+        this.ncfile2 = file2;
         this.texStorage = new TextureStorage(this, 900, 643);
 
         ioQueue = new LinkedList<NetCDFArray>();
@@ -128,12 +138,38 @@ public class NetCDFDatasetManager2 {
         }
 
         NetCDFDatasetManager2.availableFrameSequenceNumbers = new ArrayList<Integer>();
-        File currentFile = NetCDFUtil.getSeqLowestFile(ncfile);
-        while (currentFile != null) {
-            int nr = NetCDFUtil.getFrameNumber(currentFile);
-            availableFrameSequenceNumbers.add(nr);
 
-            currentFile = NetCDFUtil.getSeqNextFile(currentFile);
+        if (ncfile2 == null) {
+            File currentFile = NetCDFUtil.getSeqLowestFile(ncfile1);
+            while (currentFile != null) {
+                int nr = NetCDFUtil.getFrameNumber(currentFile);
+                availableFrameSequenceNumbers.add(nr);
+
+                currentFile = NetCDFUtil.getSeqNextFile(currentFile);
+            }
+        } else {
+            File currentFile1 = NetCDFUtil.getSeqLowestFile(ncfile1);
+            int nr = NetCDFUtil.getFrameNumber(currentFile1);
+            File currentFile2;
+            try {
+                currentFile2 = NetCDFUtil.getSeqFile(ncfile2, nr);
+            } catch (IOException e) {
+                currentFile2 = null;
+            }
+
+            while (currentFile1 != null && currentFile2 != null) {
+                nr = NetCDFUtil.getFrameNumber(currentFile1);
+                try {
+                    currentFile2 = NetCDFUtil.getSeqFile(ncfile2, nr);
+                } catch (IOException e) {
+                    currentFile2 = null;
+                    break;
+                }
+
+                availableFrameSequenceNumbers.add(nr);
+
+                currentFile1 = NetCDFUtil.getSeqNextFile(currentFile1);
+            }
         }
 
         Array t_lat;
@@ -141,7 +177,7 @@ public class NetCDFDatasetManager2 {
         float latMax = 90f;
         int arraySize = 602;
         try {
-            t_lat = NetCDFUtil.getData(NetCDFUtil.open(ncfile), "t_lat");
+            t_lat = NetCDFUtil.getData(NetCDFUtil.open(ncfile1), "t_lat");
             arraySize = (int) t_lat.getSize();
 
             latMin = t_lat.getFloat(0) + 90f;
@@ -157,11 +193,25 @@ public class NetCDFDatasetManager2 {
     public void buildImages(SurfaceTextureDescription desc) {
         int frameNumber = availableFrameSequenceNumbers.get(desc
                 .getFrameNumber());
-        NetcdfFile frameFile;
+        NetcdfFile frameFile1;
         try {
-            frameFile = NetCDFUtil.open(NetCDFUtil.getSeqFile(ncfile,
-                    frameNumber));
-            IOJobExecute(new NetCDFArray(frameFile, desc));
+            if (!desc.isDiff()) {
+                if (desc.secondSet && ncfile2 != null) {
+                    frameFile1 = NetCDFUtil.open(NetCDFUtil.getSeqFile(ncfile2,
+                            frameNumber));
+                } else {
+                    frameFile1 = NetCDFUtil.open(NetCDFUtil.getSeqFile(ncfile1,
+                            frameNumber));
+                }
+                IOJobExecute(new NetCDFArray(frameFile1, desc));
+            } else {
+                frameFile1 = NetCDFUtil.open(NetCDFUtil.getSeqFile(ncfile1,
+                        frameNumber));
+                NetcdfFile frameFile2 = NetCDFUtil.open(NetCDFUtil.getSeqFile(
+                        ncfile2, frameNumber));
+                IOJobExecute(new NetCDFArray(frameFile1, frameFile2, desc));
+            }
+
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

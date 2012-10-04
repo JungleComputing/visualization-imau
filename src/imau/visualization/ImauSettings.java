@@ -20,26 +20,30 @@ public class ImauSettings extends Settings {
         FIRST_DATASET, SECOND_DATASET, DIFF
     };
 
+    public static enum Months {
+        Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
+    };
+
     private static GlobeState    globeStateLT              = new GlobeState(
-                                                                   GlobeState.DataMode.SECOND_DATASET,
+                                                                   GlobeState.DataMode.FIRST_DATASET,
                                                                    false,
                                                                    GlobeState.Variable.TEMP,
                                                                    75, 0,
                                                                    "default");
     private static GlobeState    globeStateRT              = new GlobeState(
-                                                                   GlobeState.DataMode.SECOND_DATASET,
+                                                                   GlobeState.DataMode.FIRST_DATASET,
                                                                    false,
                                                                    GlobeState.Variable.SSH,
                                                                    75, 0,
                                                                    "default");
     private static GlobeState    globeStateLB              = new GlobeState(
-                                                                   GlobeState.DataMode.SECOND_DATASET,
+                                                                   GlobeState.DataMode.FIRST_DATASET,
                                                                    false,
                                                                    GlobeState.Variable.SALT,
                                                                    75, 0,
                                                                    "inv_diff");
     private static GlobeState    globeStateRB              = new GlobeState(
-                                                                   GlobeState.DataMode.SECOND_DATASET,
+                                                                   GlobeState.DataMode.FIRST_DATASET,
                                                                    false,
                                                                    GlobeState.Variable.HMXL,
                                                                    75, 0,
@@ -963,6 +967,103 @@ public class ImauSettings extends Settings {
         } else if (varName.compareTo("H2") == 0) {
             result = MIN_H2;
         }
+        return result;
+    }
+
+    public float getVarDiffMax(String varName) {
+        float result = 0f;
+        if (varName.compareTo("SSH") == 0) {
+            result = MAX_DIFF_SSH;
+        } else if (varName.compareTo("SHF") == 0) {
+            result = MAX_DIFF_SHF;
+        } else if (varName.compareTo("SFWF") == 0) {
+            result = MAX_DIFF_SFWF;
+        } else if (varName.compareTo("HMXL") == 0) {
+            result = MAX_DIFF_HMXL;
+        } else if (varName.compareTo("SALT") == 0) {
+            result = MAX_DIFF_SALT;
+        } else if (varName.compareTo("TEMP") == 0) {
+            result = MAX_DIFF_TEMP;
+        } else if (varName.compareTo("UVEL") == 0) {
+            result = MAX_DIFF_UVEL;
+        } else if (varName.compareTo("VVEL") == 0) {
+            result = MAX_DIFF_VVEL;
+        } else if (varName.compareTo("KE") == 0) {
+            result = MAX_DIFF_KE;
+        } else if (varName.compareTo("PD") == 0) {
+            result = MAX_DIFF_PD;
+        } else if (varName.compareTo("TAUX") == 0) {
+            result = MAX_DIFF_TAUX;
+        } else if (varName.compareTo("TAUY") == 0) {
+            result = MAX_DIFF_TAUY;
+        } else if (varName.compareTo("H2") == 0) {
+            result = MAX_DIFF_H2;
+        }
+        return result;
+    }
+
+    public float getVarDiffMin(String varName) {
+        float result = 0f;
+        if (varName.compareTo("SSH") == 0) {
+            result = MIN_DIFF_SSH;
+        } else if (varName.compareTo("SHF") == 0) {
+            result = MIN_DIFF_SHF;
+        } else if (varName.compareTo("SFWF") == 0) {
+            result = MIN_DIFF_SFWF;
+        } else if (varName.compareTo("HMXL") == 0) {
+            result = MIN_DIFF_HMXL;
+        } else if (varName.compareTo("SALT") == 0) {
+            result = MIN_DIFF_SALT;
+        } else if (varName.compareTo("TEMP") == 0) {
+            result = MIN_DIFF_TEMP;
+        } else if (varName.compareTo("UVEL") == 0) {
+            result = MIN_DIFF_UVEL;
+        } else if (varName.compareTo("VVEL") == 0) {
+            result = MIN_DIFF_VVEL;
+        } else if (varName.compareTo("KE") == 0) {
+            result = MIN_DIFF_KE;
+        } else if (varName.compareTo("PD") == 0) {
+            result = MIN_DIFF_PD;
+        } else if (varName.compareTo("TAUX") == 0) {
+            result = MIN_DIFF_TAUX;
+        } else if (varName.compareTo("TAUY") == 0) {
+            result = MIN_DIFF_TAUY;
+        } else if (varName.compareTo("H2") == 0) {
+            result = MIN_DIFF_H2;
+        }
+        return result;
+    }
+
+    public String getMonth(int frameNumber) {
+        String result = "";
+        if (frameNumber % 12 == 0) {
+            result = "Jan";
+        } else if (frameNumber % 12 == 1) {
+            result = "Feb";
+        } else if (frameNumber % 12 == 2) {
+            result = "Mar";
+        } else if (frameNumber % 12 == 3) {
+            result = "Apr";
+        } else if (frameNumber % 12 == 4) {
+            result = "May";
+        } else if (frameNumber % 12 == 5) {
+            result = "Jun";
+        } else if (frameNumber % 12 == 6) {
+            result = "Jul";
+        } else if (frameNumber % 12 == 7) {
+            result = "Aug";
+        } else if (frameNumber % 12 == 8) {
+            result = "Sep";
+        } else if (frameNumber % 12 == 9) {
+            result = "Oct";
+        } else if (frameNumber % 12 == 10) {
+            result = "Nov";
+        } else if (frameNumber % 12 == 11) {
+            result = "Dec";
+        }
+
+        result += ", year " + (75 + (int) Math.floor(frameNumber / 12));
+
         return result;
     }
 }

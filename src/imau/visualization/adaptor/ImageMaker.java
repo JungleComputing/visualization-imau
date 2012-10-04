@@ -660,6 +660,22 @@ public class ImageMaker {
         return new Dimensions(min, max);
     }
 
+    public static Dimensions getDimensions(SurfaceTextureDescription desc) {
+        float max = 0;
+        float min = 0;
+
+        if (desc.isDiff()) {
+            max = settings.getVarDiffMax(desc.getVarName());
+            min = settings.getVarDiffMin(desc.getVarName());
+
+        } else {
+            max = settings.getVarMax(desc.getVarName());
+            min = settings.getVarMin(desc.getVarName());
+        }
+
+        return new Dimensions(min, max);
+    }
+
     public static Dimensions getDynamicDimensions(String varName,
             float[] gridPoints) {
         float max = Float.MIN_VALUE;

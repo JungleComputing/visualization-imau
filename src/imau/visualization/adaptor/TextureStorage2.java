@@ -107,8 +107,10 @@ public class TextureStorage2 {
         }
     }
 
-    public synchronized void requestNewConfiguration(int screenNumber, SurfaceTextureDescription newDesc) {
-        if (newDesc != null && !surfaceStorage.containsValue(newDesc) && !legendStorage.containsValue(newDesc)
+    public synchronized void requestNewConfiguration(int screenNumber,
+            SurfaceTextureDescription newDesc) {
+        if (newDesc != null && !surfaceStorage.containsValue(newDesc)
+                && !legendStorage.containsValue(newDesc)
                 && !dimensionsStorage.containsValue(newDesc)) {
 
             if (newScreen.containsKey(screenNumber)) {
@@ -127,15 +129,18 @@ public class TextureStorage2 {
         for (int i = 0; i < 4; i++) {
             if (oldScreen.containsKey(i)) {
                 SurfaceTextureDescription oldDesc = newScreen.get(i);
-                SurfaceTextureDescription newDesc = new SurfaceTextureDescription(frameNumber, oldDesc.getDepth(),
-                        oldDesc.getVarName(), oldDesc.getColorMap(), oldDesc.isDynamicDimensions());
+                SurfaceTextureDescription newDesc = new SurfaceTextureDescription(
+                        frameNumber, oldDesc.getDepth(), oldDesc.getVarName(),
+                        oldDesc.getColorMap(), oldDesc.isDynamicDimensions(),
+                        oldDesc.isDiff(), oldDesc.isSecondSet());
 
                 requestNewConfiguration(i, newDesc);
             }
         }
     }
 
-    public synchronized void setSurfaceImage(SurfaceTextureDescription desc, ByteBuffer data) {
+    public synchronized void setSurfaceImage(SurfaceTextureDescription desc,
+            ByteBuffer data) {
         if (newScreen.containsValue(desc) || oldScreen.containsValue(desc)) {
             surfaceStorage.put(desc, data);
         }

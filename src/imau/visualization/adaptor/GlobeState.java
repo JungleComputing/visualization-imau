@@ -116,9 +116,9 @@ public class GlobeState {
         String result = "";
 
         if (index == 0) {
-            result = "First Dataset";
+            result = "Control";
         } else if (index == 1) {
-            result = "Second Dataset";
+            result = "0.5 Sv";
         } else if (index == 2) {
             result = "Difference";
         }

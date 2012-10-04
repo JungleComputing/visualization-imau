@@ -33,11 +33,14 @@ public class NetCDFTimedPlayer2 implements Runnable {
 
     private final ImauInputHandler    inputHandler;
 
-    private NetCDFDatasetManager2     frameManagerDS1;
+    private NetCDFDatasetManager2     dsManager;
     private TextureStorage            texStorage;
 
     private boolean                   needsScreenshot    = false;
     private String                    screenshotFilename = "";
+
+    private long                      waittime           = settings
+                                                                 .getWaittimeMovie();
 
     public NetCDFTimedPlayer2(CustomJSlider timeBar,
             JFormattedTextField frameCounter) {
@@ -59,13 +62,29 @@ public class NetCDFTimedPlayer2 implements Runnable {
     }
 
     public void init(File fileDS1) {
-        this.frameManagerDS1 = new NetCDFDatasetManager2(fileDS1, 1, 4);
-        this.texStorage = frameManagerDS1.getTextureStorage();
+        this.dsManager = new NetCDFDatasetManager2(fileDS1, null, 1, 4);
+        this.texStorage = dsManager.getTextureStorage();
 
-        final int initialMaxBar = frameManagerDS1.getNumFiles() - 1;
+        final int initialMaxBar = dsManager.getNumFiles() - 1;
 
         timeBar.setMaximum(initialMaxBar);
         timeBar.setMinimum(0);
+
+        updateFrame(0, true);
+
+        initialized = true;
+    }
+
+    public void init(File fileDS1, File fileDS2) {
+        this.dsManager = new NetCDFDatasetManager2(fileDS1, fileDS2, 1, 4);
+        this.texStorage = dsManager.getTextureStorage();
+
+        final int initialMaxBar = dsManager.getNumFiles() - 1;
+
+        timeBar.setMaximum(initialMaxBar);
+        timeBar.setMinimum(0);
+
+        this.waittime = waittime * 2;
 
         updateFrame(0, true);
 
@@ -174,16 +193,23 @@ public class NetCDFTimedPlayer2 implements Runnable {
 
                         // Forward frame
                         if (currentState != states.REDRAWING) {
-                            updateFrame(frameNumber + 1, false);
+                            int newFrameNumber = frameNumber + 1;
+                            if (texStorage.doneWithLastRequest()) {
+                                texStorage.requestNewFrame(newFrameNumber);
+
+                                frameNumber = newFrameNumber;
+                                settings.setFrameNumber(newFrameNumber);
+                                this.timeBar.setValue(newFrameNumber);
+                                this.frameCounter.setValue(newFrameNumber);
+                            }
                         }
 
                         // Wait for the _rest_ of the timeframe
                         stopTime = System.currentTimeMillis();
                         long spentTime = stopTime - startTime;
 
-                        if (spentTime < settings.getWaittimeMovie()) {
-                            Thread.sleep(settings.getWaittimeMovie()
-                                    - spentTime);
+                        if (spentTime < waittime) {
+                            Thread.sleep(waittime - spentTime);
                         }
                     }
                 } catch (final InterruptedException e) {
@@ -224,7 +250,7 @@ public class NetCDFTimedPlayer2 implements Runnable {
 
     private synchronized void updateFrame(int newFrameNumber,
             boolean overrideUpdate) {
-        if (frameManagerDS1 != null) {
+        if (dsManager != null) {
             if (newFrameNumber != frameNumber || overrideUpdate) {
                 texStorage.requestNewFrame(newFrameNumber);
 

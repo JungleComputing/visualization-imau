@@ -445,6 +445,9 @@ public class NetCDFUtil {
         String number = String.format(format, value);
 
         File fileTry = new File(prefix + number + postfix);
+
+        logger.debug("Opening file: " + prefix + number + postfix);
+
         if (fileTry.exists())
             return fileTry;
 
