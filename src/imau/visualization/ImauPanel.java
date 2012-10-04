@@ -48,8 +48,12 @@ import util.ImauInputHandler;
 
 public class ImauPanel extends CommonPanel {
     public static enum TweakState {
-        NONE, DATA, VISUAL, MOVIE
+        NONE, DATA
     }
+
+    // public static enum TweakState {
+    // NONE, DATA, VISUAL, MOVIE
+    // }
 
     private final ImauSettings        settings           = ImauSettings
                                                                  .getInstance();
@@ -111,37 +115,37 @@ public class ImauPanel extends CommonPanel {
         // });
         // file.add(open2);
         menuBar.add(file);
-        final JMenu options = new JMenu("Options");
-
-        final JMenuItem makeMovie = new JMenuItem("Make movie.");
-        makeMovie.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.MOVIE);
-            }
-        });
-        options.add(makeMovie);
-
-        final JMenuItem showDataTweakPanel = new JMenuItem(
-                "Show data configuration panel.");
-        showDataTweakPanel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.DATA);
-            }
-        });
-        options.add(showDataTweakPanel);
-
-        final JMenuItem showVisualTweakPanel = new JMenuItem(
-                "Show visual configuration panel.");
-        showVisualTweakPanel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.VISUAL);
-            }
-        });
-        options.add(showVisualTweakPanel);
-        menuBar.add(options);
+        // final JMenu options = new JMenu("Options");
+        //
+        // final JMenuItem makeMovie = new JMenuItem("Make movie.");
+        // makeMovie.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // setTweakState(TweakState.MOVIE);
+        // }
+        // });
+        // options.add(makeMovie);
+        //
+        // final JMenuItem showDataTweakPanel = new JMenuItem(
+        // "Show data configuration panel.");
+        // showDataTweakPanel.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // setTweakState(TweakState.DATA);
+        // }
+        // });
+        // options.add(showDataTweakPanel);
+        //
+        // final JMenuItem showVisualTweakPanel = new JMenuItem(
+        // "Show visual configuration panel.");
+        // showVisualTweakPanel.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // setTweakState(TweakState.VISUAL);
+        // }
+        // });
+        // options.add(showVisualTweakPanel);
+        // menuBar.add(options);
 
         add(menuBar, BorderLayout.NORTH);
 
@@ -183,6 +187,8 @@ public class ImauPanel extends CommonPanel {
                 handleFile(cmdlnfile);
             }
         }
+
+        setTweakState(TweakState.DATA);
     }
 
     void close() {
@@ -392,28 +398,28 @@ public class ImauPanel extends CommonPanel {
     }
 
     private void createDataTweakPanel() {
-        final ItemListener listener = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent arg0) {
-                setTweakState(TweakState.NONE);
-            }
-        };
-        dataConfig.add(GoggleSwing.titleBox("Configuration", listener));
+        // final ItemListener listener = new ItemListener() {
+        // @Override
+        // public void itemStateChanged(ItemEvent arg0) {
+        // setTweakState(TweakState.NONE);
+        // }
+        // };
+        // dataConfig.add(GoggleSwing.titleBox("Configuration", listener));
 
-        final JLabel depthSetting = new JLabel("" + settings.getDepthDef());
-        final ChangeListener depthListener = new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                final JSlider source = (JSlider) e.getSource();
-                if (source.hasFocus()) {
-                    settings.setDepth(source.getValue());
-                    depthSetting.setText("" + settings.getDepthDef());
-                }
-            }
-        };
-        dataConfig.add(GoggleSwing.sliderBox("Depth setting", depthListener,
-                settings.getDepthMin(), settings.getDepthMax(), 1,
-                settings.getDepthDef(), depthSetting));
+        // final JLabel depthSetting = new JLabel("" + settings.getDepthDef());
+        // final ChangeListener depthListener = new ChangeListener() {
+        // @Override
+        // public void stateChanged(ChangeEvent e) {
+        // final JSlider source = (JSlider) e.getSource();
+        // if (source.hasFocus()) {
+        // settings.setDepth(source.getValue());
+        // depthSetting.setText("" + settings.getDepthDef());
+        // }
+        // }
+        // };
+        // dataConfig.add(GoggleSwing.sliderBox("Depth setting", depthListener,
+        // settings.getDepthMin(), settings.getDepthMax(), 1,
+        // settings.getDepthDef(), depthSetting));
 
         final ArrayList<Component> vcomponents = new ArrayList<Component>();
         JLabel windowlabel = new JLabel("Window Selection");
@@ -802,12 +808,12 @@ public class ImauPanel extends CommonPanel {
         } else if (currentConfigState == TweakState.DATA) {
             configPanel.setVisible(true);
             configPanel.add(dataConfig, BorderLayout.WEST);
-        } else if (currentConfigState == TweakState.VISUAL) {
-            configPanel.setVisible(true);
-            configPanel.add(visualConfig, BorderLayout.WEST);
-        } else if (currentConfigState == TweakState.MOVIE) {
-            configPanel.setVisible(true);
-            configPanel.add(movieConfig, BorderLayout.WEST);
+            // } else if (currentConfigState == TweakState.VISUAL) {
+            // configPanel.setVisible(true);
+            // configPanel.add(visualConfig, BorderLayout.WEST);
+            // } else if (currentConfigState == TweakState.MOVIE) {
+            // configPanel.setVisible(true);
+            // configPanel.add(movieConfig, BorderLayout.WEST);
         }
     }
 

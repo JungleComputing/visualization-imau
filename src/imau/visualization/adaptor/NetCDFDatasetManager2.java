@@ -191,30 +191,33 @@ public class NetCDFDatasetManager2 {
     }
 
     public void buildImages(SurfaceTextureDescription desc) {
-        int frameNumber = availableFrameSequenceNumbers.get(desc
-                .getFrameNumber());
-        NetcdfFile frameFile1;
-        try {
-            if (!desc.isDiff()) {
-                if (desc.secondSet && ncfile2 != null) {
-                    frameFile1 = NetCDFUtil.open(NetCDFUtil.getSeqFile(ncfile2,
-                            frameNumber));
+        if (desc.getFrameNumber() < availableFrameSequenceNumbers.size()) {
+            int frameNumber = availableFrameSequenceNumbers.get(desc
+                    .getFrameNumber());
+
+            NetcdfFile frameFile1;
+            try {
+                if (!desc.isDiff()) {
+                    if (desc.secondSet && ncfile2 != null) {
+                        frameFile1 = NetCDFUtil.open(NetCDFUtil.getSeqFile(
+                                ncfile2, frameNumber));
+                    } else {
+                        frameFile1 = NetCDFUtil.open(NetCDFUtil.getSeqFile(
+                                ncfile1, frameNumber));
+                    }
+                    IOJobExecute(new NetCDFArray(frameFile1, desc));
                 } else {
                     frameFile1 = NetCDFUtil.open(NetCDFUtil.getSeqFile(ncfile1,
                             frameNumber));
+                    NetcdfFile frameFile2 = NetCDFUtil.open(NetCDFUtil
+                            .getSeqFile(ncfile2, frameNumber));
+                    IOJobExecute(new NetCDFArray(frameFile1, frameFile2, desc));
                 }
-                IOJobExecute(new NetCDFArray(frameFile1, desc));
-            } else {
-                frameFile1 = NetCDFUtil.open(NetCDFUtil.getSeqFile(ncfile1,
-                        frameNumber));
-                NetcdfFile frameFile2 = NetCDFUtil.open(NetCDFUtil.getSeqFile(
-                        ncfile2, frameNumber));
-                IOJobExecute(new NetCDFArray(frameFile1, frameFile2, desc));
-            }
 
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 

@@ -71,7 +71,8 @@ public class ImauWindow extends CommonWindow {
     private MultiColorText     varNameTextLT, varNameTextRT, varNameTextLB,
             varNameTextRB, legendTextLTmin, legendTextRTmin, legendTextLBmin,
             legendTextRBmin, legendTextLTmax, legendTextRTmax, legendTextLBmax,
-            legendTextRBmax, dateTextLT, dateTextRT, dateTextLB, dateTextRB;
+            legendTextRBmax, dateTextLT, dateTextRT, dateTextLB, dateTextRB,
+            datasetTextLT, datasetTextRT, datasetTextLB, datasetTextRB;
 
     private int                fontSize     = 80;
 
@@ -208,6 +209,9 @@ public class ImauWindow extends CommonWindow {
             varNameTextLT.setString(gl, variableName, Color4.white, fontSize);
             dateTextLT.setString(gl, settings.getMonth(state.getFrameNumber()),
                     Color4.white, fontSize);
+            datasetTextLT.setString(gl,
+                    GlobeState.verbalizeDataMode(state.getDataModeIndex()),
+                    Color4.white, fontSize);
             legendTextLTmin.setString(gl, min, Color4.white, fontSize);
             legendTextLTmax.setString(gl, max, Color4.white, fontSize);
 
@@ -228,8 +232,8 @@ public class ImauWindow extends CommonWindow {
 
         drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
                 sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextLT, dateTextLT, legendTextLTmin,
-                legendTextLTmax, ltFBO);
+                heightMap, varNameTextLT, dateTextLT, datasetTextLT,
+                legendTextLTmin, legendTextLTmax, ltFBO);
 
         surface.delete(gl);
         legend.delete(gl);
@@ -266,6 +270,9 @@ public class ImauWindow extends CommonWindow {
             varNameTextRT.setString(gl, variableName, Color4.white, fontSize);
             dateTextRT.setString(gl, settings.getMonth(state.getFrameNumber()),
                     Color4.white, fontSize);
+            datasetTextRT.setString(gl,
+                    GlobeState.verbalizeDataMode(state.getDataModeIndex()),
+                    Color4.white, fontSize);
             legendTextRTmin.setString(gl, min, Color4.white, fontSize);
             legendTextRTmax.setString(gl, max, Color4.white, fontSize);
             rtState = state;
@@ -281,8 +288,8 @@ public class ImauWindow extends CommonWindow {
 
         drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
                 sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextRT, dateTextRT, legendTextRTmin,
-                legendTextRTmax, rtFBO);
+                heightMap, varNameTextRT, dateTextRT, datasetTextRT,
+                legendTextRTmin, legendTextRTmax, rtFBO);
 
         surface.delete(gl);
         legend.delete(gl);
@@ -315,6 +322,9 @@ public class ImauWindow extends CommonWindow {
             varNameTextLB.setString(gl, variableName, Color4.white, fontSize);
             dateTextLB.setString(gl, settings.getMonth(state.getFrameNumber()),
                     Color4.white, fontSize);
+            datasetTextLB.setString(gl,
+                    GlobeState.verbalizeDataMode(state.getDataModeIndex()),
+                    Color4.white, fontSize);
             legendTextLBmin.setString(gl, min, Color4.white, fontSize);
             legendTextLBmax.setString(gl, max, Color4.white, fontSize);
 
@@ -333,8 +343,8 @@ public class ImauWindow extends CommonWindow {
 
         drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
                 sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextLB, dateTextLB, legendTextLBmin,
-                legendTextLBmax, lbFBO);
+                heightMap, varNameTextLB, dateTextLB, datasetTextLB,
+                legendTextLBmin, legendTextLBmax, lbFBO);
 
         surface.delete(gl);
         legend.delete(gl);
@@ -367,6 +377,9 @@ public class ImauWindow extends CommonWindow {
             varNameTextRB.setString(gl, variableName, Color4.white, fontSize);
             dateTextRB.setString(gl, settings.getMonth(state.getFrameNumber()),
                     Color4.white, fontSize);
+            datasetTextRB.setString(gl,
+                    GlobeState.verbalizeDataMode(state.getDataModeIndex()),
+                    Color4.white, fontSize);
             legendTextRBmin.setString(gl, min, Color4.white, fontSize);
             legendTextRBmax.setString(gl, max, Color4.white, fontSize);
 
@@ -385,8 +398,8 @@ public class ImauWindow extends CommonWindow {
 
         drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
                 sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextRB, dateTextRB, legendTextRBmin,
-                legendTextRBmax, rbFBO);
+                heightMap, varNameTextRB, dateTextRB, datasetTextRB,
+                legendTextRBmin, legendTextRBmax, rbFBO);
 
         surface.delete(gl);
         legend.delete(gl);
@@ -401,10 +414,11 @@ public class ImauWindow extends CommonWindow {
             FBO hudLegendTextureFBO, FBO sphereTextureFBO, final int width,
             final int height, final GL3 gl, MatF4 mv, Texture2D legend,
             Texture2D globe, Texture2D heightMap, MultiColorText varNameText,
-            MultiColorText dateText, MultiColorText legendTextMin,
-            MultiColorText legendTextMax, FBO target) {
-        drawHUDText(gl, width, height, varNameText, dateText, legendTextMin,
-                legendTextMax, textProgram, hudTextFBO);
+            MultiColorText dateText, MultiColorText datasetText,
+            MultiColorText legendTextMin, MultiColorText legendTextMax,
+            FBO target) {
+        drawHUDText(gl, width, height, varNameText, dateText, datasetText,
+                legendTextMin, legendTextMax, textProgram, hudTextFBO);
         drawHUDLegend(gl, width, height, legend, legendProgram,
                 hudLegendTextureFBO);
         drawSphere(gl, mv, globe, heightMap, texturedSphereProgram,
@@ -476,8 +490,8 @@ public class ImauWindow extends CommonWindow {
 
     private void drawHUDText(GL3 gl, int width, int height,
             MultiColorText varNameText, MultiColorText dateText,
-            MultiColorText legendTextMin, MultiColorText legendTextMax,
-            Program textProgram, FBO target) {
+            MultiColorText datasetText, MultiColorText legendTextMin,
+            MultiColorText legendTextMax, Program textProgram, FBO target) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -486,15 +500,20 @@ public class ImauWindow extends CommonWindow {
 
             // Draw text
             int textLength = varNameText.toString().length() * fontSize;
+
             varNameText.draw(
                     gl,
                     textProgram,
                     Text.getPMVForHUD(width, height, 2 * width - textLength
                             - 150, 40));
 
+            textLength = datasetText.toString().length() * fontSize;
+            datasetText.draw(gl, textProgram,
+                    Text.getPMVForHUD(width, height, 10, 1.9f * height));
+
             textLength = dateText.toString().length() * fontSize;
             dateText.draw(gl, textProgram,
-                    Text.getPMVForHUD(width, height, 0, 40));
+                    Text.getPMVForHUD(width, height, 10, 40));
 
             textLength = legendTextMin.toString().length() * fontSize;
             legendTextMin.draw(
@@ -840,6 +859,11 @@ public class ImauWindow extends CommonWindow {
         dateTextLB = new MultiColorText(textMaterial, font);
         dateTextRB = new MultiColorText(textMaterial, font);
 
+        datasetTextLT = new MultiColorText(textMaterial, font);
+        datasetTextRT = new MultiColorText(textMaterial, font);
+        datasetTextLB = new MultiColorText(textMaterial, font);
+        datasetTextRB = new MultiColorText(textMaterial, font);
+
         varNameTextLT.init(gl);
         varNameTextRT.init(gl);
         varNameTextLB.init(gl);
@@ -859,6 +883,11 @@ public class ImauWindow extends CommonWindow {
         dateTextRT.init(gl);
         dateTextLB.init(gl);
         dateTextRB.init(gl);
+
+        datasetTextLT.init(gl);
+        datasetTextRT.init(gl);
+        datasetTextLB.init(gl);
+        datasetTextRB.init(gl);
 
         // varNameTextLT.finalizeColorScheme(gl);
         // varNameTextRT.finalizeColorScheme(gl);
