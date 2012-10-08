@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "../../sage-code/sage3.0/include/libsage.h"
+#include "../../sage-code/sage/include/libsage.h"
 
 #include "imau_visualization_jni_SageInterface.h"
 

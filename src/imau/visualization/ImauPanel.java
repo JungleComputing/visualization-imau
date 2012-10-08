@@ -147,6 +147,41 @@ public class ImauPanel extends CommonPanel {
         // options.add(showVisualTweakPanel);
         // menuBar.add(options);
 
+        ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
+                "images/ESCIENCE_logo.jpg", "eScienceCenter Logo", 311, 28);
+        JLabel nlesclogo = new JLabel(nlescIcon);
+        nlesclogo.setMinimumSize(new Dimension(300, 20));
+        nlesclogo.setMaximumSize(new Dimension(311, 28));
+
+        ImageIcon saraIcon = GoggleSwing.createResizedImageIcon(
+                "images/logo_sara.png", "SARA Logo", 41, 28);
+        JLabel saralogo = new JLabel(saraIcon);
+        saralogo.setMinimumSize(new Dimension(40, 20));
+        saralogo.setMaximumSize(new Dimension(41, 28));
+        menuBar.add(Box.createHorizontalStrut(3));
+
+        ImageIcon imauIcon = GoggleSwing.createResizedImageIcon(
+                "images/logo_imau.png", "IMAU Logo", 52, 28);
+        JLabel imaulogo = new JLabel(imauIcon);
+        imaulogo.setMinimumSize(new Dimension(50, 20));
+        imaulogo.setMaximumSize(new Dimension(52, 28));
+
+        ImageIcon qrIcon = GoggleSwing.createResizedImageIcon(
+                "images/qrcode_nlesc.png", "QR", 28, 28);
+        JLabel qr = new JLabel(qrIcon);
+        qr.setMinimumSize(new Dimension(20, 20));
+        qr.setMaximumSize(new Dimension(28, 28));
+
+        menuBar.add(Box.createHorizontalGlue());
+        menuBar.add(imaulogo);
+        menuBar.add(Box.createHorizontalStrut(30));
+        menuBar.add(saralogo);
+        menuBar.add(Box.createHorizontalStrut(30));
+        menuBar.add(nlesclogo);
+        menuBar.add(Box.createHorizontalStrut(30));
+        menuBar.add(qr);
+        menuBar.add(Box.createHorizontalStrut(10));
+
         add(menuBar, BorderLayout.NORTH);
 
         // Make the "media player" panel

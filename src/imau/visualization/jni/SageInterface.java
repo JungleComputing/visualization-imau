@@ -22,7 +22,8 @@ public class SageInterface {
             System.exit(1);
         }
 
-        System.out.println("Libraries loaded.");
+        System.out.println("Libraries loaded, sending " + (width * height)
+                + " pixels in WxH: " + width + "x" + height + ".");
         setup(width, height, fps);
     }
 

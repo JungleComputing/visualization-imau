@@ -3,6 +3,7 @@ package util;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
@@ -104,6 +105,18 @@ public class GoggleSwing {
         result.setToolTipText(description);
         result.setFocusPainted(false);
         return result;
+    }
+
+    public static ImageIcon createResizedImageIcon(String path,
+            String description, int width, int height) {
+        ImageIcon icon = createImageIcon(path, description);
+        Image img = icon.getImage();
+
+        Image newimg = img.getScaledInstance(width, height,
+                java.awt.Image.SCALE_SMOOTH);
+        ImageIcon newIcon = new ImageIcon(newimg);
+
+        return newIcon;
     }
 
     /** Returns an ImageIcon, or null if the path was invalid. */

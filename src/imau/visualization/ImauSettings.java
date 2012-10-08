@@ -33,7 +33,7 @@ public class ImauSettings extends Settings {
     private static GlobeState    globeStateRT              = new GlobeState(
                                                                    GlobeState.DataMode.FIRST_DATASET,
                                                                    false,
-                                                                   GlobeState.Variable.SSH,
+                                                                   GlobeState.Variable.KE,
                                                                    75, 0,
                                                                    "default");
     private static GlobeState    globeStateLB              = new GlobeState(
@@ -103,7 +103,7 @@ public class ImauSettings extends Settings {
     private static float         MAX_DIFF_VVEL             = 100f;
 
     private static float         MIN_KE                    = 0f;
-    private static float         MAX_KE                    = 17000f;
+    private static float         MAX_KE                    = 10000f;
     private static float         MIN_DIFF_KE               = -5000f;
     private static float         MAX_DIFF_KE               = 5000f;
 
@@ -136,13 +136,14 @@ public class ImauSettings extends Settings {
     private static boolean       DYNAMIC_DIMENSIONS        = false;
 
     private static boolean       IMAGE_STREAM_OUTPUT       = false;
+    private static final int     SAGE_FRAMES_PER_SECOND    = 10;
     private static boolean       IMAGE_STREAM_GL_ONLY      = true;
 
     private static float         HEIGHT_DISTORION          = 0f;
     private static float         HEIGHT_DISTORION_MIN      = 0f;
     private static float         HEIGHT_DISTORION_MAX      = .01f;
 
-    private static String        SAGE_DIRECTORY            = "/home/maarten/sage-code/sage3.0";
+    private static String        SAGE_DIRECTORY            = "/home/maarten/sage-code/sage";
 
     private static final boolean TOUCH_CONNECTED           = false;
 
@@ -183,10 +184,8 @@ public class ImauSettings extends Settings {
                     .getLongProperty("WAITTIME_FOR_MOVIE");
             ImauSettings.EPSILON = props.getFloatProperty("EPSILON");
 
-            ImauSettings.FILE_EXTENSION_LENGTH = props
-                    .getIntProperty("FILE_EXTENSION_LENGTH");
-            ImauSettings.FILE_NUMBER_LENGTH = props
-                    .getIntProperty("FILE_NUMBER_LENGTH");
+            ImauSettings.FILE_EXTENSION_LENGTH = props.getIntProperty(
+                    "FILE_EXTENSION_LENGTH", FILE_EXTENSION_LENGTH);
 
             ImauSettings.PREPROCESSING_AMOUNT = props
                     .getIntProperty("PREPROCESSING_AMOUNT");
@@ -232,6 +231,9 @@ public class ImauSettings extends Settings {
             ImauSettings.DEPTH_MIN = props.getIntProperty("DEPTH_MIN");
             ImauSettings.DEPTH_DEF = props.getIntProperty("DEPTH_DEF");
             ImauSettings.DEPTH_MAX = props.getIntProperty("DEPTH_MAX");
+
+            ImauSettings.IMAGE_STREAM_OUTPUT = props
+                    .getBooleanProperty("IMAGE_STREAM_OUTPUT");
         } catch (NumberFormatException e) {
             logger.warn(e.getMessage());
         }
@@ -1065,5 +1067,9 @@ public class ImauSettings extends Settings {
         result += ", year " + (75 + (int) Math.floor(frameNumber / 12));
 
         return result;
+    }
+
+    public int getSageFramesPerSecond() {
+        return SAGE_FRAMES_PER_SECOND;
     }
 }

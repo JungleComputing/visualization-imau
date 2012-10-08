@@ -948,7 +948,8 @@ public class ImauWindow extends CommonWindow {
                 frameDim = new Dimension(canvasWidth, canvasHeight);
             }
 
-            sage = new SageInterface(frameDim.width, frameDim.height, 60);
+            sage = new SageInterface(frameDim.width, frameDim.height,
+                    settings.getSageFramesPerSecond());
         }
     }
 
