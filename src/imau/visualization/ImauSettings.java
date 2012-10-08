@@ -184,56 +184,57 @@ public class ImauSettings extends Settings {
                     .getLongProperty("WAITTIME_FOR_MOVIE");
             ImauSettings.EPSILON = props.getFloatProperty("EPSILON");
 
-            ImauSettings.FILE_EXTENSION_LENGTH = props.getIntProperty(
-                    "FILE_EXTENSION_LENGTH", FILE_EXTENSION_LENGTH);
-
-            ImauSettings.PREPROCESSING_AMOUNT = props
-                    .getIntProperty("PREPROCESSING_AMOUNT");
-
-            ImauSettings.MAX_SSH = props.getFloatProperty("MAX_SSH");
-            ImauSettings.MIN_SSH = props.getFloatProperty("MIN_SSH");
-            ImauSettings.MAX_DIFF_SSH = props.getFloatProperty("MAX_DIFF_SSH");
-            ImauSettings.MIN_DIFF_SSH = props.getFloatProperty("MIN_DIFF_SSH");
-
-            ImauSettings.MAX_SHF = props.getFloatProperty("MAX_SHF");
-            ImauSettings.MIN_SHF = props.getFloatProperty("MIN_SHF");
-            ImauSettings.MAX_DIFF_SHF = props.getFloatProperty("MAX_DIFF_SHF");
-            ImauSettings.MIN_DIFF_SHF = props.getFloatProperty("MIN_DIFF_SHF");
-
-            ImauSettings.MAX_SFWF = props.getFloatProperty("MAX_SFWF");
-            ImauSettings.MIN_SFWF = props.getFloatProperty("MIN_SFWF");
-            ImauSettings.MAX_DIFF_SFWF = props
-                    .getFloatProperty("MAX_DIFF_SFWF");
-            ImauSettings.MIN_DIFF_SFWF = props
-                    .getFloatProperty("MIN_DIFF_SFWF");
-
-            ImauSettings.MAX_HMXL = props.getFloatProperty("MAX_HMXL");
-            ImauSettings.MIN_HMXL = props.getFloatProperty("MIN_HMXL");
-            ImauSettings.MAX_DIFF_HMXL = props
-                    .getFloatProperty("MAX_DIFF_HMXL");
-            ImauSettings.MIN_DIFF_HMXL = props
-                    .getFloatProperty("MIN_DIFF_HMXL");
-
-            ImauSettings.MAX_SALT = props.getFloatProperty("MAX_SALT");
-            ImauSettings.MIN_SALT = props.getFloatProperty("MIN_SALT");
-            ImauSettings.MAX_DIFF_SALT = props
-                    .getFloatProperty("MAX_DIFF_SALT");
-            ImauSettings.MIN_DIFF_SALT = props
-                    .getFloatProperty("MIN_DIFF_SALT");
-
-            ImauSettings.MAX_TEMP = props.getFloatProperty("MAX_TEMP");
-            ImauSettings.MIN_TEMP = props.getFloatProperty("MIN_TEMP");
-            ImauSettings.MAX_DIFF_TEMP = props
-                    .getFloatProperty("MAX_DIFF_TEMP");
-            ImauSettings.MIN_DIFF_TEMP = props
-                    .getFloatProperty("MIN_DIFF_TEMP");
-
-            ImauSettings.DEPTH_MIN = props.getIntProperty("DEPTH_MIN");
-            ImauSettings.DEPTH_DEF = props.getIntProperty("DEPTH_DEF");
-            ImauSettings.DEPTH_MAX = props.getIntProperty("DEPTH_MAX");
-
             ImauSettings.IMAGE_STREAM_OUTPUT = props
                     .getBooleanProperty("IMAGE_STREAM_OUTPUT");
+
+            // ImauSettings.PREPROCESSING_AMOUNT = props
+            // .getIntProperty("PREPROCESSING_AMOUNT");
+            //
+            // ImauSettings.MAX_SSH = props.getFloatProperty("MAX_SSH");
+            // ImauSettings.MIN_SSH = props.getFloatProperty("MIN_SSH");
+            // ImauSettings.MAX_DIFF_SSH =
+            // props.getFloatProperty("MAX_DIFF_SSH");
+            // ImauSettings.MIN_DIFF_SSH =
+            // props.getFloatProperty("MIN_DIFF_SSH");
+            //
+            // ImauSettings.MAX_SHF = props.getFloatProperty("MAX_SHF");
+            // ImauSettings.MIN_SHF = props.getFloatProperty("MIN_SHF");
+            // ImauSettings.MAX_DIFF_SHF =
+            // props.getFloatProperty("MAX_DIFF_SHF");
+            // ImauSettings.MIN_DIFF_SHF =
+            // props.getFloatProperty("MIN_DIFF_SHF");
+            //
+            // ImauSettings.MAX_SFWF = props.getFloatProperty("MAX_SFWF");
+            // ImauSettings.MIN_SFWF = props.getFloatProperty("MIN_SFWF");
+            // ImauSettings.MAX_DIFF_SFWF = props
+            // .getFloatProperty("MAX_DIFF_SFWF");
+            // ImauSettings.MIN_DIFF_SFWF = props
+            // .getFloatProperty("MIN_DIFF_SFWF");
+            //
+            // ImauSettings.MAX_HMXL = props.getFloatProperty("MAX_HMXL");
+            // ImauSettings.MIN_HMXL = props.getFloatProperty("MIN_HMXL");
+            // ImauSettings.MAX_DIFF_HMXL = props
+            // .getFloatProperty("MAX_DIFF_HMXL");
+            // ImauSettings.MIN_DIFF_HMXL = props
+            // .getFloatProperty("MIN_DIFF_HMXL");
+            //
+            // ImauSettings.MAX_SALT = props.getFloatProperty("MAX_SALT");
+            // ImauSettings.MIN_SALT = props.getFloatProperty("MIN_SALT");
+            // ImauSettings.MAX_DIFF_SALT = props
+            // .getFloatProperty("MAX_DIFF_SALT");
+            // ImauSettings.MIN_DIFF_SALT = props
+            // .getFloatProperty("MIN_DIFF_SALT");
+            //
+            // ImauSettings.MAX_TEMP = props.getFloatProperty("MAX_TEMP");
+            // ImauSettings.MIN_TEMP = props.getFloatProperty("MIN_TEMP");
+            // ImauSettings.MAX_DIFF_TEMP = props
+            // .getFloatProperty("MAX_DIFF_TEMP");
+            // ImauSettings.MIN_DIFF_TEMP = props
+            // .getFloatProperty("MIN_DIFF_TEMP");
+            //
+            // ImauSettings.DEPTH_MIN = props.getIntProperty("DEPTH_MIN");
+            // ImauSettings.DEPTH_DEF = props.getIntProperty("DEPTH_DEF");
+            // ImauSettings.DEPTH_MAX = props.getIntProperty("DEPTH_MAX");
         } catch (NumberFormatException e) {
             logger.warn(e.getMessage());
         }

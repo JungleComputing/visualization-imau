@@ -166,11 +166,11 @@ public class ImauPanel extends CommonPanel {
         imaulogo.setMinimumSize(new Dimension(50, 20));
         imaulogo.setMaximumSize(new Dimension(52, 28));
 
-        ImageIcon qrIcon = GoggleSwing.createResizedImageIcon(
-                "images/qrcode_nlesc.png", "QR", 28, 28);
-        JLabel qr = new JLabel(qrIcon);
-        qr.setMinimumSize(new Dimension(20, 20));
-        qr.setMaximumSize(new Dimension(28, 28));
+        // ImageIcon qrIcon = GoggleSwing.createResizedImageIcon(
+        // "images/qrcode_nlesc.png", "QR", 28, 28);
+        // JLabel qr = new JLabel(qrIcon);
+        // qr.setMinimumSize(new Dimension(20, 20));
+        // qr.setMaximumSize(new Dimension(28, 28));
 
         menuBar.add(Box.createHorizontalGlue());
         menuBar.add(imaulogo);
@@ -178,9 +178,9 @@ public class ImauPanel extends CommonPanel {
         menuBar.add(saralogo);
         menuBar.add(Box.createHorizontalStrut(30));
         menuBar.add(nlesclogo);
-        menuBar.add(Box.createHorizontalStrut(30));
-        menuBar.add(qr);
         menuBar.add(Box.createHorizontalStrut(10));
+        // menuBar.add(qr);
+        // menuBar.add(Box.createHorizontalStrut(10));
 
         add(menuBar, BorderLayout.NORTH);
 
