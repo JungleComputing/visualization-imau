@@ -2,174 +2,206 @@ package imau.visualization;
 
 import imau.visualization.adaptor.GlobeState;
 import imau.visualization.adaptor.GlobeState.Variable;
-import openglCommon.util.Settings;
 import openglCommon.util.TypedProperties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImauSettings extends Settings {
-    private final static Logger logger = LoggerFactory
-                                               .getLogger(ImauSettings.class);
+public class ImauSettings {
+    private final Logger logger = LoggerFactory.getLogger(ImauSettings.class);
 
     private static class SingletonHolder {
         public final static ImauSettings instance = new ImauSettings();
     }
 
-    public static enum GlobeMode {
+    public static ImauSettings getInstance() {
+        return SingletonHolder.instance;
+    }
+
+    public enum GlobeMode {
         FIRST_DATASET, SECOND_DATASET, DIFF
     };
 
-    public static enum Months {
+    public enum Months {
         Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
     };
 
-    private static GlobeState    globeStateLT              = new GlobeState(
-                                                                   GlobeState.DataMode.FIRST_DATASET,
-                                                                   false,
-                                                                   GlobeState.Variable.TEMP,
-                                                                   75, 0,
-                                                                   "default");
-    private static GlobeState    globeStateRT              = new GlobeState(
-                                                                   GlobeState.DataMode.FIRST_DATASET,
-                                                                   false,
-                                                                   GlobeState.Variable.KE,
-                                                                   75, 0,
-                                                                   "default");
-    private static GlobeState    globeStateLB              = new GlobeState(
-                                                                   GlobeState.DataMode.FIRST_DATASET,
-                                                                   false,
-                                                                   GlobeState.Variable.SALT,
-                                                                   75, 0,
-                                                                   "inv_diff");
-    private static GlobeState    globeStateRB              = new GlobeState(
-                                                                   GlobeState.DataMode.FIRST_DATASET,
-                                                                   false,
-                                                                   GlobeState.Variable.HMXL,
-                                                                   75, 0,
-                                                                   "hotres");
+    private boolean        STEREO_RENDERING           = true;
+    private boolean        STEREO_SWITCHED            = true;
 
-    private static long          WAITTIME_FOR_RETRY        = 10000;
-    private static long          WAITTIME_FOR_MOVIE        = 1000;
-    private static float         EPSILON                   = 1.0E-7f;
+    private float          STEREO_OCULAR_DISTANCE_MIN = 0f;
+    private float          STEREO_OCULAR_DISTANCE_DEF = .2f;
+    private float          STEREO_OCULAR_DISTANCE_MAX = 1f;
 
-    private static int           FILE_EXTENSION_LENGTH     = 2;
-    private static int           FILE_NUMBER_LENGTH        = 4;
+    // Size settings for default startup and screenshots
+    private int            DEFAULT_SCREEN_WIDTH       = 1024;
+    private int            DEFAULT_SCREEN_HEIGHT      = 768;
 
-    private static String[]      ACCEPTABLE_POSTFIXES      = { ".nc" };
+    private int            SCREENSHOT_SCREEN_WIDTH    = 1280;
+    private int            SCREENSHOT_SCREEN_HEIGHT   = 720;
 
-    private static String        CURRENT_POSTFIX           = "nc";
+    // Settings for the initial view
+    private int            INITIAL_SIMULATION_FRAME   = 0;
+    private float          INITIAL_ROTATION_X         = 17f;
+    private float          INITIAL_ROTATION_Y         = -25f;
+    private float          INITIAL_ZOOM               = -390.0f;
 
-    private static int           PREPROCESSING_AMOUNT      = 2;
+    // Setting per movie frame
+    private boolean        MOVIE_ROTATE               = true;
+    private float          MOVIE_ROTATION_SPEED_MIN   = -1f;
+    private float          MOVIE_ROTATION_SPEED_MAX   = 1f;
+    private float          MOVIE_ROTATION_SPEED_DEF   = -0.25f;
 
-    private static float         MIN_SSH                   = -200f;
-    private static float         MAX_SSH                   = 100f;
-    private static float         MIN_DIFF_SSH              = -100f;
-    private static float         MAX_DIFF_SSH              = 100f;
+    // Settings for the gas cloud octree
+    private int            MAX_OCTREE_DEPTH           = 25;
+    private float          OCTREE_EDGES               = 800f;
 
-    private static float         MIN_SHF                   = -400f;
-    private static float         MAX_SHF                   = 250f;
-    private static float         MIN_DIFF_SHF              = -150f;
-    private static float         MAX_DIFF_SHF              = 150f;
+    // Settings that should never change, but are listed here to make sure they
+    // can be found if necessary
+    private int            MAX_EXPECTED_MODELS        = 1000;
 
-    private static float         MIN_SFWF                  = -3E-4f;
-    private static float         MAX_SFWF                  = 3E-4f;
-    private static float         MIN_DIFF_SFWF             = -1E-4f;
-    private static float         MAX_DIFF_SFWF             = 1E-4f;
+    protected String       SCREENSHOT_PATH            = System.getProperty("user.dir")
+                                                              + System.getProperty("path.separator");
 
-    private static float         MIN_HMXL                  = 0f;
-    private static float         MAX_HMXL                  = 150000f;
-    private static float         MIN_DIFF_HMXL             = -50000f;
-    private static float         MAX_DIFF_HMXL             = 50000f;
+    private GlobeState     globeStateLT               = new GlobeState(
+                                                              GlobeState.DataMode.FIRST_DATASET,
+                                                              false,
+                                                              GlobeState.Variable.TEMP,
+                                                              75, 0, "default");
+    private GlobeState     globeStateRT               = new GlobeState(
+                                                              GlobeState.DataMode.FIRST_DATASET,
+                                                              false,
+                                                              GlobeState.Variable.KE,
+                                                              75, 0, "rainbow");
+    private GlobeState     globeStateLB               = new GlobeState(
+                                                              GlobeState.DataMode.FIRST_DATASET,
+                                                              false,
+                                                              GlobeState.Variable.SALT,
+                                                              75, 0, "inv_diff");
+    private GlobeState     globeStateRB               = new GlobeState(
+                                                              GlobeState.DataMode.FIRST_DATASET,
+                                                              false,
+                                                              GlobeState.Variable.HMXL,
+                                                              75, 0, "hotres");
 
-    private static float         MIN_SALT                  = 0.03f;
-    private static float         MAX_SALT                  = 0.04f;
-    private static float         MIN_DIFF_SALT             = -0.025f;
-    private static float         MAX_DIFF_SALT             = 0.025f;
+    private long           WAITTIME_FOR_RETRY         = 10000;
+    private long           WAITTIME_FOR_MOVIE         = 1000;
+    private int            TIME_STEP_SIZE             = 1;
+    private float          EPSILON                    = 1.0E-7f;
 
-    private static float         MIN_TEMP                  = -2f;
-    private static float         MAX_TEMP                  = 30f;
-    private static float         MIN_DIFF_TEMP             = -15f;
-    private static float         MAX_DIFF_TEMP             = 15f;
+    private int            FILE_EXTENSION_LENGTH      = 2;
+    private int            FILE_NUMBER_LENGTH         = 4;
 
-    private static float         MIN_UVEL                  = -200f;
-    private static float         MAX_UVEL                  = 200f;
-    private static float         MIN_DIFF_UVEL             = -100f;
-    private static float         MAX_DIFF_UVEL             = 100f;
+    private final String[] ACCEPTABLE_POSTFIXES       = { ".nc" };
 
-    private static float         MIN_VVEL                  = -200f;
-    private static float         MAX_VVEL                  = 200f;
-    private static float         MIN_DIFF_VVEL             = -100f;
-    private static float         MAX_DIFF_VVEL             = 100f;
+    private String         CURRENT_POSTFIX            = "nc";
 
-    private static float         MIN_KE                    = 0f;
-    private static float         MAX_KE                    = 10000f;
-    private static float         MIN_DIFF_KE               = -5000f;
-    private static float         MAX_DIFF_KE               = 5000f;
+    private int            PREPROCESSING_AMOUNT       = 2;
 
-    private static float         MIN_PD                    = 1f;
-    private static float         MAX_PD                    = 1.04f;
-    private static float         MIN_DIFF_PD               = -0.01f;
-    private static float         MAX_DIFF_PD               = 0.01f;
+    private float          MIN_SSH                    = -200f;
+    private float          MAX_SSH                    = 100f;
+    private float          MIN_DIFF_SSH               = -100f;
+    private float          MAX_DIFF_SSH               = 100f;
 
-    private static float         MIN_TAUX                  = -1f;
-    private static float         MAX_TAUX                  = 1f;
-    private static float         MIN_DIFF_TAUX             = -.5f;
-    private static float         MAX_DIFF_TAUX             = .5f;
+    private float          MIN_SHF                    = -400f;
+    private float          MAX_SHF                    = 250f;
+    private float          MIN_DIFF_SHF               = -150f;
+    private float          MAX_DIFF_SHF               = 150f;
 
-    private static float         MIN_TAUY                  = -1f;
-    private static float         MAX_TAUY                  = 1f;
-    private static float         MIN_DIFF_TAUY             = -.5f;
-    private static float         MAX_DIFF_TAUY             = .5f;
+    private float          MIN_SFWF                   = -3E-4f;
+    private float          MAX_SFWF                   = 3E-4f;
+    private float          MIN_DIFF_SFWF              = -1E-4f;
+    private float          MAX_DIFF_SFWF              = 1E-4f;
 
-    private static float         MIN_H2                    = 0f;
-    private static float         MAX_H2                    = 100000f;
-    private static float         MIN_DIFF_H2               = -50000f;
-    private static float         MAX_DIFF_H2               = 50000f;
+    private float          MIN_HMXL                   = 0f;
+    private float          MAX_HMXL                   = 150000f;
+    private float          MIN_DIFF_HMXL              = -50000f;
+    private float          MAX_DIFF_HMXL              = 50000f;
 
-    private static int           DEPTH_MIN                 = 0;
-    private static int           DEPTH_DEF                 = 0;
-    private static int           DEPTH_MAX                 = 41;
+    private float          MIN_SALT                   = 0.03f;
+    private float          MAX_SALT                   = 0.04f;
+    private float          MIN_DIFF_SALT              = -0.025f;
+    private float          MAX_DIFF_SALT              = 0.025f;
 
-    private static int           WINDOW_SELECTION          = 0;
+    private float          MIN_TEMP                   = -2f;
+    private float          MAX_TEMP                   = 30f;
+    private float          MIN_DIFF_TEMP              = -15f;
+    private float          MAX_DIFF_TEMP              = 15f;
 
-    private static boolean       DYNAMIC_DIMENSIONS        = false;
+    private float          MIN_UVEL                   = -200f;
+    private float          MAX_UVEL                   = 200f;
+    private float          MIN_DIFF_UVEL              = -100f;
+    private float          MAX_DIFF_UVEL              = 100f;
 
-    private static boolean       IMAGE_STREAM_OUTPUT       = false;
-    private static final int     SAGE_FRAMES_PER_SECOND    = 10;
-    private static boolean       IMAGE_STREAM_GL_ONLY      = true;
+    private float          MIN_VVEL                   = -200f;
+    private float          MAX_VVEL                   = 200f;
+    private float          MIN_DIFF_VVEL              = -100f;
+    private float          MAX_DIFF_VVEL              = 100f;
 
-    private static float         HEIGHT_DISTORION          = 0f;
-    private static float         HEIGHT_DISTORION_MIN      = 0f;
-    private static float         HEIGHT_DISTORION_MAX      = .01f;
+    private float          MIN_KE                     = 0f;
+    private float          MAX_KE                     = 10000f;
+    private float          MIN_DIFF_KE                = -5000f;
+    private float          MAX_DIFF_KE                = 5000f;
 
-    private static String        SAGE_DIRECTORY            = "/home/maarten/sage-code/sage";
+    private float          MIN_PD                     = 1f;
+    private float          MAX_PD                     = 1.04f;
+    private float          MIN_DIFF_PD                = -0.01f;
+    private float          MAX_DIFF_PD                = 0.01f;
 
-    private static final boolean TOUCH_CONNECTED           = false;
+    private float          MIN_TAUX                   = -1f;
+    private float          MAX_TAUX                   = 1f;
+    private float          MIN_DIFF_TAUX              = -.5f;
+    private float          MAX_DIFF_TAUX              = .5f;
 
-    private static String[]      POSSIBLE_LAT_AXIS_NAMES   = { "t_lat", "TLAT",
+    private float          MIN_TAUY                   = -1f;
+    private float          MAX_TAUY                   = 1f;
+    private float          MIN_DIFF_TAUY              = -.5f;
+    private float          MAX_DIFF_TAUY              = .5f;
+
+    private float          MIN_H2                     = 0f;
+    private float          MAX_H2                     = 100000f;
+    private float          MIN_DIFF_H2                = -50000f;
+    private float          MAX_DIFF_H2                = 50000f;
+
+    private int            DEPTH_MIN                  = 0;
+    private int            DEPTH_DEF                  = 0;
+    private int            DEPTH_MAX                  = 41;
+
+    private int            WINDOW_SELECTION           = 0;
+
+    private boolean        DYNAMIC_DIMENSIONS         = false;
+
+    private boolean        IMAGE_STREAM_OUTPUT        = false;
+    private final int      SAGE_FRAMES_PER_SECOND     = 10;
+    private boolean        IMAGE_STREAM_GL_ONLY       = true;
+
+    private float          HEIGHT_DISTORION           = 0f;
+    private final float    HEIGHT_DISTORION_MIN       = 0f;
+    private final float    HEIGHT_DISTORION_MAX       = .01f;
+
+    private String         SAGE_DIRECTORY             = "/home/maarten/sage-code/sage";
+
+    private final boolean  TOUCH_CONNECTED            = false;
+
+    private final String[] POSSIBLE_LAT_AXIS_NAMES    = { "t_lat", "TLAT",
             "T_LAT", "tlat", "lat_t", "latt", "LATT", "u_lat", "ULAT", "U_LAT",
             "ulat", "lat_u", "latu", "LATU", "nlat", "NLAT", "latn", "LATN",
-            "n_lat", "N_LAT", "lat_n", "LAT_N"            };
-    private static String[]      POSSIBLE_LON_AXIS_NAMES   = { "t_lon", "TLON",
+            "n_lat", "N_LAT", "lat_n", "LAT_N"       };
+    private final String[] POSSIBLE_LON_AXIS_NAMES    = { "t_lon", "TLON",
             "T_LON", "tlon", "lon_t", "lont", "LONT", "t_long", "TLONG",
             "T_LONG", "tlong", "long_t", "longt", "LONGT", "u_lon", "ULON",
             "U_LON", "ulon", "lon_u", "lonu", "LONU", "u_long", "ULONG",
             "U_LONG", "ulong", "long_u", "longu", "LONGU", "nlon", "NLON",
             "lonn", "LONN", "n_lon", "N_LON", "lon_n", "LON_N", "nlong",
             "NLONG", "longn", "LONGN", "n_long", "N_LONG", "long_n", "LONG_N" };
-    private static String[]      POSSIBLE_DEPTH_AXIS_NAMES = { "t_depth",
-            "TDEPTH", "T_DEPTH", "tdepth", "depth_t", "deptht", "DEPTHT", "ZT",
-            "zt", "Z_T", "z_t", "TZ", "tz", "T_Z", "t_z", "u_depth", "UDEPTH",
+    private final String[] POSSIBLE_DEPTH_AXIS_NAMES  = { "t_depth", "TDEPTH",
+            "T_DEPTH", "tdepth", "depth_t", "deptht", "DEPTHT", "ZT", "zt",
+            "Z_T", "z_t", "TZ", "tz", "T_Z", "t_z", "u_depth", "UDEPTH",
             "U_DEPTH", "udepth", "depth_u", "depthu", "DEPTHU", "ZU", "zu",
-            "Z_U", "z_u", "UZ", "uz", "U_Z", "u_z"        };
+            "Z_U", "z_u", "UZ", "uz", "U_Z", "u_z"   };
 
-    private static String        LAT_SUBSTRING             = "lat";
-    private static String        LON_SUBSTRING             = "lon";
-
-    public static ImauSettings getInstance() {
-        return SingletonHolder.instance;
-    }
+    private final String   LAT_SUBSTRING              = "lat";
+    private final String   LON_SUBSTRING              = "lon";
 
     private ImauSettings() {
         super();
@@ -178,110 +210,159 @@ public class ImauSettings extends Settings {
             final TypedProperties props = new TypedProperties();
             props.loadFromFile("settings.properties");
 
-            ImauSettings.WAITTIME_FOR_RETRY = props
-                    .getLongProperty("WAITTIME_FOR_RETRY");
-            ImauSettings.WAITTIME_FOR_MOVIE = props
-                    .getLongProperty("WAITTIME_FOR_MOVIE");
-            ImauSettings.EPSILON = props.getFloatProperty("EPSILON");
+            STEREO_RENDERING = props.getBooleanProperty("STEREO_RENDERING");
+            STEREO_SWITCHED = props.getBooleanProperty("STEREO_SWITCHED");
 
-            ImauSettings.IMAGE_STREAM_OUTPUT = props
-                    .getBooleanProperty("IMAGE_STREAM_OUTPUT");
+            STEREO_OCULAR_DISTANCE_MIN = props
+                    .getFloatProperty("STEREO_OCULAR_DISTANCE_MIN");
+            STEREO_OCULAR_DISTANCE_MAX = props
+                    .getFloatProperty("STEREO_OCULAR_DISTANCE_MAX");
+            STEREO_OCULAR_DISTANCE_DEF = props
+                    .getFloatProperty("STEREO_OCULAR_DISTANCE_DEF");
 
-            // ImauSettings.PREPROCESSING_AMOUNT = props
+            // Size settings for default startup and screenshots
+            DEFAULT_SCREEN_WIDTH = props.getIntProperty("DEFAULT_SCREEN_WIDTH");
+            DEFAULT_SCREEN_HEIGHT = props
+                    .getIntProperty("DEFAULT_SCREEN_HEIGHT");
+
+            SCREENSHOT_SCREEN_WIDTH = props
+                    .getIntProperty("SCREENSHOT_SCREEN_WIDTH");
+            SCREENSHOT_SCREEN_HEIGHT = props
+                    .getIntProperty("SCREENSHOT_SCREEN_HEIGHT");
+
+            // Settings for the initial view
+            INITIAL_SIMULATION_FRAME = props
+                    .getIntProperty("INITIAL_SIMULATION_FRAME");
+            INITIAL_ROTATION_X = props.getFloatProperty("INITIAL_ROTATION_X");
+            INITIAL_ROTATION_Y = props.getFloatProperty("INITIAL_ROTATION_Y");
+            INITIAL_ZOOM = props.getFloatProperty("INITIAL_ZOOM");
+
+            // Setting per movie frame
+            MOVIE_ROTATE = props.getBooleanProperty("MOVIE_ROTATE");
+            MOVIE_ROTATION_SPEED_MIN = props
+                    .getFloatProperty("MOVIE_ROTATION_SPEED_MIN");
+            MOVIE_ROTATION_SPEED_MAX = props
+                    .getFloatProperty("MOVIE_ROTATION_SPEED_MAX");
+            MOVIE_ROTATION_SPEED_DEF = props
+                    .getFloatProperty("MOVIE_ROTATION_SPEED_DEF");
+
+            // Settings for the gas cloud octree
+            MAX_OCTREE_DEPTH = props.getIntProperty("MAX_OCTREE_DEPTH");
+            OCTREE_EDGES = props.getFloatProperty("OCTREE_EDGES");
+
+            // Settings that should never change, but are listed here to make
+            // sure
+            // they
+            // can be found if necessary
+            MAX_EXPECTED_MODELS = props.getIntProperty("MAX_EXPECTED_MODELS");
+
+            SCREENSHOT_PATH = props.getProperty("SCREENSHOT_PATH");
+
+            WAITTIME_FOR_RETRY = props.getLongProperty("WAITTIME_FOR_RETRY");
+            WAITTIME_FOR_MOVIE = props.getLongProperty("WAITTIME_FOR_MOVIE");
+
+            System.out.println(IMAGE_STREAM_OUTPUT ? "true" : "false");
+
+            setIMAGE_STREAM_OUTPUT(props
+                    .getBooleanProperty("IMAGE_STREAM_OUTPUT"));
+
+            System.out.println(IMAGE_STREAM_OUTPUT ? "true" : "false");
+
+            // PREPROCESSING_AMOUNT = props
             // .getIntProperty("PREPROCESSING_AMOUNT");
             //
-            // ImauSettings.MAX_SSH = props.getFloatProperty("MAX_SSH");
-            // ImauSettings.MIN_SSH = props.getFloatProperty("MIN_SSH");
-            // ImauSettings.MAX_DIFF_SSH =
+            // MAX_SSH = props.getFloatProperty("MAX_SSH");
+            // MIN_SSH = props.getFloatProperty("MIN_SSH");
+            // MAX_DIFF_SSH =
             // props.getFloatProperty("MAX_DIFF_SSH");
-            // ImauSettings.MIN_DIFF_SSH =
+            // MIN_DIFF_SSH =
             // props.getFloatProperty("MIN_DIFF_SSH");
             //
-            // ImauSettings.MAX_SHF = props.getFloatProperty("MAX_SHF");
-            // ImauSettings.MIN_SHF = props.getFloatProperty("MIN_SHF");
-            // ImauSettings.MAX_DIFF_SHF =
+            // MAX_SHF = props.getFloatProperty("MAX_SHF");
+            // MIN_SHF = props.getFloatProperty("MIN_SHF");
+            // MAX_DIFF_SHF =
             // props.getFloatProperty("MAX_DIFF_SHF");
-            // ImauSettings.MIN_DIFF_SHF =
+            // MIN_DIFF_SHF =
             // props.getFloatProperty("MIN_DIFF_SHF");
             //
-            // ImauSettings.MAX_SFWF = props.getFloatProperty("MAX_SFWF");
-            // ImauSettings.MIN_SFWF = props.getFloatProperty("MIN_SFWF");
-            // ImauSettings.MAX_DIFF_SFWF = props
+            // MAX_SFWF = props.getFloatProperty("MAX_SFWF");
+            // MIN_SFWF = props.getFloatProperty("MIN_SFWF");
+            // MAX_DIFF_SFWF = props
             // .getFloatProperty("MAX_DIFF_SFWF");
-            // ImauSettings.MIN_DIFF_SFWF = props
+            // MIN_DIFF_SFWF = props
             // .getFloatProperty("MIN_DIFF_SFWF");
             //
-            // ImauSettings.MAX_HMXL = props.getFloatProperty("MAX_HMXL");
-            // ImauSettings.MIN_HMXL = props.getFloatProperty("MIN_HMXL");
-            // ImauSettings.MAX_DIFF_HMXL = props
+            // MAX_HMXL = props.getFloatProperty("MAX_HMXL");
+            // MIN_HMXL = props.getFloatProperty("MIN_HMXL");
+            // MAX_DIFF_HMXL = props
             // .getFloatProperty("MAX_DIFF_HMXL");
-            // ImauSettings.MIN_DIFF_HMXL = props
+            // MIN_DIFF_HMXL = props
             // .getFloatProperty("MIN_DIFF_HMXL");
             //
-            // ImauSettings.MAX_SALT = props.getFloatProperty("MAX_SALT");
-            // ImauSettings.MIN_SALT = props.getFloatProperty("MIN_SALT");
-            // ImauSettings.MAX_DIFF_SALT = props
+            // MAX_SALT = props.getFloatProperty("MAX_SALT");
+            // MIN_SALT = props.getFloatProperty("MIN_SALT");
+            // MAX_DIFF_SALT = props
             // .getFloatProperty("MAX_DIFF_SALT");
-            // ImauSettings.MIN_DIFF_SALT = props
+            // MIN_DIFF_SALT = props
             // .getFloatProperty("MIN_DIFF_SALT");
             //
-            // ImauSettings.MAX_TEMP = props.getFloatProperty("MAX_TEMP");
-            // ImauSettings.MIN_TEMP = props.getFloatProperty("MIN_TEMP");
-            // ImauSettings.MAX_DIFF_TEMP = props
+            // MAX_TEMP = props.getFloatProperty("MAX_TEMP");
+            // MIN_TEMP = props.getFloatProperty("MIN_TEMP");
+            // MAX_DIFF_TEMP = props
             // .getFloatProperty("MAX_DIFF_TEMP");
-            // ImauSettings.MIN_DIFF_TEMP = props
+            // MIN_DIFF_TEMP = props
             // .getFloatProperty("MIN_DIFF_TEMP");
             //
-            // ImauSettings.DEPTH_MIN = props.getIntProperty("DEPTH_MIN");
-            // ImauSettings.DEPTH_DEF = props.getIntProperty("DEPTH_DEF");
-            // ImauSettings.DEPTH_MAX = props.getIntProperty("DEPTH_MAX");
+            // DEPTH_MIN = props.getIntProperty("DEPTH_MIN");
+            // DEPTH_DEF = props.getIntProperty("DEPTH_DEF");
+            // DEPTH_MAX = props.getIntProperty("DEPTH_MAX");
         } catch (NumberFormatException e) {
             logger.warn(e.getMessage());
         }
     }
 
     public void setWaittimeBeforeRetry(long value) {
-        ImauSettings.WAITTIME_FOR_RETRY = value;
+        WAITTIME_FOR_RETRY = value;
     }
 
     public void setWaittimeMovie(long value) {
-        ImauSettings.WAITTIME_FOR_MOVIE = value;
+        WAITTIME_FOR_MOVIE = value;
     }
 
     public void setEpsilon(float value) {
-        ImauSettings.EPSILON = value;
+        EPSILON = value;
     }
 
     public void setFileExtensionLength(int value) {
-        ImauSettings.FILE_EXTENSION_LENGTH = value;
+        FILE_EXTENSION_LENGTH = value;
     }
 
     public void setFileNumberLength(int value) {
-        ImauSettings.FILE_NUMBER_LENGTH = value;
+        FILE_NUMBER_LENGTH = value;
     }
 
     public void setCurrentExtension(String value) {
-        ImauSettings.CURRENT_POSTFIX = value;
+        CURRENT_POSTFIX = value;
     }
 
     public long getWaittimeBeforeRetry() {
-        return ImauSettings.WAITTIME_FOR_RETRY;
+        return WAITTIME_FOR_RETRY;
     }
 
     public long getWaittimeMovie() {
-        return ImauSettings.WAITTIME_FOR_MOVIE;
+        return WAITTIME_FOR_MOVIE;
     }
 
     public float getEpsilon() {
-        return ImauSettings.EPSILON;
+        return EPSILON;
     }
 
     public int getFileExtensionLength() {
-        return ImauSettings.FILE_EXTENSION_LENGTH;
+        return FILE_EXTENSION_LENGTH;
     }
 
     public int getFileNumberLength() {
-        return ImauSettings.FILE_NUMBER_LENGTH;
+        return FILE_NUMBER_LENGTH;
     }
 
     public String[] getAcceptableExtensions() {
@@ -677,11 +758,11 @@ public class ImauSettings extends Settings {
     }
 
     public void setWindowSelection(int i) {
-        ImauSettings.WINDOW_SELECTION = i;
+        WINDOW_SELECTION = i;
     }
 
     public int getWindowSelection() {
-        return ImauSettings.WINDOW_SELECTION;
+        return WINDOW_SELECTION;
     }
 
     public String selectionToString(int windowSelection) {
@@ -857,8 +938,8 @@ public class ImauSettings extends Settings {
         return IMAGE_STREAM_OUTPUT;
     }
 
-    public void setIMAGE_STREAM_OUTPUT(boolean iMAGE_STREAM_OUTPUT) {
-        IMAGE_STREAM_OUTPUT = iMAGE_STREAM_OUTPUT;
+    public void setIMAGE_STREAM_OUTPUT(boolean value) {
+        IMAGE_STREAM_OUTPUT = value;
     }
 
     public String getSAGE_DIRECTORY() {
@@ -1072,5 +1153,143 @@ public class ImauSettings extends Settings {
 
     public int getSageFramesPerSecond() {
         return SAGE_FRAMES_PER_SECOND;
+    }
+
+    public int getTimestep() {
+        return TIME_STEP_SIZE;
+    }
+
+    public void setTimestep(int value) {
+        System.out.println("Timestep set to: " + value);
+        TIME_STEP_SIZE = value;
+    }
+
+    public boolean getStereo() {
+        return STEREO_RENDERING;
+    }
+
+    public void setStereo(int stateChange) {
+        if (stateChange == 1)
+            STEREO_RENDERING = true;
+        if (stateChange == 2)
+            STEREO_RENDERING = false;
+    }
+
+    public boolean getStereoSwitched() {
+        return STEREO_SWITCHED;
+    }
+
+    public void setStereoSwitched(int stateChange) {
+        if (stateChange == 1)
+            STEREO_SWITCHED = true;
+        if (stateChange == 2)
+            STEREO_SWITCHED = false;
+    }
+
+    public float getStereoOcularDistanceMin() {
+        return STEREO_OCULAR_DISTANCE_MIN;
+    }
+
+    public float getStereoOcularDistanceMax() {
+        return STEREO_OCULAR_DISTANCE_MAX;
+    }
+
+    public float getStereoOcularDistance() {
+        return STEREO_OCULAR_DISTANCE_DEF;
+    }
+
+    public void setStereoOcularDistance(float value) {
+        STEREO_OCULAR_DISTANCE_DEF = value;
+    }
+
+    public int getDefaultScreenWidth() {
+        return DEFAULT_SCREEN_WIDTH;
+    }
+
+    public int getDefaultScreenHeight() {
+        return DEFAULT_SCREEN_HEIGHT;
+    }
+
+    public int getScreenshotScreenWidth() {
+        return SCREENSHOT_SCREEN_WIDTH;
+    }
+
+    public int getScreenshotScreenHeight() {
+        return SCREENSHOT_SCREEN_HEIGHT;
+    }
+
+    public int getMaxOctreeDepth() {
+        return MAX_OCTREE_DEPTH;
+    }
+
+    public float getOctreeEdges() {
+        return OCTREE_EDGES;
+    }
+
+    public int getMaxExpectedModels() {
+        return MAX_EXPECTED_MODELS;
+    }
+
+    public float getInitialRotationX() {
+        return INITIAL_ROTATION_X;
+    }
+
+    public float getInitialRotationY() {
+        return INITIAL_ROTATION_Y;
+    }
+
+    public float getInitialZoom() {
+        return INITIAL_ZOOM;
+    }
+
+    public void setMovieRotate(int stateChange) {
+        if (stateChange == 1)
+            MOVIE_ROTATE = true;
+        if (stateChange == 2)
+            MOVIE_ROTATE = false;
+    }
+
+    public boolean getMovieRotate() {
+        return MOVIE_ROTATE;
+    }
+
+    public void setMovieRotationSpeed(float value) {
+        MOVIE_ROTATION_SPEED_DEF = value;
+    }
+
+    public float getMovieRotationSpeedMin() {
+        return MOVIE_ROTATION_SPEED_MIN;
+    }
+
+    public float getMovieRotationSpeedMax() {
+        return MOVIE_ROTATION_SPEED_MAX;
+    }
+
+    public float getMovieRotationSpeedDef() {
+        return MOVIE_ROTATION_SPEED_DEF;
+    }
+
+    public int getInitialSimulationFrame() {
+        return INITIAL_SIMULATION_FRAME;
+    }
+
+    public void setInitial_simulation_frame(int initialSimulationFrame) {
+        INITIAL_SIMULATION_FRAME = initialSimulationFrame;
+    }
+
+    public void setInitial_rotation_x(float initialRotationX) {
+        INITIAL_ROTATION_X = initialRotationX;
+    }
+
+    public void setInitial_rotation_y(float initialRotationY) {
+        INITIAL_ROTATION_Y = initialRotationY;
+    }
+
+    public String getScreenshotPath() {
+        return SCREENSHOT_PATH;
+    }
+
+    public void setScreenshotPath(String newPath) {
+        SCREENSHOT_PATH = newPath;
     }
 }

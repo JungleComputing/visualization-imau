@@ -30,7 +30,6 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -64,7 +63,7 @@ public class ImauPanel extends CommonPanel {
 
     protected CustomJSlider           timeBar;
 
-    protected JFormattedTextField     frameCounter;
+    protected JFormattedTextField     frameCounter, stepSizeField;
     private TweakState                currentConfigState = TweakState.NONE;
 
     private final JPanel              configPanel;
@@ -95,16 +94,16 @@ public class ImauPanel extends CommonPanel {
         // Make the menu bar
         final JMenuBar menuBar = new JMenuBar();
         final JMenu file = new JMenu("File");
-        final JMenuItem open = new JMenuItem("Open");
-        open.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                final File file = openFile();
-                file1 = file;
-                handleFile(file);
-            }
-        });
-        file.add(open);
+        // final JMenuItem open = new JMenuItem("Open");
+        // open.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // final File file = openFile();
+        // file1 = file;
+        // handleFile(file);
+        // }
+        // });
+        // file.add(open);
         // final JMenuItem open2 = new JMenuItem("Open Second");
         // open2.addActionListener(new ActionListener() {
         // @Override
@@ -285,6 +284,25 @@ public class ImauPanel extends CommonPanel {
                 "images/media-playback-stop.png", "Start");
 
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+
+        stepSizeField = new JFormattedTextField();
+        stepSizeField.setColumns(4);
+        stepSizeField.setMaximumSize(new Dimension(40, 20));
+        stepSizeField.setValue(settings.getTimestep());
+        stepSizeField.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent e) {
+                final JFormattedTextField source = (JFormattedTextField) e
+                        .getSource();
+                if (source.hasFocus()) {
+                    if (source == stepSizeField) {
+                        settings.setTimestep((Integer) ((Number) source
+                                .getValue()));
+                    }
+                }
+            }
+        });
+        bottomPanel.add(stepSizeField);
 
         screenshotButton.addActionListener(new ActionListener() {
             @Override

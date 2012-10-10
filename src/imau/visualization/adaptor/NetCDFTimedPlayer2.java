@@ -193,7 +193,8 @@ public class NetCDFTimedPlayer2 implements Runnable {
 
                         // Forward frame
                         if (currentState != states.REDRAWING) {
-                            int newFrameNumber = frameNumber + 1;
+                            int newFrameNumber = frameNumber
+                                    + settings.getTimestep();
                             if (texStorage.doneWithLastRequest()) {
                                 texStorage.requestNewFrame(newFrameNumber);
 

@@ -941,6 +941,8 @@ public class ImauWindow extends CommonWindow {
             e.printStackTrace();
         }
 
+        System.out.println("window sage init? :"
+                + (settings.isIMAGE_STREAM_OUTPUT() ? "true" : "false"));
         if (settings.isIMAGE_STREAM_OUTPUT()) {
             Dimension frameDim = ImauApp.getFrameSize();
 
