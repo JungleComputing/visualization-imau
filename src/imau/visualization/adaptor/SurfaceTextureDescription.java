@@ -8,10 +8,12 @@ public class SurfaceTextureDescription {
     protected final boolean dynamicDimensions;
     protected final boolean diff;
     protected final boolean secondSet;
+    protected final float   lowerBound;
+    protected final float   upperBound;
 
     public SurfaceTextureDescription(int frameNumber, int depth,
             String varName, String colorMap, boolean dynamicDimensions,
-            boolean diff, boolean secondSet) {
+            boolean diff, boolean secondSet, float lowerBound, float upperBound) {
         this.frameNumber = frameNumber;
         this.depth = depth;
         this.varName = varName;
@@ -19,6 +21,8 @@ public class SurfaceTextureDescription {
         this.dynamicDimensions = dynamicDimensions;
         this.diff = diff;
         this.secondSet = secondSet;
+        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
     }
 
     public int getFrameNumber() {
@@ -49,6 +53,14 @@ public class SurfaceTextureDescription {
         return secondSet;
     }
 
+    public float getLowerBound() {
+        return lowerBound;
+    }
+
+    public float getUpperBound() {
+        return upperBound;
+    }
+
     @Override
     public int hashCode() {
         int dataModePrime = (frameNumber + 3) * 23;
@@ -59,10 +71,12 @@ public class SurfaceTextureDescription {
         int frameNumberPrime = (frameNumber + 131) * 1543;
         int depthPrime = (depth + 251) * 2957;
         int colorMapPrime = (colorMap.hashCode() + 919) * 7883;
+        int lowerBoundPrime = (int) ((lowerBound + 41) * 1543);
+        int upperBoundPrime = (int) ((upperBound + 67) * 2957);
 
         int hashCode = frameNumberPrime + dynamicPrime + diffPrime
                 + secondPrime + depthPrime + dataModePrime + variablePrime
-                + colorMapPrime;
+                + colorMapPrime + lowerBoundPrime + upperBoundPrime;
 
         return hashCode;
     }
@@ -81,7 +95,9 @@ public class SurfaceTextureDescription {
         return (dynamicDimensions == that.dynamicDimensions
                 && diff == that.diff && secondSet == that.secondSet
                 && varName.compareTo(that.varName) == 0
-                && frameNumber == that.frameNumber && depth == that.depth && colorMap
+                && frameNumber == that.frameNumber
+                && lowerBound == that.lowerBound
+                && upperBound == that.upperBound && depth == that.depth && colorMap
                     .compareTo(that.colorMap) == 0);
     }
 

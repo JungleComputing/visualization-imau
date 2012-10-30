@@ -132,7 +132,8 @@ public class TextureStorage2 {
                 SurfaceTextureDescription newDesc = new SurfaceTextureDescription(
                         frameNumber, oldDesc.getDepth(), oldDesc.getVarName(),
                         oldDesc.getColorMap(), oldDesc.isDynamicDimensions(),
-                        oldDesc.isDiff(), oldDesc.isSecondSet());
+                        oldDesc.isDiff(), oldDesc.isSecondSet(),
+                        oldDesc.getLowerBound(), oldDesc.getUpperBound());
 
                 requestNewConfiguration(i, newDesc);
             }

@@ -31,6 +31,8 @@ public class IntPBO {
         /* generate the pixel buffer object */
         gl.glGenBuffers(1, pboPointer);
         gl.glBindBuffer(GL3.GL_PIXEL_PACK_BUFFER, pboPointer.get(0));
+        gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, 1);
+
         gl.glBufferData(GL3.GL_PIXEL_PACK_BUFFER, width * height * 4, null,
                 GL3.GL_STREAM_READ);
         gl.glReadPixels(0, 0, width, height, GL3.GL_BGRA, GL3.GL_UNSIGNED_BYTE,
@@ -68,6 +70,7 @@ public class IntPBO {
     public void copyToPBO(GL3 gl) throws UninitializedException {
         if (initialized) {
             gl.glBindBuffer(GL3.GL_PIXEL_PACK_BUFFER, pboPointer.get(0));
+
             gl.glReadPixels(0, 0, width, height, GL3.GL_BGRA,
                     GL3.GL_UNSIGNED_BYTE, 0);
             data = gl.glMapBuffer(GL3.GL_PIXEL_PACK_BUFFER, GL3.GL_WRITE_ONLY);

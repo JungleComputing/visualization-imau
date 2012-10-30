@@ -9,7 +9,7 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 
 import openglCommon.math.VecF3;
-import openglCommon.util.CustomJSlider;
+import util.CustomJSlider;
 import util.ImauInputHandler;
 
 public class NetCDFTimedPlayer2 implements Runnable {
@@ -42,9 +42,9 @@ public class NetCDFTimedPlayer2 implements Runnable {
     private long                      waittime           = settings
                                                                  .getWaittimeMovie();
 
-    public NetCDFTimedPlayer2(CustomJSlider timeBar,
+    public NetCDFTimedPlayer2(CustomJSlider timeBar2,
             JFormattedTextField frameCounter) {
-        this.timeBar = timeBar;
+        this.timeBar = timeBar2;
         this.frameCounter = frameCounter;
         this.inputHandler = ImauInputHandler.getInstance();
     }
@@ -134,6 +134,8 @@ public class NetCDFTimedPlayer2 implements Runnable {
     }
 
     public synchronized boolean isScreenshotNeeded() {
+        screenshotFilename = settings.getScreenshotPath()
+                + String.format("%05d", (frameNumber)) + ".png";
         return needsScreenshot;
     }
 
@@ -170,10 +172,7 @@ public class NetCDFTimedPlayer2 implements Runnable {
                                         + frameNumber + ", Rotation x: "
                                         + rotation.get(0) + " y: "
                                         + rotation.get(1));
-                                // imauWindow.makeSnapshot(String.format("%05d",
-                                // (frameNumber)));
-                                screenshotFilename = String.format("%05d",
-                                        (frameNumber));
+
                                 setScreenshotNeeded(true);
 
                                 rotation.set(
@@ -183,11 +182,7 @@ public class NetCDFTimedPlayer2 implements Runnable {
                                                         .getMovieRotationSpeedDef());
                                 inputHandler.setRotation(rotation);
                             } else {
-                                screenshotFilename = String.format("%05d",
-                                        (frameNumber));
                                 setScreenshotNeeded(true);
-                                // imauWindow.makeSnapshot(String.format("%05d",
-                                // frameNumber));
                             }
                         }
 

@@ -640,11 +640,11 @@ public class ImageMaker {
         float max = 0;
         float min = 0;
         if (state.getDataMode() == DataMode.DIFF) {
-            max = settings.getVarDiffMax(var);
-            min = settings.getVarDiffMin(var);
+            max = settings.getCurrentVarDiffMax(var);
+            min = settings.getCurrentVarDiffMin(var);
         } else {
-            max = settings.getVarMax(var);
-            min = settings.getVarMin(var);
+            max = settings.getCurrentVarMax(var);
+            min = settings.getCurrentVarMin(var);
         }
 
         return new Dimensions(min, max);
@@ -654,8 +654,8 @@ public class ImageMaker {
         float max = 0;
         float min = 0;
 
-        max = settings.getVarMax(varName);
-        min = settings.getVarMin(varName);
+        max = settings.getCurrentVarMax(varName);
+        min = settings.getCurrentVarMin(varName);
 
         return new Dimensions(min, max);
     }
@@ -665,12 +665,12 @@ public class ImageMaker {
         float min = 0;
 
         if (desc.isDiff()) {
-            max = settings.getVarDiffMax(desc.getVarName());
-            min = settings.getVarDiffMin(desc.getVarName());
+            max = settings.getCurrentVarDiffMax(desc.getVarName());
+            min = settings.getCurrentVarDiffMin(desc.getVarName());
 
         } else {
-            max = settings.getVarMax(desc.getVarName());
-            min = settings.getVarMin(desc.getVarName());
+            max = settings.getCurrentVarMax(desc.getVarName());
+            min = settings.getCurrentVarMin(desc.getVarName());
         }
 
         return new Dimensions(min, max);

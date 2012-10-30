@@ -1,5 +1,6 @@
 package imau.visualization;
 
+import imau.visualization.adaptor.ColormapInterpreter;
 import imau.visualization.adaptor.GlobeState;
 import imau.visualization.adaptor.NetCDFTimedPlayer2;
 import imau.visualization.netcdf.NetCDFUtil;
@@ -30,29 +31,29 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicSliderUI;
 
 import openglCommon.CommonPanel;
-import openglCommon.util.CustomJSlider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import util.CustomJSlider;
 import util.GoggleSwing;
 import util.ImauInputHandler;
+import util.RangeSlider;
+import util.RangeSliderUI;
 
 public class ImauPanel extends CommonPanel {
     public static enum TweakState {
-        NONE, DATA
+        NONE, DATA, VISUAL, MOVIE
     }
-
-    // public static enum TweakState {
-    // NONE, DATA, VISUAL, MOVIE
-    // }
 
     private final ImauSettings        settings           = ImauSettings
                                                                  .getInstance();
@@ -80,7 +81,7 @@ public class ImauPanel extends CommonPanel {
         super(imauWindow, ImauInputHandler.getInstance());
         this.imauWindow = imauWindow;
 
-        timeBar = new openglCommon.util.CustomJSlider();
+        timeBar = new CustomJSlider(new BasicSliderUI(timeBar));
         timeBar.setValue(0);
         timeBar.setMajorTickSpacing(5);
         timeBar.setMinorTickSpacing(1);
@@ -94,57 +95,57 @@ public class ImauPanel extends CommonPanel {
         // Make the menu bar
         final JMenuBar menuBar = new JMenuBar();
         final JMenu file = new JMenu("File");
-        // final JMenuItem open = new JMenuItem("Open");
-        // open.addActionListener(new ActionListener() {
-        // @Override
-        // public void actionPerformed(ActionEvent arg0) {
-        // final File file = openFile();
-        // file1 = file;
-        // handleFile(file);
-        // }
-        // });
-        // file.add(open);
-        // final JMenuItem open2 = new JMenuItem("Open Second");
-        // open2.addActionListener(new ActionListener() {
-        // @Override
-        // public void actionPerformed(ActionEvent arg0) {
-        // final File file = openFile();
-        // handleFile(file1, file);
-        // }
-        // });
-        // file.add(open2);
+        final JMenuItem open = new JMenuItem("Open");
+        open.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                final File file = openFile();
+                file1 = file;
+                handleFile(file);
+            }
+        });
+        file.add(open);
+        final JMenuItem open2 = new JMenuItem("Open Second");
+        open2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                final File file = openFile();
+                handleFile(file1, file);
+            }
+        });
+        file.add(open2);
         menuBar.add(file);
-        // final JMenu options = new JMenu("Options");
-        //
-        // final JMenuItem makeMovie = new JMenuItem("Make movie.");
-        // makeMovie.addActionListener(new ActionListener() {
-        // @Override
-        // public void actionPerformed(ActionEvent arg0) {
-        // setTweakState(TweakState.MOVIE);
-        // }
-        // });
-        // options.add(makeMovie);
-        //
-        // final JMenuItem showDataTweakPanel = new JMenuItem(
-        // "Show data configuration panel.");
-        // showDataTweakPanel.addActionListener(new ActionListener() {
-        // @Override
-        // public void actionPerformed(ActionEvent arg0) {
-        // setTweakState(TweakState.DATA);
-        // }
-        // });
-        // options.add(showDataTweakPanel);
-        //
-        // final JMenuItem showVisualTweakPanel = new JMenuItem(
-        // "Show visual configuration panel.");
-        // showVisualTweakPanel.addActionListener(new ActionListener() {
-        // @Override
-        // public void actionPerformed(ActionEvent arg0) {
-        // setTweakState(TweakState.VISUAL);
-        // }
-        // });
-        // options.add(showVisualTweakPanel);
-        // menuBar.add(options);
+        final JMenu options = new JMenu("Options");
+
+        final JMenuItem makeMovie = new JMenuItem("Make movie.");
+        makeMovie.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                setTweakState(TweakState.MOVIE);
+            }
+        });
+        options.add(makeMovie);
+
+        final JMenuItem showDataTweakPanel = new JMenuItem(
+                "Show data configuration panel.");
+        showDataTweakPanel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                setTweakState(TweakState.DATA);
+            }
+        });
+        options.add(showDataTweakPanel);
+
+        final JMenuItem showVisualTweakPanel = new JMenuItem(
+                "Show visual configuration panel.");
+        showVisualTweakPanel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                setTweakState(TweakState.VISUAL);
+            }
+        });
+        options.add(showVisualTweakPanel);
+        menuBar.add(options);
 
         ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
                 "images/ESCIENCE_logo.jpg", "eScienceCenter Logo", 311, 28);
@@ -308,13 +309,13 @@ public class ImauPanel extends CommonPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // timer.stop();
-                final ImauInputHandler inputHandler = ImauInputHandler
-                        .getInstance();
-                final String fileName = "screenshot: " + "{"
-                        + inputHandler.getRotation().get(0) + ","
-                        + inputHandler.getRotation().get(1) + " - "
-                        + Float.toString(inputHandler.getViewDist()) + "} ";
-                imauWindow.makeSnapshot(fileName);
+                // final ImauInputHandler inputHandler = ImauInputHandler
+                // .getInstance();
+                // final String fileName = "screenshot: " + "{"
+                // + inputHandler.getRotation().get(0) + ","
+                // + inputHandler.getRotation().get(1) + " - "
+                // + Float.toString(inputHandler.getViewDist()) + "} ";
+                imauWindow.makeSnapshot();
             }
         });
         bottomPanel.add(screenshotButton);
@@ -451,28 +452,28 @@ public class ImauPanel extends CommonPanel {
     }
 
     private void createDataTweakPanel() {
-        // final ItemListener listener = new ItemListener() {
-        // @Override
-        // public void itemStateChanged(ItemEvent arg0) {
-        // setTweakState(TweakState.NONE);
-        // }
-        // };
-        // dataConfig.add(GoggleSwing.titleBox("Configuration", listener));
+        final ItemListener listener = new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent arg0) {
+                setTweakState(TweakState.NONE);
+            }
+        };
+        dataConfig.add(GoggleSwing.titleBox("Configuration", listener));
 
-        // final JLabel depthSetting = new JLabel("" + settings.getDepthDef());
-        // final ChangeListener depthListener = new ChangeListener() {
-        // @Override
-        // public void stateChanged(ChangeEvent e) {
-        // final JSlider source = (JSlider) e.getSource();
-        // if (source.hasFocus()) {
-        // settings.setDepth(source.getValue());
-        // depthSetting.setText("" + settings.getDepthDef());
-        // }
-        // }
-        // };
-        // dataConfig.add(GoggleSwing.sliderBox("Depth setting", depthListener,
-        // settings.getDepthMin(), settings.getDepthMax(), 1,
-        // settings.getDepthDef(), depthSetting));
+        final JLabel depthSetting = new JLabel("" + settings.getDepthDef());
+        final ChangeListener depthListener = new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                final JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    settings.setDepth(source.getValue());
+                    depthSetting.setText("" + settings.getDepthDef());
+                }
+            }
+        };
+        dataConfig.add(GoggleSwing.sliderBox("Depth setting", depthListener,
+                settings.getDepthMin(), settings.getDepthMax(), 1,
+                settings.getDepthDef(), depthSetting));
 
         final ArrayList<Component> vcomponents = new ArrayList<Component>();
         JLabel windowlabel = new JLabel("Window Selection");
@@ -513,7 +514,7 @@ public class ImauPanel extends CommonPanel {
                 GlobeState.verbalizeVariable(10),
                 GlobeState.verbalizeVariable(11),
                 GlobeState.verbalizeVariable(12) };
-        final String[] colorMaps = NetCDFUtil.getColorMaps();
+        final String[] colorMaps = ColormapInterpreter.getColormapNames();
 
         final JComboBox dataModeComboBoxLT = new JComboBox(dataModes);
         final JComboBox dataModeComboBoxRT = new JComboBox(dataModes);
@@ -607,39 +608,14 @@ public class ImauPanel extends CommonPanel {
             }
         });
 
-        final JComboBox comboBoxLTColorMaps = new JComboBox(colorMaps);
-        final JComboBox comboBoxRTColorMaps = new JComboBox(colorMaps);
-        final JComboBox comboBoxLBColorMaps = new JComboBox(colorMaps);
-        final JComboBox comboBoxRBColorMaps = new JComboBox(colorMaps);
-
-        comboBoxLTColorMaps.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setLTColorMap(colorMaps[comboBoxLTColorMaps
-                        .getSelectedIndex()]);
-            }
-        });
-        comboBoxRTColorMaps.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setRTColorMap(colorMaps[comboBoxRTColorMaps
-                        .getSelectedIndex()]);
-            }
-        });
-        comboBoxLBColorMaps.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setLBColorMap(colorMaps[comboBoxLBColorMaps
-                        .getSelectedIndex()]);
-            }
-        });
-        comboBoxRBColorMaps.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setRBColorMap(colorMaps[comboBoxRBColorMaps
-                        .getSelectedIndex()]);
-            }
-        });
+        final JComboBox comboBoxLTColorMaps = ColormapInterpreter
+                .getLegendJComboBox(new Dimension(200, 25));
+        final JComboBox comboBoxRTColorMaps = ColormapInterpreter
+                .getLegendJComboBox(new Dimension(200, 25));
+        final JComboBox comboBoxLBColorMaps = ColormapInterpreter
+                .getLegendJComboBox(new Dimension(200, 25));
+        final JComboBox comboBoxRBColorMaps = ColormapInterpreter
+                .getLegendJComboBox(new Dimension(200, 25));
 
         final ArrayList<Component> vcomponentsLT = new ArrayList<Component>();
         final ArrayList<Component> vcomponentsRT = new ArrayList<Component>();
@@ -681,10 +657,14 @@ public class ImauPanel extends CommonPanel {
         comboBoxLB.setSelectedIndex(LBC.getVariableIndex());
         comboBoxRB.setSelectedIndex(RBC.getVariableIndex());
 
-        comboBoxLTColorMaps.setSelectedItem(LTC.getColorMap());
-        comboBoxRTColorMaps.setSelectedItem(RTC.getColorMap());
-        comboBoxLBColorMaps.setSelectedItem(LBC.getColorMap());
-        comboBoxRBColorMaps.setSelectedItem(RBC.getColorMap());
+        comboBoxLTColorMaps.setSelectedItem(ColormapInterpreter
+                .getIndexOfColormap(LTC.getColorMap()));
+        comboBoxRTColorMaps.setSelectedItem(ColormapInterpreter
+                .getIndexOfColormap(RTC.getColorMap()));
+        comboBoxLBColorMaps.setSelectedItem(ColormapInterpreter
+                .getIndexOfColormap(LBC.getColorMap()));
+        comboBoxRBColorMaps.setSelectedItem(ColormapInterpreter
+                .getIndexOfColormap(RBC.getColorMap()));
 
         dataModeComboBoxLT.setMinimumSize(new Dimension(100, 25));
         dataModeComboBoxRT.setMinimumSize(new Dimension(100, 25));
@@ -730,6 +710,134 @@ public class ImauPanel extends CommonPanel {
         vcomponentsRT.add(comboBoxRTColorMaps);
         vcomponentsLB.add(comboBoxLBColorMaps);
         vcomponentsRB.add(comboBoxRBColorMaps);
+
+        RangeSlider legendSliderLT = new RangeSlider();
+        RangeSlider legendSliderRT = new RangeSlider();
+        RangeSlider legendSliderLB = new RangeSlider();
+        RangeSlider legendSliderRB = new RangeSlider();
+
+        ((RangeSliderUI) legendSliderLT.getUI()).setRangeColorMap(LTC
+                .getColorMap());
+        ((RangeSliderUI) legendSliderRT.getUI()).setRangeColorMap(RTC
+                .getColorMap());
+        ((RangeSliderUI) legendSliderLB.getUI()).setRangeColorMap(LBC
+                .getColorMap());
+        ((RangeSliderUI) legendSliderRB.getUI()).setRangeColorMap(RBC
+                .getColorMap());
+
+        legendSliderLT.setMinimum(0);
+        legendSliderRT.setMinimum(0);
+        legendSliderLB.setMinimum(0);
+        legendSliderRB.setMinimum(0);
+
+        legendSliderLT.setMaximum(100);
+        legendSliderRT.setMaximum(100);
+        legendSliderLB.setMaximum(100);
+        legendSliderRB.setMaximum(100);
+
+        legendSliderLT.setValue(settings.getRangeSliderLowerValue(0));
+        legendSliderRT.setValue(settings.getRangeSliderLowerValue(1));
+        legendSliderLB.setValue(settings.getRangeSliderLowerValue(2));
+        legendSliderRB.setValue(settings.getRangeSliderLowerValue(3));
+
+        legendSliderLT.setUpperValue(settings.getRangeSliderUpperValue(0));
+        legendSliderRT.setUpperValue(settings.getRangeSliderUpperValue(1));
+        legendSliderLB.setUpperValue(settings.getRangeSliderUpperValue(2));
+        legendSliderRB.setUpperValue(settings.getRangeSliderUpperValue(3));
+
+        final RangeSliderUI frsLT = ((RangeSliderUI) legendSliderLT.getUI());
+        comboBoxLTColorMaps.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                settings.setLTColorMap(colorMaps[comboBoxLTColorMaps
+                        .getSelectedIndex()]);
+
+                frsLT.setRangeColorMap(colorMaps[comboBoxLTColorMaps
+                        .getSelectedIndex()]);
+            }
+        });
+
+        final RangeSliderUI frsRT = ((RangeSliderUI) legendSliderLT.getUI());
+        comboBoxRTColorMaps.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                settings.setRTColorMap(colorMaps[comboBoxRTColorMaps
+                        .getSelectedIndex()]);
+
+                frsRT.setRangeColorMap(colorMaps[comboBoxLTColorMaps
+                        .getSelectedIndex()]);
+            }
+        });
+
+        final RangeSliderUI frsLB = ((RangeSliderUI) legendSliderLT.getUI());
+        comboBoxLBColorMaps.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                settings.setLBColorMap(colorMaps[comboBoxLBColorMaps
+                        .getSelectedIndex()]);
+
+                frsLB.setRangeColorMap(colorMaps[comboBoxLTColorMaps
+                        .getSelectedIndex()]);
+            }
+        });
+
+        final RangeSliderUI frsRB = ((RangeSliderUI) legendSliderLT.getUI());
+        comboBoxRBColorMaps.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                settings.setRBColorMap(colorMaps[comboBoxRBColorMaps
+                        .getSelectedIndex()]);
+
+                frsRB.setRangeColorMap(colorMaps[comboBoxLTColorMaps
+                        .getSelectedIndex()]);
+            }
+        });
+
+        legendSliderLT.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                RangeSlider slider = (RangeSlider) e.getSource();
+                GlobeState state = settings.getLTState();
+                String var = state.getVariable().toString();
+                settings.setVariableRange(0, var, slider.getValue(),
+                        slider.getUpperValue());
+            }
+        });
+        legendSliderRT.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                RangeSlider slider = (RangeSlider) e.getSource();
+                GlobeState state = settings.getRTState();
+                String var = state.getVariable().toString();
+                settings.setVariableRange(1, var, slider.getValue(),
+                        slider.getUpperValue());
+            }
+        });
+        legendSliderLB.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                RangeSlider slider = (RangeSlider) e.getSource();
+                GlobeState state = settings.getLBState();
+                String var = state.getVariable().toString();
+                settings.setVariableRange(2, var, slider.getValue(),
+                        slider.getUpperValue());
+            }
+        });
+        legendSliderRB.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                RangeSlider slider = (RangeSlider) e.getSource();
+                GlobeState state = settings.getRBState();
+                String var = state.getVariable().toString();
+                settings.setVariableRange(3, var, slider.getValue(),
+                        slider.getUpperValue());
+            }
+        });
+
+        vcomponentsLT.add(legendSliderLT);
+        vcomponentsRT.add(legendSliderRT);
+        vcomponentsLB.add(legendSliderLB);
+        vcomponentsRB.add(legendSliderRB);
 
         vcomponentsLT.add(GoggleSwing.verticalStrut(5));
         vcomponentsRT.add(GoggleSwing.verticalStrut(5));
@@ -778,6 +886,7 @@ public class ImauPanel extends CommonPanel {
                 "",
                 new GoggleSwing.CheckBoxItem("Dynamic dimensions", settings
                         .isDynamicDimensions(), checkBoxListener)));
+
     }
 
     protected void handleFile(File file1, File file2) {
@@ -792,7 +901,7 @@ public class ImauPanel extends CommonPanel {
             timer.init(file1, file2);
             new Thread(timer).start();
 
-            final String path = NetCDFUtil.getPath(file1);
+            final String path = NetCDFUtil.getPath(file1) + "screenshots/";
 
             settings.setScreenshotPath(path);
         } else {
@@ -818,7 +927,7 @@ public class ImauPanel extends CommonPanel {
             timer.init(file);
             new Thread(timer).start();
 
-            final String path = NetCDFUtil.getPath(file);
+            final String path = NetCDFUtil.getPath(file) + "screenshots/";
 
             settings.setScreenshotPath(path);
         } else {
@@ -861,12 +970,12 @@ public class ImauPanel extends CommonPanel {
         } else if (currentConfigState == TweakState.DATA) {
             configPanel.setVisible(true);
             configPanel.add(dataConfig, BorderLayout.WEST);
-            // } else if (currentConfigState == TweakState.VISUAL) {
-            // configPanel.setVisible(true);
-            // configPanel.add(visualConfig, BorderLayout.WEST);
-            // } else if (currentConfigState == TweakState.MOVIE) {
-            // configPanel.setVisible(true);
-            // configPanel.add(movieConfig, BorderLayout.WEST);
+        } else if (currentConfigState == TweakState.VISUAL) {
+            configPanel.setVisible(true);
+            configPanel.add(visualConfig, BorderLayout.WEST);
+        } else if (currentConfigState == TweakState.MOVIE) {
+            configPanel.setVisible(true);
+            configPanel.add(movieConfig, BorderLayout.WEST);
         }
     }
 

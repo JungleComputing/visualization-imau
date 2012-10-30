@@ -19,15 +19,20 @@ public class GlobeState {
     private int      currentFrameNumber = 0;
     private int      currentDepth       = 0;
     private String   currentColorMap    = "default";
+    private float    lowerBound         = 0f;
+    private float    upperBound         = 100f;
 
     public GlobeState(DataMode dataMode, boolean dynamicDimensions,
-            Variable var, int frameNumber, int depth, String colorMap) {
+            Variable var, int frameNumber, int depth, String colorMap,
+            float lowerBound, float upperBound) {
         this.currentDataMode = dataMode;
         this.dynamicDimensions = dynamicDimensions;
         this.currentVariable = var;
         this.currentFrameNumber = frameNumber;
         this.currentDepth = depth;
         this.currentColorMap = colorMap;
+        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
     }
 
     @Override
@@ -36,11 +41,14 @@ public class GlobeState {
         int dynamicPrime = ((dynamicDimensions ? 1 : 3) + 41) * 313;
         int variablePrime = (currentVariable.hashCode() + 67) * 859;
         int frameNumberPrime = (currentDepth + 131) * 1543;
+        int lowerBoundPrime = (int) ((lowerBound + 41) * 1543);
+        int upperBoundPrime = (int) ((upperBound + 67) * 2957);
         int depthPrime = (currentDepth + 251) * 2957;
         int colorMapPrime = (currentColorMap.hashCode() + 919) * 7883;
 
         int hashCode = frameNumberPrime + dynamicPrime + depthPrime
-                + dataModePrime + variablePrime + colorMapPrime;
+                + dataModePrime + variablePrime + colorMapPrime
+                + lowerBoundPrime + upperBoundPrime;
 
         return hashCode;
     }
@@ -60,7 +68,9 @@ public class GlobeState {
                 && dynamicDimensions == that.dynamicDimensions
                 && currentVariable == that.currentVariable
                 && currentFrameNumber == that.currentFrameNumber
-                && currentDepth == that.currentDepth && currentColorMap
+                && currentDepth == that.currentDepth
+                && lowerBound == that.lowerBound
+                && upperBound == that.upperBound && currentColorMap
                     .compareTo(that.currentColorMap) == 0);
     }
 
@@ -264,6 +274,14 @@ public class GlobeState {
 
     public boolean isDynamicDimensions() {
         return dynamicDimensions;
+    }
+
+    public float getLowerBound() {
+        return lowerBound;
+    }
+
+    public float getUpperBound() {
+        return upperBound;
     }
 
 }

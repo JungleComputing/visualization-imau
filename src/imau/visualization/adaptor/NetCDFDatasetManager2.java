@@ -1,5 +1,6 @@
 package imau.visualization.adaptor;
 
+import imau.visualization.ImauSettings;
 import imau.visualization.netcdf.NetCDFNoSuchVariableException;
 import imau.visualization.netcdf.NetCDFUtil;
 
@@ -15,8 +16,9 @@ import ucar.ma2.Array;
 import ucar.nc2.NetcdfFile;
 
 public class NetCDFDatasetManager2 {
-    private final static Logger           logger = LoggerFactory
-                                                         .getLogger(NetCDFDatasetManager2.class);
+    private final static Logger           logger   = LoggerFactory
+                                                           .getLogger(NetCDFDatasetManager2.class);
+    private final ImauSettings            settings = ImauSettings.getInstance();
 
     private static ArrayList<Integer>     availableFrameSequenceNumbers;
 
@@ -118,7 +120,8 @@ public class NetCDFDatasetManager2 {
         }
         this.ncfile1 = file1;
         this.ncfile2 = file2;
-        this.texStorage = new TextureStorage(this, 900, 643);
+        this.texStorage = new TextureStorage(this, settings.getImageWidth(),
+                settings.getImageHeight());
 
         ioQueue = new LinkedList<NetCDFArray>();
         cpuQueue = new LinkedList<Runnable>();

@@ -26,182 +26,252 @@ public class ImauSettings {
         Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
     };
 
-    private boolean        STEREO_RENDERING           = true;
-    private boolean        STEREO_SWITCHED            = true;
+    private static final int IMAGE_WIDTH                = 3600;
+    private static final int IMAGE_HEIGHT               = 2431;
 
-    private float          STEREO_OCULAR_DISTANCE_MIN = 0f;
-    private float          STEREO_OCULAR_DISTANCE_DEF = .2f;
-    private float          STEREO_OCULAR_DISTANCE_MAX = 1f;
+    private boolean          STEREO_RENDERING           = true;
+    private boolean          STEREO_SWITCHED            = true;
+
+    private float            STEREO_OCULAR_DISTANCE_MIN = 0f;
+    private float            STEREO_OCULAR_DISTANCE_DEF = .2f;
+    private float            STEREO_OCULAR_DISTANCE_MAX = 1f;
 
     // Size settings for default startup and screenshots
-    private int            DEFAULT_SCREEN_WIDTH       = 1024;
-    private int            DEFAULT_SCREEN_HEIGHT      = 768;
+    private int              DEFAULT_SCREEN_WIDTH       = 1024;
+    private int              DEFAULT_SCREEN_HEIGHT      = 768;
 
-    private int            SCREENSHOT_SCREEN_WIDTH    = 1280;
-    private int            SCREENSHOT_SCREEN_HEIGHT   = 720;
+    private int              SCREENSHOT_SCREEN_WIDTH    = 1280;
+    private int              SCREENSHOT_SCREEN_HEIGHT   = 720;
 
     // Settings for the initial view
-    private int            INITIAL_SIMULATION_FRAME   = 0;
-    private float          INITIAL_ROTATION_X         = 17f;
-    private float          INITIAL_ROTATION_Y         = -25f;
-    private float          INITIAL_ZOOM               = -390.0f;
+    private int              INITIAL_SIMULATION_FRAME   = 0;
+    private float            INITIAL_ROTATION_X         = 17f;
+    private float            INITIAL_ROTATION_Y         = -25f;
+    private float            INITIAL_ZOOM               = -390.0f;
 
     // Setting per movie frame
-    private boolean        MOVIE_ROTATE               = true;
-    private float          MOVIE_ROTATION_SPEED_MIN   = -1f;
-    private float          MOVIE_ROTATION_SPEED_MAX   = 1f;
-    private float          MOVIE_ROTATION_SPEED_DEF   = -0.25f;
+    private boolean          MOVIE_ROTATE               = true;
+    private float            MOVIE_ROTATION_SPEED_MIN   = -1f;
+    private float            MOVIE_ROTATION_SPEED_MAX   = 1f;
+    private float            MOVIE_ROTATION_SPEED_DEF   = -0.25f;
 
     // Settings for the gas cloud octree
-    private int            MAX_OCTREE_DEPTH           = 25;
-    private float          OCTREE_EDGES               = 800f;
+    private int              MAX_OCTREE_DEPTH           = 25;
+    private float            OCTREE_EDGES               = 800f;
 
     // Settings that should never change, but are listed here to make sure they
     // can be found if necessary
-    private int            MAX_EXPECTED_MODELS        = 1000;
+    private int              MAX_EXPECTED_MODELS        = 1000;
 
-    protected String       SCREENSHOT_PATH            = System.getProperty("user.dir")
-                                                              + System.getProperty("path.separator");
+    protected String         SCREENSHOT_PATH            = System.getProperty("user.dir")
+                                                                + System.getProperty("path.separator");
 
-    private GlobeState     globeStateLT               = new GlobeState(
-                                                              GlobeState.DataMode.FIRST_DATASET,
-                                                              false,
-                                                              GlobeState.Variable.TEMP,
-                                                              75, 0, "default");
-    private GlobeState     globeStateRT               = new GlobeState(
-                                                              GlobeState.DataMode.FIRST_DATASET,
-                                                              false,
-                                                              GlobeState.Variable.KE,
-                                                              75, 0, "rainbow");
-    private GlobeState     globeStateLB               = new GlobeState(
-                                                              GlobeState.DataMode.FIRST_DATASET,
-                                                              false,
-                                                              GlobeState.Variable.SALT,
-                                                              75, 0, "inv_diff");
-    private GlobeState     globeStateRB               = new GlobeState(
-                                                              GlobeState.DataMode.FIRST_DATASET,
-                                                              false,
-                                                              GlobeState.Variable.HMXL,
-                                                              75, 0, "hotres");
+    private long             WAITTIME_FOR_RETRY         = 10000;
+    private long             WAITTIME_FOR_MOVIE         = 1000;
+    private int              TIME_STEP_SIZE             = 1;
+    private float            EPSILON                    = 1.0E-7f;
 
-    private long           WAITTIME_FOR_RETRY         = 10000;
-    private long           WAITTIME_FOR_MOVIE         = 1000;
-    private int            TIME_STEP_SIZE             = 1;
-    private float          EPSILON                    = 1.0E-7f;
+    private int              FILE_EXTENSION_LENGTH      = 2;
+    private int              FILE_NUMBER_LENGTH         = 4;
 
-    private int            FILE_EXTENSION_LENGTH      = 2;
-    private int            FILE_NUMBER_LENGTH         = 4;
+    private final String[]   ACCEPTABLE_POSTFIXES       = { ".nc" };
 
-    private final String[] ACCEPTABLE_POSTFIXES       = { ".nc" };
+    private String           CURRENT_POSTFIX            = "nc";
 
-    private String         CURRENT_POSTFIX            = "nc";
+    private int              PREPROCESSING_AMOUNT       = 2;
 
-    private int            PREPROCESSING_AMOUNT       = 2;
+    private final float      MIN_SSH                    = -200f;
+    private final float      MAX_SSH                    = 100f;
+    private float            CURRENT_MIN_SSH            = -200f;
+    private float            CURRENT_MAX_SSH            = 100f;
+    private final float      MIN_DIFF_SSH               = -100f;
+    private final float      MAX_DIFF_SSH               = 100f;
+    private float            CURRENT_MIN_DIFF_SSH       = -100f;
+    private float            CURRENT_MAX_DIFF_SSH       = 100f;
 
-    private float          MIN_SSH                    = -200f;
-    private float          MAX_SSH                    = 100f;
-    private float          MIN_DIFF_SSH               = -100f;
-    private float          MAX_DIFF_SSH               = 100f;
+    private final float      MIN_SHF                    = -400f;
+    private final float      MAX_SHF                    = 250f;
+    private float            CURRENT_MIN_SHF            = -400f;
+    private float            CURRENT_MAX_SHF            = 250f;
+    private final float      MIN_DIFF_SHF               = -150f;
+    private final float      MAX_DIFF_SHF               = 150f;
+    private float            CURRENT_MIN_DIFF_SHF       = -150f;
+    private float            CURRENT_MAX_DIFF_SHF       = 150f;
 
-    private float          MIN_SHF                    = -400f;
-    private float          MAX_SHF                    = 250f;
-    private float          MIN_DIFF_SHF               = -150f;
-    private float          MAX_DIFF_SHF               = 150f;
+    private final float      MIN_SFWF                   = -3E-4f;
+    private final float      MAX_SFWF                   = 3E-4f;
+    private float            CURRENT_MIN_SFWF           = -3E-4f;
+    private float            CURRENT_MAX_SFWF           = 3E-4f;
+    private final float      MIN_DIFF_SFWF              = -1E-4f;
+    private final float      MAX_DIFF_SFWF              = 1E-4f;
+    private float            CURRENT_MIN_DIFF_SFWF      = -1E-4f;
+    private float            CURRENT_MAX_DIFF_SFWF      = 1E-4f;
 
-    private float          MIN_SFWF                   = -3E-4f;
-    private float          MAX_SFWF                   = 3E-4f;
-    private float          MIN_DIFF_SFWF              = -1E-4f;
-    private float          MAX_DIFF_SFWF              = 1E-4f;
+    private final float      MIN_HMXL                   = 0f;
+    private final float      MAX_HMXL                   = 150000f;
+    private float            CURRENT_MIN_HMXL           = 0f;
+    private float            CURRENT_MAX_HMXL           = 150000f;
+    private final float      MIN_DIFF_HMXL              = -50000f;
+    private final float      MAX_DIFF_HMXL              = 50000f;
+    private float            CURRENT_MIN_DIFF_HMXL      = -50000f;
+    private float            CURRENT_MAX_DIFF_HMXL      = 50000f;
 
-    private float          MIN_HMXL                   = 0f;
-    private float          MAX_HMXL                   = 150000f;
-    private float          MIN_DIFF_HMXL              = -50000f;
-    private float          MAX_DIFF_HMXL              = 50000f;
+    private final float      MIN_SALT                   = 0.00f;
+    private final float      MAX_SALT                   = 0.05f;
+    private float            CURRENT_MIN_SALT           = 0.03f;
+    private float            CURRENT_MAX_SALT           = 0.04f;
+    private final float      MIN_DIFF_SALT              = -0.025f;
+    private final float      MAX_DIFF_SALT              = 0.025f;
+    private float            CURRENT_MIN_DIFF_SALT      = -0.025f;
+    private float            CURRENT_MAX_DIFF_SALT      = 0.025f;
 
-    private float          MIN_SALT                   = 0.03f;
-    private float          MAX_SALT                   = 0.04f;
-    private float          MIN_DIFF_SALT              = -0.025f;
-    private float          MAX_DIFF_SALT              = 0.025f;
+    private final float      MIN_TEMP                   = -2f;
+    private final float      MAX_TEMP                   = 30f;
+    private float            CURRENT_MIN_TEMP           = -2f;
+    private float            CURRENT_MAX_TEMP           = 30f;
+    private final float      MIN_DIFF_TEMP              = -15f;
+    private final float      MAX_DIFF_TEMP              = 15f;
+    private float            CURRENT_MIN_DIFF_TEMP      = -15f;
+    private float            CURRENT_MAX_DIFF_TEMP      = 15f;
 
-    private float          MIN_TEMP                   = -2f;
-    private float          MAX_TEMP                   = 30f;
-    private float          MIN_DIFF_TEMP              = -15f;
-    private float          MAX_DIFF_TEMP              = 15f;
+    private final float      MIN_UVEL                   = -200f;
+    private final float      MAX_UVEL                   = 200f;
+    private float            CURRENT_MIN_UVEL           = -200f;
+    private float            CURRENT_MAX_UVEL           = 200f;
+    private final float      MIN_DIFF_UVEL              = -100f;
+    private final float      MAX_DIFF_UVEL              = 100f;
+    private float            CURRENT_MIN_DIFF_UVEL      = -100f;
+    private float            CURRENT_MAX_DIFF_UVEL      = 100f;
 
-    private float          MIN_UVEL                   = -200f;
-    private float          MAX_UVEL                   = 200f;
-    private float          MIN_DIFF_UVEL              = -100f;
-    private float          MAX_DIFF_UVEL              = 100f;
+    private final float      MIN_VVEL                   = -200f;
+    private final float      MAX_VVEL                   = 200f;
+    private float            CURRENT_MIN_VVEL           = -200f;
+    private float            CURRENT_MAX_VVEL           = 200f;
+    private final float      MIN_DIFF_VVEL              = -100f;
+    private final float      MAX_DIFF_VVEL              = 100f;
+    private float            CURRENT_MIN_DIFF_VVEL      = -100f;
+    private float            CURRENT_MAX_DIFF_VVEL      = 100f;
 
-    private float          MIN_VVEL                   = -200f;
-    private float          MAX_VVEL                   = 200f;
-    private float          MIN_DIFF_VVEL              = -100f;
-    private float          MAX_DIFF_VVEL              = 100f;
+    private final float      MIN_KE                     = 0f;
+    private final float      MAX_KE                     = 10000f;
+    private float            CURRENT_MIN_KE             = 0f;
+    private float            CURRENT_MAX_KE             = 10000f;
+    private final float      MIN_DIFF_KE                = -5000f;
+    private final float      MAX_DIFF_KE                = 5000f;
+    private float            CURRENT_MIN_DIFF_KE        = -5000f;
+    private float            CURRENT_MAX_DIFF_KE        = 5000f;
 
-    private float          MIN_KE                     = 0f;
-    private float          MAX_KE                     = 10000f;
-    private float          MIN_DIFF_KE                = -5000f;
-    private float          MAX_DIFF_KE                = 5000f;
+    private final float      MIN_PD                     = 1f;
+    private final float      MAX_PD                     = 1.04f;
+    private float            CURRENT_MIN_PD             = 1f;
+    private float            CURRENT_MAX_PD             = 1.04f;
+    private final float      MIN_DIFF_PD                = -0.01f;
+    private final float      MAX_DIFF_PD                = 0.01f;
+    private float            CURRENT_MIN_DIFF_PD        = -0.01f;
+    private float            CURRENT_MAX_DIFF_PD        = 0.01f;
 
-    private float          MIN_PD                     = 1f;
-    private float          MAX_PD                     = 1.04f;
-    private float          MIN_DIFF_PD                = -0.01f;
-    private float          MAX_DIFF_PD                = 0.01f;
+    private final float      MIN_TAUX                   = -1f;
+    private final float      MAX_TAUX                   = 1f;
+    private float            CURRENT_MIN_TAUX           = -1f;
+    private float            CURRENT_MAX_TAUX           = 1f;
+    private final float      MIN_DIFF_TAUX              = -.5f;
+    private final float      MAX_DIFF_TAUX              = .5f;
+    private float            CURRENT_MIN_DIFF_TAUX      = -.5f;
+    private float            CURRENT_MAX_DIFF_TAUX      = .5f;
 
-    private float          MIN_TAUX                   = -1f;
-    private float          MAX_TAUX                   = 1f;
-    private float          MIN_DIFF_TAUX              = -.5f;
-    private float          MAX_DIFF_TAUX              = .5f;
+    private final float      MIN_TAUY                   = -1f;
+    private final float      MAX_TAUY                   = 1f;
+    private float            CURRENT_MIN_TAUY           = -1f;
+    private float            CURRENT_MAX_TAUY           = 1f;
+    private final float      MIN_DIFF_TAUY              = -.5f;
+    private final float      MAX_DIFF_TAUY              = .5f;
+    private float            CURRENT_MIN_DIFF_TAUY      = -.5f;
+    private float            CURRENT_MAX_DIFF_TAUY      = .5f;
 
-    private float          MIN_TAUY                   = -1f;
-    private float          MAX_TAUY                   = 1f;
-    private float          MIN_DIFF_TAUY              = -.5f;
-    private float          MAX_DIFF_TAUY              = .5f;
+    private final float      MIN_H2                     = 0f;
+    private final float      MAX_H2                     = 100000f;
+    private float            CURRENT_MIN_H2             = 0f;
+    private float            CURRENT_MAX_H2             = 100000f;
+    private final float      MIN_DIFF_H2                = -50000f;
+    private final float      MAX_DIFF_H2                = 50000f;
+    private float            CURRENT_MIN_DIFF_H2        = -50000f;
+    private float            CURRENT_MAX_DIFF_H2        = 50000f;
 
-    private float          MIN_H2                     = 0f;
-    private float          MAX_H2                     = 100000f;
-    private float          MIN_DIFF_H2                = -50000f;
-    private float          MAX_DIFF_H2                = 50000f;
+    private int              DEPTH_MIN                  = 0;
+    private int              DEPTH_DEF                  = 0;
+    private int              DEPTH_MAX                  = 41;
 
-    private int            DEPTH_MIN                  = 0;
-    private int            DEPTH_DEF                  = 0;
-    private int            DEPTH_MAX                  = 41;
+    private int              WINDOW_SELECTION           = 0;
 
-    private int            WINDOW_SELECTION           = 0;
+    private boolean          DYNAMIC_DIMENSIONS         = false;
 
-    private boolean        DYNAMIC_DIMENSIONS         = false;
+    private boolean          IMAGE_STREAM_OUTPUT        = false;
+    private final int        SAGE_FRAMES_PER_SECOND     = 10;
+    private boolean          IMAGE_STREAM_GL_ONLY       = true;
 
-    private boolean        IMAGE_STREAM_OUTPUT        = false;
-    private final int      SAGE_FRAMES_PER_SECOND     = 10;
-    private boolean        IMAGE_STREAM_GL_ONLY       = true;
+    private float            HEIGHT_DISTORION           = 0f;
+    private final float      HEIGHT_DISTORION_MIN       = 0f;
+    private final float      HEIGHT_DISTORION_MAX       = .01f;
 
-    private float          HEIGHT_DISTORION           = 0f;
-    private final float    HEIGHT_DISTORION_MIN       = 0f;
-    private final float    HEIGHT_DISTORION_MAX       = .01f;
+    private String           SAGE_DIRECTORY             = "/home/maarten/sage-code/sage";
 
-    private String         SAGE_DIRECTORY             = "/home/maarten/sage-code/sage";
+    private final boolean    TOUCH_CONNECTED            = false;
 
-    private final boolean  TOUCH_CONNECTED            = false;
-
-    private final String[] POSSIBLE_LAT_AXIS_NAMES    = { "t_lat", "TLAT",
+    private final String[]   POSSIBLE_LAT_AXIS_NAMES    = { "t_lat", "TLAT",
             "T_LAT", "tlat", "lat_t", "latt", "LATT", "u_lat", "ULAT", "U_LAT",
             "ulat", "lat_u", "latu", "LATU", "nlat", "NLAT", "latn", "LATN",
-            "n_lat", "N_LAT", "lat_n", "LAT_N"       };
-    private final String[] POSSIBLE_LON_AXIS_NAMES    = { "t_lon", "TLON",
+            "n_lat", "N_LAT", "lat_n", "LAT_N"         };
+    private final String[]   POSSIBLE_LON_AXIS_NAMES    = { "t_lon", "TLON",
             "T_LON", "tlon", "lon_t", "lont", "LONT", "t_long", "TLONG",
             "T_LONG", "tlong", "long_t", "longt", "LONGT", "u_lon", "ULON",
             "U_LON", "ulon", "lon_u", "lonu", "LONU", "u_long", "ULONG",
             "U_LONG", "ulong", "long_u", "longu", "LONGU", "nlon", "NLON",
             "lonn", "LONN", "n_lon", "N_LON", "lon_n", "LON_N", "nlong",
             "NLONG", "longn", "LONGN", "n_long", "N_LONG", "long_n", "LONG_N" };
-    private final String[] POSSIBLE_DEPTH_AXIS_NAMES  = { "t_depth", "TDEPTH",
-            "T_DEPTH", "tdepth", "depth_t", "deptht", "DEPTHT", "ZT", "zt",
-            "Z_T", "z_t", "TZ", "tz", "T_Z", "t_z", "u_depth", "UDEPTH",
+    private final String[]   POSSIBLE_DEPTH_AXIS_NAMES  = { "t_depth",
+            "TDEPTH", "T_DEPTH", "tdepth", "depth_t", "deptht", "DEPTHT", "ZT",
+            "zt", "Z_T", "z_t", "TZ", "tz", "T_Z", "t_z", "u_depth", "UDEPTH",
             "U_DEPTH", "udepth", "depth_u", "depthu", "DEPTHU", "ZU", "zu",
-            "Z_U", "z_u", "UZ", "uz", "U_Z", "u_z"   };
+            "Z_U", "z_u", "UZ", "uz", "U_Z", "u_z"     };
 
-    private final String   LAT_SUBSTRING              = "lat";
-    private final String   LON_SUBSTRING              = "lon";
+    private final String     LAT_SUBSTRING              = "lat";
+    private final String     LON_SUBSTRING              = "lon";
+
+    private GlobeState       globeStateLT               = new GlobeState(
+                                                                GlobeState.DataMode.FIRST_DATASET,
+                                                                false,
+                                                                GlobeState.Variable.TEMP,
+                                                                75,
+                                                                0,
+                                                                "default",
+                                                                CURRENT_MIN_TEMP,
+                                                                CURRENT_MAX_TEMP);
+    private GlobeState       globeStateRT               = new GlobeState(
+                                                                GlobeState.DataMode.FIRST_DATASET,
+                                                                false,
+                                                                GlobeState.Variable.KE,
+                                                                75, 0,
+                                                                "rainbow",
+                                                                CURRENT_MIN_KE,
+                                                                CURRENT_MAX_KE);
+    private GlobeState       globeStateLB               = new GlobeState(
+                                                                GlobeState.DataMode.FIRST_DATASET,
+                                                                false,
+                                                                GlobeState.Variable.SALT,
+                                                                75,
+                                                                0,
+                                                                "inv_diff",
+                                                                CURRENT_MIN_SALT,
+                                                                CURRENT_MAX_SALT);
+    private GlobeState       globeStateRB               = new GlobeState(
+                                                                GlobeState.DataMode.FIRST_DATASET,
+                                                                false,
+                                                                GlobeState.Variable.HMXL,
+                                                                75,
+                                                                0,
+                                                                "hotres",
+                                                                CURRENT_MIN_HMXL,
+                                                                CURRENT_MAX_HMXL);
 
     private ImauSettings() {
         super();
@@ -381,126 +451,6 @@ public class ImauSettings {
         PREPROCESSING_AMOUNT = value;
     }
 
-    public void setVarMax(Variable var, float value) {
-        if (var == Variable.SSH) {
-            MAX_SSH = value;
-        } else if (var == Variable.SHF) {
-            MAX_SHF = value;
-        } else if (var == Variable.SFWF) {
-            MAX_SFWF = value;
-        } else if (var == Variable.HMXL) {
-            MAX_HMXL = value;
-        } else if (var == Variable.SALT) {
-            MAX_SALT = value;
-        } else if (var == Variable.TEMP) {
-            MAX_TEMP = value;
-        } else if (var == Variable.UVEL) {
-            MAX_UVEL = value;
-        } else if (var == Variable.VVEL) {
-            MAX_VVEL = value;
-        } else if (var == Variable.KE) {
-            MAX_KE = value;
-        } else if (var == Variable.PD) {
-            MAX_PD = value;
-        } else if (var == Variable.TAUX) {
-            MAX_TAUX = value;
-        } else if (var == Variable.TAUY) {
-            MAX_TAUY = value;
-        } else if (var == Variable.H2) {
-            MAX_H2 = value;
-        }
-    }
-
-    public void setVarDiffMax(Variable var, float value) {
-        if (var == Variable.SSH) {
-            MAX_DIFF_SSH = value;
-        } else if (var == Variable.SHF) {
-            MAX_DIFF_SHF = value;
-        } else if (var == Variable.SFWF) {
-            MAX_DIFF_SFWF = value;
-        } else if (var == Variable.HMXL) {
-            MAX_DIFF_HMXL = value;
-        } else if (var == Variable.SALT) {
-            MAX_DIFF_SALT = value;
-        } else if (var == Variable.TEMP) {
-            MAX_DIFF_TEMP = value;
-        } else if (var == Variable.UVEL) {
-            MAX_DIFF_UVEL = value;
-        } else if (var == Variable.VVEL) {
-            MAX_DIFF_VVEL = value;
-        } else if (var == Variable.KE) {
-            MAX_DIFF_KE = value;
-        } else if (var == Variable.PD) {
-            MAX_DIFF_PD = value;
-        } else if (var == Variable.TAUX) {
-            MAX_DIFF_TAUX = value;
-        } else if (var == Variable.TAUY) {
-            MAX_DIFF_TAUY = value;
-        } else if (var == Variable.H2) {
-            MAX_DIFF_H2 = value;
-        }
-    }
-
-    public void setVarMin(Variable var, float value) {
-        if (var == Variable.SSH) {
-            MIN_SSH = value;
-        } else if (var == Variable.SHF) {
-            MIN_SHF = value;
-        } else if (var == Variable.SFWF) {
-            MIN_SFWF = value;
-        } else if (var == Variable.HMXL) {
-            MIN_HMXL = value;
-        } else if (var == Variable.SALT) {
-            MIN_SALT = value;
-        } else if (var == Variable.TEMP) {
-            MIN_TEMP = value;
-        } else if (var == Variable.UVEL) {
-            MIN_UVEL = value;
-        } else if (var == Variable.VVEL) {
-            MIN_VVEL = value;
-        } else if (var == Variable.KE) {
-            MIN_KE = value;
-        } else if (var == Variable.PD) {
-            MIN_PD = value;
-        } else if (var == Variable.TAUX) {
-            MIN_TAUX = value;
-        } else if (var == Variable.TAUY) {
-            MIN_TAUY = value;
-        } else if (var == Variable.H2) {
-            MIN_H2 = value;
-        }
-    }
-
-    public void setVarDiffMin(Variable var, float value) {
-        if (var == Variable.SSH) {
-            MIN_DIFF_SSH = value;
-        } else if (var == Variable.SHF) {
-            MIN_DIFF_SHF = value;
-        } else if (var == Variable.SFWF) {
-            MIN_DIFF_SFWF = value;
-        } else if (var == Variable.HMXL) {
-            MIN_DIFF_HMXL = value;
-        } else if (var == Variable.SALT) {
-            MIN_DIFF_SALT = value;
-        } else if (var == Variable.TEMP) {
-            MIN_DIFF_TEMP = value;
-        } else if (var == Variable.UVEL) {
-            MIN_DIFF_UVEL = value;
-        } else if (var == Variable.VVEL) {
-            MIN_DIFF_VVEL = value;
-        } else if (var == Variable.KE) {
-            MIN_DIFF_KE = value;
-        } else if (var == Variable.PD) {
-            MIN_DIFF_PD = value;
-        } else if (var == Variable.TAUX) {
-            MIN_DIFF_TAUX = value;
-        } else if (var == Variable.TAUY) {
-            MIN_DIFF_TAUY = value;
-        } else if (var == Variable.H2) {
-            MIN_DIFF_H2 = value;
-        }
-    }
-
     public float getVarMax(Variable var) {
         float result = 0f;
         if (var == Variable.SSH) {
@@ -629,6 +579,510 @@ public class ImauSettings {
         return result;
     }
 
+    public float getVarMax(String var) {
+        float result = 0f;
+        if (Variable.SSH.toString().compareTo(var) == 0) {
+            result = MAX_SSH;
+        } else if (Variable.SHF.toString().compareTo(var) == 0) {
+            result = MAX_SHF;
+        } else if (Variable.SFWF.toString().compareTo(var) == 0) {
+            result = MAX_SFWF;
+        } else if (Variable.HMXL.toString().compareTo(var) == 0) {
+            result = MAX_HMXL;
+        } else if (Variable.SALT.toString().compareTo(var) == 0) {
+            result = MAX_SALT;
+        } else if (Variable.TEMP.toString().compareTo(var) == 0) {
+            result = MAX_TEMP;
+        } else if (Variable.UVEL.toString().compareTo(var) == 0) {
+            result = MAX_UVEL;
+        } else if (Variable.VVEL.toString().compareTo(var) == 0) {
+            result = MAX_VVEL;
+        } else if (Variable.KE.toString().compareTo(var) == 0) {
+            result = MAX_KE;
+        } else if (Variable.PD.toString().compareTo(var) == 0) {
+            result = MAX_PD;
+        } else if (Variable.TAUX.toString().compareTo(var) == 0) {
+            result = MAX_TAUX;
+        } else if (Variable.TAUY.toString().compareTo(var) == 0) {
+            result = MAX_TAUY;
+        } else if (Variable.H2.toString().compareTo(var) == 0) {
+            result = MAX_H2;
+        }
+        return result;
+    }
+
+    public float getVarDiffMax(String var) {
+        float result = 0f;
+        if (Variable.SSH.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_SSH;
+        } else if (Variable.SHF.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_SHF;
+        } else if (Variable.SFWF.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_SFWF;
+        } else if (Variable.HMXL.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_HMXL;
+        } else if (Variable.SALT.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_SALT;
+        } else if (Variable.TEMP.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_TEMP;
+        } else if (Variable.UVEL.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_UVEL;
+        } else if (Variable.VVEL.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_VVEL;
+        } else if (Variable.KE.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_KE;
+        } else if (Variable.PD.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_PD;
+        } else if (Variable.TAUX.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_TAUX;
+        } else if (Variable.TAUY.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_TAUY;
+        } else if (Variable.H2.toString().compareTo(var) == 0) {
+            result = MAX_DIFF_H2;
+        }
+        return result;
+    }
+
+    public float getVarMin(String var) {
+        float result = 0f;
+        if (Variable.SSH.toString().compareTo(var) == 0) {
+            result = MIN_SSH;
+        } else if (Variable.SHF.toString().compareTo(var) == 0) {
+            result = MIN_SHF;
+        } else if (Variable.SFWF.toString().compareTo(var) == 0) {
+            result = MIN_SFWF;
+        } else if (Variable.HMXL.toString().compareTo(var) == 0) {
+            result = MIN_HMXL;
+        } else if (Variable.SALT.toString().compareTo(var) == 0) {
+            result = MIN_SALT;
+        } else if (Variable.TEMP.toString().compareTo(var) == 0) {
+            result = MIN_TEMP;
+        } else if (Variable.UVEL.toString().compareTo(var) == 0) {
+            result = MIN_UVEL;
+        } else if (Variable.VVEL.toString().compareTo(var) == 0) {
+            result = MIN_VVEL;
+        } else if (Variable.KE.toString().compareTo(var) == 0) {
+            result = MIN_KE;
+        } else if (Variable.PD.toString().compareTo(var) == 0) {
+            result = MIN_PD;
+        } else if (Variable.TAUX.toString().compareTo(var) == 0) {
+            result = MIN_TAUX;
+        } else if (Variable.TAUY.toString().compareTo(var) == 0) {
+            result = MIN_TAUY;
+        } else if (Variable.H2.toString().compareTo(var) == 0) {
+            result = MIN_H2;
+        }
+        return result;
+    }
+
+    public float getVarDiffMin(String var) {
+        float result = 0f;
+        if (Variable.SSH.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_SSH;
+        } else if (Variable.SHF.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_SHF;
+        } else if (Variable.SFWF.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_SFWF;
+        } else if (Variable.HMXL.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_HMXL;
+        } else if (Variable.SALT.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_SALT;
+        } else if (Variable.TEMP.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_TEMP;
+        } else if (Variable.UVEL.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_UVEL;
+        } else if (Variable.VVEL.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_VVEL;
+        } else if (Variable.KE.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_KE;
+        } else if (Variable.PD.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_PD;
+        } else if (Variable.TAUX.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_TAUX;
+        } else if (Variable.TAUY.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_TAUY;
+        } else if (Variable.H2.toString().compareTo(var) == 0) {
+            result = MIN_DIFF_H2;
+        }
+        return result;
+    }
+
+    public void setCurrentVarMax(Variable var, float value) {
+        if (var == Variable.SSH) {
+            CURRENT_MAX_SSH = value;
+        } else if (var == Variable.SHF) {
+            CURRENT_MAX_SHF = value;
+        } else if (var == Variable.SFWF) {
+            CURRENT_MAX_SFWF = value;
+        } else if (var == Variable.HMXL) {
+            CURRENT_MAX_HMXL = value;
+        } else if (var == Variable.SALT) {
+            CURRENT_MAX_SALT = value;
+        } else if (var == Variable.TEMP) {
+            CURRENT_MAX_TEMP = value;
+        } else if (var == Variable.UVEL) {
+            CURRENT_MAX_UVEL = value;
+        } else if (var == Variable.VVEL) {
+            CURRENT_MAX_VVEL = value;
+        } else if (var == Variable.KE) {
+            CURRENT_MAX_KE = value;
+        } else if (var == Variable.PD) {
+            CURRENT_MAX_PD = value;
+        } else if (var == Variable.TAUX) {
+            CURRENT_MAX_TAUX = value;
+        } else if (var == Variable.TAUY) {
+            CURRENT_MAX_TAUY = value;
+        } else if (var == Variable.H2) {
+            CURRENT_MAX_H2 = value;
+        }
+    }
+
+    public void setCurrentVarDiffMax(Variable var, float value) {
+        if (var == Variable.SSH) {
+            CURRENT_MAX_DIFF_SSH = value;
+        } else if (var == Variable.SHF) {
+            CURRENT_MAX_DIFF_SHF = value;
+        } else if (var == Variable.SFWF) {
+            CURRENT_MAX_DIFF_SFWF = value;
+        } else if (var == Variable.HMXL) {
+            CURRENT_MAX_DIFF_HMXL = value;
+        } else if (var == Variable.SALT) {
+            CURRENT_MAX_DIFF_SALT = value;
+        } else if (var == Variable.TEMP) {
+            CURRENT_MAX_DIFF_TEMP = value;
+        } else if (var == Variable.UVEL) {
+            CURRENT_MAX_DIFF_UVEL = value;
+        } else if (var == Variable.VVEL) {
+            CURRENT_MAX_DIFF_VVEL = value;
+        } else if (var == Variable.KE) {
+            CURRENT_MAX_DIFF_KE = value;
+        } else if (var == Variable.PD) {
+            CURRENT_MAX_DIFF_PD = value;
+        } else if (var == Variable.TAUX) {
+            CURRENT_MAX_DIFF_TAUX = value;
+        } else if (var == Variable.TAUY) {
+            CURRENT_MAX_DIFF_TAUY = value;
+        } else if (var == Variable.H2) {
+            CURRENT_MAX_DIFF_H2 = value;
+        }
+    }
+
+    public void setCurrentVarMin(Variable var, float value) {
+        if (var == Variable.SSH) {
+            CURRENT_MIN_SSH = value;
+        } else if (var == Variable.SHF) {
+            CURRENT_MIN_SHF = value;
+        } else if (var == Variable.SFWF) {
+            CURRENT_MIN_SFWF = value;
+        } else if (var == Variable.HMXL) {
+            CURRENT_MIN_HMXL = value;
+        } else if (var == Variable.SALT) {
+            CURRENT_MIN_SALT = value;
+        } else if (var == Variable.TEMP) {
+            CURRENT_MIN_TEMP = value;
+        } else if (var == Variable.UVEL) {
+            CURRENT_MIN_UVEL = value;
+        } else if (var == Variable.VVEL) {
+            CURRENT_MIN_VVEL = value;
+        } else if (var == Variable.KE) {
+            CURRENT_MIN_KE = value;
+        } else if (var == Variable.PD) {
+            CURRENT_MIN_PD = value;
+        } else if (var == Variable.TAUX) {
+            CURRENT_MIN_TAUX = value;
+        } else if (var == Variable.TAUY) {
+            CURRENT_MIN_TAUY = value;
+        } else if (var == Variable.H2) {
+            CURRENT_MIN_H2 = value;
+        }
+    }
+
+    public void setCurrentVarDiffMin(Variable var, float value) {
+        if (var == Variable.SSH) {
+            CURRENT_MIN_DIFF_SSH = value;
+        } else if (var == Variable.SHF) {
+            CURRENT_MIN_DIFF_SHF = value;
+        } else if (var == Variable.SFWF) {
+            CURRENT_MIN_DIFF_SFWF = value;
+        } else if (var == Variable.HMXL) {
+            CURRENT_MIN_DIFF_HMXL = value;
+        } else if (var == Variable.SALT) {
+            CURRENT_MIN_DIFF_SALT = value;
+        } else if (var == Variable.TEMP) {
+            CURRENT_MIN_DIFF_TEMP = value;
+        } else if (var == Variable.UVEL) {
+            CURRENT_MIN_DIFF_UVEL = value;
+        } else if (var == Variable.VVEL) {
+            CURRENT_MIN_DIFF_VVEL = value;
+        } else if (var == Variable.KE) {
+            CURRENT_MIN_DIFF_KE = value;
+        } else if (var == Variable.PD) {
+            CURRENT_MIN_DIFF_PD = value;
+        } else if (var == Variable.TAUX) {
+            CURRENT_MIN_DIFF_TAUX = value;
+        } else if (var == Variable.TAUY) {
+            CURRENT_MIN_DIFF_TAUY = value;
+        } else if (var == Variable.H2) {
+            CURRENT_MIN_DIFF_H2 = value;
+        }
+    }
+
+    public float getCurrentVarMax(Variable var) {
+        float result = 0f;
+        if (var == Variable.SSH) {
+            result = CURRENT_MAX_SSH;
+        } else if (var == Variable.SHF) {
+            result = CURRENT_MAX_SHF;
+        } else if (var == Variable.SFWF) {
+            result = CURRENT_MAX_SFWF;
+        } else if (var == Variable.HMXL) {
+            result = CURRENT_MAX_HMXL;
+        } else if (var == Variable.SALT) {
+            result = CURRENT_MAX_SALT;
+        } else if (var == Variable.TEMP) {
+            result = CURRENT_MAX_TEMP;
+        } else if (var == Variable.UVEL) {
+            result = CURRENT_MAX_UVEL;
+        } else if (var == Variable.VVEL) {
+            result = CURRENT_MAX_VVEL;
+        } else if (var == Variable.KE) {
+            result = CURRENT_MAX_KE;
+        } else if (var == Variable.PD) {
+            result = CURRENT_MAX_PD;
+        } else if (var == Variable.TAUX) {
+            result = CURRENT_MAX_TAUX;
+        } else if (var == Variable.TAUY) {
+            result = CURRENT_MAX_TAUY;
+        } else if (var == Variable.H2) {
+            result = CURRENT_MAX_H2;
+        }
+        return result;
+    }
+
+    public float getCurrentVarDiffMax(Variable var) {
+        float result = 0f;
+        if (var == Variable.SSH) {
+            result = CURRENT_MAX_DIFF_SSH;
+        } else if (var == Variable.SHF) {
+            result = CURRENT_MAX_DIFF_SHF;
+        } else if (var == Variable.SFWF) {
+            result = CURRENT_MAX_DIFF_SFWF;
+        } else if (var == Variable.HMXL) {
+            result = CURRENT_MAX_DIFF_HMXL;
+        } else if (var == Variable.SALT) {
+            result = CURRENT_MAX_DIFF_SALT;
+        } else if (var == Variable.TEMP) {
+            result = CURRENT_MAX_DIFF_TEMP;
+        } else if (var == Variable.UVEL) {
+            result = CURRENT_MAX_DIFF_UVEL;
+        } else if (var == Variable.VVEL) {
+            result = CURRENT_MAX_DIFF_VVEL;
+        } else if (var == Variable.KE) {
+            result = CURRENT_MAX_DIFF_KE;
+        } else if (var == Variable.PD) {
+            result = CURRENT_MAX_DIFF_PD;
+        } else if (var == Variable.TAUX) {
+            result = CURRENT_MAX_DIFF_TAUX;
+        } else if (var == Variable.TAUY) {
+            result = CURRENT_MAX_DIFF_TAUY;
+        } else if (var == Variable.H2) {
+            result = CURRENT_MAX_DIFF_H2;
+        }
+        return result;
+    }
+
+    public float getCurrentVarMin(Variable var) {
+        float result = 0f;
+        if (var == Variable.SSH) {
+            result = CURRENT_MIN_SSH;
+        } else if (var == Variable.SHF) {
+            result = CURRENT_MIN_SHF;
+        } else if (var == Variable.SFWF) {
+            result = CURRENT_MIN_SFWF;
+        } else if (var == Variable.HMXL) {
+            result = CURRENT_MIN_HMXL;
+        } else if (var == Variable.SALT) {
+            result = CURRENT_MIN_SALT;
+        } else if (var == Variable.TEMP) {
+            result = CURRENT_MIN_TEMP;
+        } else if (var == Variable.UVEL) {
+            result = CURRENT_MIN_UVEL;
+        } else if (var == Variable.VVEL) {
+            result = CURRENT_MIN_VVEL;
+        } else if (var == Variable.KE) {
+            result = CURRENT_MIN_KE;
+        } else if (var == Variable.PD) {
+            result = CURRENT_MIN_PD;
+        } else if (var == Variable.TAUX) {
+            result = CURRENT_MIN_TAUX;
+        } else if (var == Variable.TAUY) {
+            result = CURRENT_MIN_TAUY;
+        } else if (var == Variable.H2) {
+            result = CURRENT_MIN_H2;
+        }
+        return result;
+    }
+
+    public float getCurrentVarDiffMin(Variable var) {
+        float result = 0f;
+        if (var == Variable.SSH) {
+            result = CURRENT_MIN_DIFF_SSH;
+        } else if (var == Variable.SHF) {
+            result = CURRENT_MIN_DIFF_SHF;
+        } else if (var == Variable.SFWF) {
+            result = CURRENT_MIN_DIFF_SFWF;
+        } else if (var == Variable.HMXL) {
+            result = CURRENT_MIN_DIFF_HMXL;
+        } else if (var == Variable.SALT) {
+            result = CURRENT_MIN_DIFF_SALT;
+        } else if (var == Variable.TEMP) {
+            result = CURRENT_MIN_DIFF_TEMP;
+        } else if (var == Variable.UVEL) {
+            result = CURRENT_MIN_DIFF_UVEL;
+        } else if (var == Variable.VVEL) {
+            result = CURRENT_MIN_DIFF_VVEL;
+        } else if (var == Variable.KE) {
+            result = CURRENT_MIN_DIFF_KE;
+        } else if (var == Variable.PD) {
+            result = CURRENT_MIN_DIFF_PD;
+        } else if (var == Variable.TAUX) {
+            result = CURRENT_MIN_DIFF_TAUX;
+        } else if (var == Variable.TAUY) {
+            result = CURRENT_MIN_DIFF_TAUY;
+        } else if (var == Variable.H2) {
+            result = CURRENT_MIN_DIFF_H2;
+        }
+        return result;
+    }
+
+    public float getCurrentVarMax(String var) {
+        float result = 0f;
+        if (Variable.SSH.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_SSH;
+        } else if (Variable.SHF.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_SHF;
+        } else if (Variable.SFWF.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_SFWF;
+        } else if (Variable.HMXL.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_HMXL;
+        } else if (Variable.SALT.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_SALT;
+        } else if (Variable.TEMP.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_TEMP;
+        } else if (Variable.UVEL.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_UVEL;
+        } else if (Variable.VVEL.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_VVEL;
+        } else if (Variable.KE.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_KE;
+        } else if (Variable.PD.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_PD;
+        } else if (Variable.TAUX.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_TAUX;
+        } else if (Variable.TAUY.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_TAUY;
+        } else if (Variable.H2.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_H2;
+        }
+        return result;
+    }
+
+    public float getCurrentVarDiffMax(String var) {
+        float result = 0f;
+        if (Variable.SSH.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_SSH;
+        } else if (Variable.SHF.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_SHF;
+        } else if (Variable.SFWF.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_SFWF;
+        } else if (Variable.HMXL.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_HMXL;
+        } else if (Variable.SALT.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_SALT;
+        } else if (Variable.TEMP.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_TEMP;
+        } else if (Variable.UVEL.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_UVEL;
+        } else if (Variable.VVEL.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_VVEL;
+        } else if (Variable.KE.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_KE;
+        } else if (Variable.PD.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_PD;
+        } else if (Variable.TAUX.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_TAUX;
+        } else if (Variable.TAUY.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_TAUY;
+        } else if (Variable.H2.toString().compareTo(var) == 0) {
+            result = CURRENT_MAX_DIFF_H2;
+        }
+        return result;
+    }
+
+    public float getCurrentVarMin(String var) {
+        float result = 0f;
+        if (Variable.SSH.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_SSH;
+        } else if (Variable.SHF.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_SHF;
+        } else if (Variable.SFWF.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_SFWF;
+        } else if (Variable.HMXL.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_HMXL;
+        } else if (Variable.SALT.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_SALT;
+        } else if (Variable.TEMP.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_TEMP;
+        } else if (Variable.UVEL.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_UVEL;
+        } else if (Variable.VVEL.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_VVEL;
+        } else if (Variable.KE.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_KE;
+        } else if (Variable.PD.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_PD;
+        } else if (Variable.TAUX.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_TAUX;
+        } else if (Variable.TAUY.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_TAUY;
+        } else if (Variable.H2.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_H2;
+        }
+        return result;
+    }
+
+    public float getCurrentVarDiffMin(String var) {
+        float result = 0f;
+        if (Variable.SSH.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_SSH;
+        } else if (Variable.SHF.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_SHF;
+        } else if (Variable.SFWF.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_SFWF;
+        } else if (Variable.HMXL.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_HMXL;
+        } else if (Variable.SALT.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_SALT;
+        } else if (Variable.TEMP.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_TEMP;
+        } else if (Variable.UVEL.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_UVEL;
+        } else if (Variable.VVEL.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_VVEL;
+        } else if (Variable.KE.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_KE;
+        } else if (Variable.PD.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_PD;
+        } else if (Variable.TAUX.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_TAUX;
+        } else if (Variable.TAUY.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_TAUY;
+        } else if (Variable.H2.toString().compareTo(var) == 0) {
+            result = CURRENT_MIN_DIFF_H2;
+        }
+        return result;
+    }
+
     public int getDepthMin() {
         return DEPTH_MIN;
     }
@@ -649,7 +1103,8 @@ public class ImauSettings {
         if (state.getFrameNumber() != value) {
             result = new GlobeState(state.getDataMode(),
                     state.isDynamicDimensions(), state.getVariable(), value,
-                    state.getDepth(), state.getColorMap());
+                    state.getDepth(), state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateLT = result;
         }
 
@@ -657,7 +1112,8 @@ public class ImauSettings {
         if (state.getFrameNumber() != value) {
             result = new GlobeState(state.getDataMode(),
                     state.isDynamicDimensions(), state.getVariable(), value,
-                    state.getDepth(), state.getColorMap());
+                    state.getDepth(), state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateRT = result;
         }
 
@@ -665,7 +1121,8 @@ public class ImauSettings {
         if (state.getFrameNumber() != value) {
             result = new GlobeState(state.getDataMode(),
                     state.isDynamicDimensions(), state.getVariable(), value,
-                    state.getDepth(), state.getColorMap());
+                    state.getDepth(), state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateLB = result;
         }
 
@@ -673,7 +1130,8 @@ public class ImauSettings {
         if (state.getFrameNumber() != value) {
             result = new GlobeState(state.getDataMode(),
                     state.isDynamicDimensions(), state.getVariable(), value,
-                    state.getDepth(), state.getColorMap());
+                    state.getDepth(), state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateRB = result;
         }
     }
@@ -686,7 +1144,8 @@ public class ImauSettings {
         if (state.getDepth() != value) {
             result = new GlobeState(state.getDataMode(),
                     state.isDynamicDimensions(), state.getVariable(),
-                    state.getFrameNumber(), value, state.getColorMap());
+                    state.getFrameNumber(), value, state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateLT = result;
         }
 
@@ -694,7 +1153,8 @@ public class ImauSettings {
         if (state.getDepth() != value) {
             result = new GlobeState(state.getDataMode(),
                     state.isDynamicDimensions(), state.getVariable(),
-                    state.getFrameNumber(), value, state.getColorMap());
+                    state.getFrameNumber(), value, state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateRT = result;
         }
 
@@ -702,7 +1162,8 @@ public class ImauSettings {
         if (state.getDepth() != value) {
             result = new GlobeState(state.getDataMode(),
                     state.isDynamicDimensions(), state.getVariable(),
-                    state.getFrameNumber(), value, state.getColorMap());
+                    state.getFrameNumber(), value, state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateLB = result;
         }
 
@@ -710,7 +1171,8 @@ public class ImauSettings {
         if (state.getDepth() != value) {
             result = new GlobeState(state.getDataMode(),
                     state.isDynamicDimensions(), state.getVariable(),
-                    state.getFrameNumber(), value, state.getColorMap());
+                    state.getFrameNumber(), value, state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateRB = result;
         }
 
@@ -783,7 +1245,8 @@ public class ImauSettings {
         GlobeState state = globeStateLT;
         GlobeState result = new GlobeState(dataMode,
                 state.isDynamicDimensions(), state.getVariable(),
-                state.getFrameNumber(), state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap(),
+                state.getLowerBound(), state.getUpperBound());
         globeStateLT = result;
     }
 
@@ -791,7 +1254,8 @@ public class ImauSettings {
         GlobeState state = globeStateRT;
         GlobeState result = new GlobeState(dataMode,
                 state.isDynamicDimensions(), state.getVariable(),
-                state.getFrameNumber(), state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap(),
+                state.getLowerBound(), state.getUpperBound());
         globeStateRT = result;
     }
 
@@ -799,7 +1263,8 @@ public class ImauSettings {
         GlobeState state = globeStateLB;
         GlobeState result = new GlobeState(dataMode,
                 state.isDynamicDimensions(), state.getVariable(),
-                state.getFrameNumber(), state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap(),
+                state.getLowerBound(), state.getUpperBound());
         globeStateLB = result;
     }
 
@@ -807,7 +1272,8 @@ public class ImauSettings {
         GlobeState state = globeStateRB;
         GlobeState result = new GlobeState(dataMode,
                 state.isDynamicDimensions(), state.getVariable(),
-                state.getFrameNumber(), state.getDepth(), state.getColorMap());
+                state.getFrameNumber(), state.getDepth(), state.getColorMap(),
+                state.getLowerBound(), state.getUpperBound());
         globeStateRB = result;
     }
 
@@ -815,7 +1281,8 @@ public class ImauSettings {
         GlobeState state = globeStateLT;
         GlobeState result = new GlobeState(state.getDataMode(),
                 state.isDynamicDimensions(), variable, state.getFrameNumber(),
-                state.getDepth(), state.getColorMap());
+                state.getDepth(), state.getColorMap(), state.getLowerBound(),
+                state.getUpperBound());
         globeStateLT = result;
     }
 
@@ -823,7 +1290,8 @@ public class ImauSettings {
         GlobeState state = globeStateRT;
         GlobeState result = new GlobeState(state.getDataMode(),
                 state.isDynamicDimensions(), variable, state.getFrameNumber(),
-                state.getDepth(), state.getColorMap());
+                state.getDepth(), state.getColorMap(), state.getLowerBound(),
+                state.getUpperBound());
         globeStateRT = result;
     }
 
@@ -831,7 +1299,8 @@ public class ImauSettings {
         GlobeState state = globeStateLB;
         GlobeState result = new GlobeState(state.getDataMode(),
                 state.isDynamicDimensions(), variable, state.getFrameNumber(),
-                state.getDepth(), state.getColorMap());
+                state.getDepth(), state.getColorMap(), state.getLowerBound(),
+                state.getUpperBound());
         globeStateLB = result;
     }
 
@@ -839,7 +1308,8 @@ public class ImauSettings {
         GlobeState state = globeStateRB;
         GlobeState result = new GlobeState(state.getDataMode(),
                 state.isDynamicDimensions(), variable, state.getFrameNumber(),
-                state.getDepth(), state.getColorMap());
+                state.getDepth(), state.getColorMap(), state.getLowerBound(),
+                state.getUpperBound());
         globeStateRB = result;
     }
 
@@ -863,7 +1333,8 @@ public class ImauSettings {
         GlobeState state = globeStateLT;
         GlobeState result = new GlobeState(state.getDataMode(),
                 state.isDynamicDimensions(), state.getVariable(),
-                state.getFrameNumber(), state.getDepth(), selectedColorMap);
+                state.getFrameNumber(), state.getDepth(), selectedColorMap,
+                state.getLowerBound(), state.getUpperBound());
         globeStateLT = result;
     }
 
@@ -871,7 +1342,8 @@ public class ImauSettings {
         GlobeState state = globeStateRT;
         GlobeState result = new GlobeState(state.getDataMode(),
                 state.isDynamicDimensions(), state.getVariable(),
-                state.getFrameNumber(), state.getDepth(), selectedColorMap);
+                state.getFrameNumber(), state.getDepth(), selectedColorMap,
+                state.getLowerBound(), state.getUpperBound());
         globeStateRT = result;
     }
 
@@ -879,7 +1351,8 @@ public class ImauSettings {
         GlobeState state = globeStateLB;
         GlobeState result = new GlobeState(state.getDataMode(),
                 state.isDynamicDimensions(), state.getVariable(),
-                state.getFrameNumber(), state.getDepth(), selectedColorMap);
+                state.getFrameNumber(), state.getDepth(), selectedColorMap,
+                state.getLowerBound(), state.getUpperBound());
         globeStateLB = result;
     }
 
@@ -887,7 +1360,8 @@ public class ImauSettings {
         GlobeState state = globeStateRB;
         GlobeState result = new GlobeState(state.getDataMode(),
                 state.isDynamicDimensions(), state.getVariable(),
-                state.getFrameNumber(), state.getDepth(), selectedColorMap);
+                state.getFrameNumber(), state.getDepth(), selectedColorMap,
+                state.getLowerBound(), state.getUpperBound());
         globeStateRB = result;
     }
 
@@ -901,7 +1375,8 @@ public class ImauSettings {
         if (state.isDynamicDimensions() != DYNAMIC_DIMENSIONS) {
             result = new GlobeState(state.getDataMode(), DYNAMIC_DIMENSIONS,
                     state.getVariable(), state.getFrameNumber(),
-                    state.getDepth(), state.getColorMap());
+                    state.getDepth(), state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateLT = result;
         }
 
@@ -909,7 +1384,8 @@ public class ImauSettings {
         if (state.isDynamicDimensions() != DYNAMIC_DIMENSIONS) {
             result = new GlobeState(state.getDataMode(), DYNAMIC_DIMENSIONS,
                     state.getVariable(), state.getFrameNumber(),
-                    state.getDepth(), state.getColorMap());
+                    state.getDepth(), state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateRT = result;
         }
 
@@ -917,7 +1393,8 @@ public class ImauSettings {
         if (state.isDynamicDimensions() != DYNAMIC_DIMENSIONS) {
             result = new GlobeState(state.getDataMode(), DYNAMIC_DIMENSIONS,
                     state.getVariable(), state.getFrameNumber(),
-                    state.getDepth(), state.getColorMap());
+                    state.getDepth(), state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateLB = result;
         }
 
@@ -925,7 +1402,8 @@ public class ImauSettings {
         if (state.isDynamicDimensions() != DYNAMIC_DIMENSIONS) {
             result = new GlobeState(state.getDataMode(), DYNAMIC_DIMENSIONS,
                     state.getVariable(), state.getFrameNumber(),
-                    state.getDepth(), state.getColorMap());
+                    state.getDepth(), state.getColorMap(),
+                    state.getLowerBound(), state.getUpperBound());
             globeStateRB = result;
         }
     }
@@ -988,134 +1466,6 @@ public class ImauSettings {
 
     public String[] getDepthNamePermutations() {
         return POSSIBLE_DEPTH_AXIS_NAMES;
-    }
-
-    public float getVarMax(String varName) {
-        float result = 0f;
-        if (varName.compareTo("SSH") == 0) {
-            result = MAX_SSH;
-        } else if (varName.compareTo("SHF") == 0) {
-            result = MAX_SHF;
-        } else if (varName.compareTo("SFWF") == 0) {
-            result = MAX_SFWF;
-        } else if (varName.compareTo("HMXL") == 0) {
-            result = MAX_HMXL;
-        } else if (varName.compareTo("SALT") == 0) {
-            result = MAX_SALT;
-        } else if (varName.compareTo("TEMP") == 0) {
-            result = MAX_TEMP;
-        } else if (varName.compareTo("UVEL") == 0) {
-            result = MAX_UVEL;
-        } else if (varName.compareTo("VVEL") == 0) {
-            result = MAX_VVEL;
-        } else if (varName.compareTo("KE") == 0) {
-            result = MAX_KE;
-        } else if (varName.compareTo("PD") == 0) {
-            result = MAX_PD;
-        } else if (varName.compareTo("TAUX") == 0) {
-            result = MAX_TAUX;
-        } else if (varName.compareTo("TAUY") == 0) {
-            result = MAX_TAUY;
-        } else if (varName.compareTo("H2") == 0) {
-            result = MAX_H2;
-        }
-        return result;
-    }
-
-    public float getVarMin(String varName) {
-        float result = 0f;
-        if (varName.compareTo("SSH") == 0) {
-            result = MIN_SSH;
-        } else if (varName.compareTo("SHF") == 0) {
-            result = MIN_SHF;
-        } else if (varName.compareTo("SFWF") == 0) {
-            result = MIN_SFWF;
-        } else if (varName.compareTo("HMXL") == 0) {
-            result = MIN_HMXL;
-        } else if (varName.compareTo("SALT") == 0) {
-            result = MIN_SALT;
-        } else if (varName.compareTo("TEMP") == 0) {
-            result = MIN_TEMP;
-        } else if (varName.compareTo("UVEL") == 0) {
-            result = MIN_UVEL;
-        } else if (varName.compareTo("VVEL") == 0) {
-            result = MIN_VVEL;
-        } else if (varName.compareTo("KE") == 0) {
-            result = MIN_KE;
-        } else if (varName.compareTo("PD") == 0) {
-            result = MIN_PD;
-        } else if (varName.compareTo("TAUX") == 0) {
-            result = MIN_TAUX;
-        } else if (varName.compareTo("TAUY") == 0) {
-            result = MIN_TAUY;
-        } else if (varName.compareTo("H2") == 0) {
-            result = MIN_H2;
-        }
-        return result;
-    }
-
-    public float getVarDiffMax(String varName) {
-        float result = 0f;
-        if (varName.compareTo("SSH") == 0) {
-            result = MAX_DIFF_SSH;
-        } else if (varName.compareTo("SHF") == 0) {
-            result = MAX_DIFF_SHF;
-        } else if (varName.compareTo("SFWF") == 0) {
-            result = MAX_DIFF_SFWF;
-        } else if (varName.compareTo("HMXL") == 0) {
-            result = MAX_DIFF_HMXL;
-        } else if (varName.compareTo("SALT") == 0) {
-            result = MAX_DIFF_SALT;
-        } else if (varName.compareTo("TEMP") == 0) {
-            result = MAX_DIFF_TEMP;
-        } else if (varName.compareTo("UVEL") == 0) {
-            result = MAX_DIFF_UVEL;
-        } else if (varName.compareTo("VVEL") == 0) {
-            result = MAX_DIFF_VVEL;
-        } else if (varName.compareTo("KE") == 0) {
-            result = MAX_DIFF_KE;
-        } else if (varName.compareTo("PD") == 0) {
-            result = MAX_DIFF_PD;
-        } else if (varName.compareTo("TAUX") == 0) {
-            result = MAX_DIFF_TAUX;
-        } else if (varName.compareTo("TAUY") == 0) {
-            result = MAX_DIFF_TAUY;
-        } else if (varName.compareTo("H2") == 0) {
-            result = MAX_DIFF_H2;
-        }
-        return result;
-    }
-
-    public float getVarDiffMin(String varName) {
-        float result = 0f;
-        if (varName.compareTo("SSH") == 0) {
-            result = MIN_DIFF_SSH;
-        } else if (varName.compareTo("SHF") == 0) {
-            result = MIN_DIFF_SHF;
-        } else if (varName.compareTo("SFWF") == 0) {
-            result = MIN_DIFF_SFWF;
-        } else if (varName.compareTo("HMXL") == 0) {
-            result = MIN_DIFF_HMXL;
-        } else if (varName.compareTo("SALT") == 0) {
-            result = MIN_DIFF_SALT;
-        } else if (varName.compareTo("TEMP") == 0) {
-            result = MIN_DIFF_TEMP;
-        } else if (varName.compareTo("UVEL") == 0) {
-            result = MIN_DIFF_UVEL;
-        } else if (varName.compareTo("VVEL") == 0) {
-            result = MIN_DIFF_VVEL;
-        } else if (varName.compareTo("KE") == 0) {
-            result = MIN_DIFF_KE;
-        } else if (varName.compareTo("PD") == 0) {
-            result = MIN_DIFF_PD;
-        } else if (varName.compareTo("TAUX") == 0) {
-            result = MIN_DIFF_TAUX;
-        } else if (varName.compareTo("TAUY") == 0) {
-            result = MIN_DIFF_TAUY;
-        } else if (varName.compareTo("H2") == 0) {
-            result = MIN_DIFF_H2;
-        }
-        return result;
     }
 
     public String getMonth(int frameNumber) {
@@ -1291,5 +1641,176 @@ public class ImauSettings {
 
     public void setScreenshotPath(String newPath) {
         SCREENSHOT_PATH = newPath;
+    }
+
+    public void setVariableRange(int whichglobe, String varName, int minValue,
+            int maxValue) {
+        float minFloatValue = 0f, maxFloatValue = 0f;
+        if (varName.compareTo("SSH") == 0) {
+            float diff = (MAX_SSH - MIN_SSH);
+            CURRENT_MIN_SSH = (minValue / 100f) * diff + MIN_SSH;
+            CURRENT_MAX_SSH = (maxValue / 100f) * diff + MIN_SSH;
+            minFloatValue = CURRENT_MIN_SSH;
+            maxFloatValue = CURRENT_MAX_SSH;
+        } else if (varName.compareTo("SHF") == 0) {
+            float diff = (MAX_SHF - MIN_SHF);
+            CURRENT_MIN_SHF = (minValue / 100f) * diff + MIN_SHF;
+            CURRENT_MAX_SHF = (maxValue / 100f) * diff + MIN_SHF;
+            minFloatValue = CURRENT_MIN_SHF;
+            maxFloatValue = CURRENT_MAX_SHF;
+        } else if (varName.compareTo("SFWF") == 0) {
+            float diff = (MAX_SFWF - MIN_SFWF);
+            CURRENT_MIN_SFWF = (minValue / 100f) * diff + MIN_SFWF;
+            CURRENT_MAX_SFWF = (maxValue / 100f) * diff + MIN_SFWF;
+            minFloatValue = CURRENT_MIN_SFWF;
+            maxFloatValue = CURRENT_MAX_SFWF;
+        } else if (varName.compareTo("HMXL") == 0) {
+            float diff = (MAX_HMXL - MIN_HMXL);
+            CURRENT_MIN_HMXL = (minValue / 100f) * diff + MIN_HMXL;
+            CURRENT_MAX_HMXL = (maxValue / 100f) * diff + MIN_HMXL;
+            minFloatValue = CURRENT_MIN_HMXL;
+            maxFloatValue = CURRENT_MAX_HMXL;
+        } else if (varName.compareTo("SALT") == 0) {
+            float diff = (MAX_SALT - MIN_SALT);
+            CURRENT_MIN_SALT = (minValue / 100f) * diff + MIN_SALT;
+            CURRENT_MAX_SALT = (maxValue / 100f) * diff + MIN_SALT;
+            minFloatValue = CURRENT_MIN_SALT;
+            maxFloatValue = CURRENT_MAX_SALT;
+        } else if (varName.compareTo("TEMP") == 0) {
+            float diff = (MAX_TEMP - MIN_TEMP);
+            CURRENT_MIN_TEMP = (minValue / 100f) * diff + MIN_TEMP;
+            CURRENT_MAX_TEMP = (maxValue / 100f) * diff + MIN_TEMP;
+            minFloatValue = CURRENT_MIN_TEMP;
+            maxFloatValue = CURRENT_MAX_TEMP;
+        } else if (varName.compareTo("UVEL") == 0) {
+            float diff = (MAX_UVEL - MIN_UVEL);
+            CURRENT_MIN_UVEL = (minValue / 100f) * diff + MIN_UVEL;
+            CURRENT_MAX_UVEL = (maxValue / 100f) * diff + MIN_UVEL;
+            minFloatValue = CURRENT_MIN_UVEL;
+            maxFloatValue = CURRENT_MAX_UVEL;
+        } else if (varName.compareTo("VVEL") == 0) {
+            float diff = (MAX_VVEL - MIN_VVEL);
+            CURRENT_MIN_VVEL = (minValue / 100f) * diff + MIN_VVEL;
+            CURRENT_MAX_VVEL = (maxValue / 100f) * diff + MIN_VVEL;
+            minFloatValue = CURRENT_MIN_VVEL;
+            maxFloatValue = CURRENT_MAX_VVEL;
+        } else if (varName.compareTo("KE") == 0) {
+            float diff = (MAX_KE - MIN_KE);
+            CURRENT_MIN_KE = (minValue / 100f) * diff + MIN_KE;
+            CURRENT_MAX_KE = (maxValue / 100f) * diff + MIN_KE;
+            minFloatValue = CURRENT_MIN_KE;
+            maxFloatValue = CURRENT_MAX_KE;
+        } else if (varName.compareTo("PD") == 0) {
+            float diff = (MAX_PD - MIN_PD);
+            CURRENT_MIN_PD = (minValue / 100f) * diff + MIN_PD;
+            CURRENT_MAX_PD = (maxValue / 100f) * diff + MIN_PD;
+            minFloatValue = CURRENT_MIN_PD;
+            maxFloatValue = CURRENT_MAX_PD;
+        } else if (varName.compareTo("TAUX") == 0) {
+            float diff = (MAX_TAUX - MIN_TAUX);
+            CURRENT_MIN_TAUX = (minValue / 100f) * diff + MIN_TAUX;
+            CURRENT_MAX_TAUX = (maxValue / 100f) * diff + MIN_TAUX;
+            minFloatValue = CURRENT_MIN_SSH;
+            maxFloatValue = CURRENT_MAX_SSH;
+        } else if (varName.compareTo("TAUY") == 0) {
+            float diff = (MAX_TAUY - MIN_TAUY);
+            CURRENT_MIN_TAUY = (minValue / 100f) * diff + MIN_TAUY;
+            CURRENT_MAX_TAUY = (maxValue / 100f) * diff + MIN_TAUY;
+            minFloatValue = CURRENT_MIN_TAUY;
+            maxFloatValue = CURRENT_MAX_TAUY;
+        } else if (varName.compareTo("H2") == 0) {
+            float diff = (MAX_H2 - MIN_H2);
+            CURRENT_MIN_H2 = (minValue / 100f) * diff + MIN_H2;
+            CURRENT_MAX_H2 = (maxValue / 100f) * diff + MIN_H2;
+            minFloatValue = CURRENT_MIN_H2;
+            maxFloatValue = CURRENT_MAX_H2;
+        }
+
+        GlobeState result;
+        GlobeState state;
+
+        if (whichglobe == 0) {
+            state = globeStateLT;
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(),
+                    state.getFrameNumber(), state.getDepth(),
+                    state.getColorMap(), minFloatValue, maxFloatValue);
+            globeStateLT = result;
+        } else if (whichglobe == 1) {
+            state = globeStateRT;
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(),
+                    state.getFrameNumber(), state.getDepth(),
+                    state.getColorMap(), minFloatValue, maxFloatValue);
+            globeStateRT = result;
+        } else if (whichglobe == 2) {
+            state = globeStateLB;
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(),
+                    state.getFrameNumber(), state.getDepth(),
+                    state.getColorMap(), minFloatValue, maxFloatValue);
+            globeStateLB = result;
+        } else if (whichglobe == 3) {
+            state = globeStateRB;
+            result = new GlobeState(state.getDataMode(),
+                    state.isDynamicDimensions(), state.getVariable(),
+                    state.getFrameNumber(), state.getDepth(),
+                    state.getColorMap(), minFloatValue, maxFloatValue);
+            globeStateRB = result;
+        }
+    }
+
+    public int getImageWidth() {
+        return IMAGE_WIDTH;
+    }
+
+    public int getImageHeight() {
+        return IMAGE_HEIGHT;
+    }
+
+    public int getRangeSliderLowerValue(int whichglobe) {
+        GlobeState state = null;
+
+        if (whichglobe == 0) {
+            state = globeStateLT;
+        } else if (whichglobe == 1) {
+            state = globeStateRT;
+        } else if (whichglobe == 2) {
+            state = globeStateLB;
+        } else if (whichglobe == 3) {
+            state = globeStateRB;
+        }
+
+        float min = getVarMin(state.getVariable());
+        float max = getVarMax(state.getVariable());
+        float currentMin = getCurrentVarMin(state.getVariable());
+
+        float diff = max - min;
+        float result = (currentMin - min) / diff;
+
+        return (int) (result * 100) - 1;
+    }
+
+    public int getRangeSliderUpperValue(int whichglobe) {
+        GlobeState state = null;
+
+        if (whichglobe == 0) {
+            state = globeStateLT;
+        } else if (whichglobe == 1) {
+            state = globeStateRT;
+        } else if (whichglobe == 2) {
+            state = globeStateLB;
+        } else if (whichglobe == 3) {
+            state = globeStateRB;
+        }
+
+        float min = getVarMin(state.getVariable());
+        float max = getVarMax(state.getVariable());
+        float currentMax = getCurrentVarMax(state.getVariable());
+
+        float diff = max - min;
+        float result = (currentMax - min) / diff;
+
+        return (int) (result * 100) - 1;
     }
 }

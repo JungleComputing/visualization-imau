@@ -47,5 +47,6 @@
 	<classpathentry kind="lib" path="lib/netcdf/toolsUI-4.2.jar"/>
 	<classpathentry kind="lib" path="lib/netcdf/visadNoDods.jar"/>
 	<classpathentry kind="lib" path="OpenGLCommon.jar"/>
+	<classpathentry kind="lib" path="lib/ibis-media-0.4.jar"/>
 	<classpathentry kind="output" path="tmp"/>
 </classpath>

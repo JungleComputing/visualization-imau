@@ -11,7 +11,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -152,18 +151,18 @@ public class ImauApp {
         }
     }
 
-    public static void writeImageToDisk(String filename) {
-        try {
-            ImageIO.write(imauWindow.getScreenshot(), "png",
-                    new File(settings.getScreenshotPath() + "screenshots/"
-                            + filename + ".png"));
-
-            // System.out.println("screenshot!");
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+    // public static void writeImageToDisk(String filename) {
+    // try {
+    // ImageIO.write(imauWindow.getScreenshot(), "png",
+    // new File(settings.getScreenshotPath() + "screenshots/"
+    // + filename + ".png"));
+    //
+    // // System.out.println("screenshot!");
+    // } catch (IOException e) {
+    // // TODO Auto-generated catch block
+    // e.printStackTrace();
+    // }
+    // }
 
     private static void log(String l, IOException ioe) {
         log.warn(l);
