@@ -169,6 +169,7 @@ public class ImauWindow extends CommonWindow {
                     bufIm.setRGB(0, 0, canvasWidth, canvasHeight, dest.array(),
                             0, canvasWidth);
                     try {
+
                         ImageIO.write(bufIm, "png",
                                 new File(timer.getScreenshotFileName()));
                     } catch (IOException e2) {
@@ -849,6 +850,8 @@ public class ImauWindow extends CommonWindow {
     @Override
     public void init(GLAutoDrawable drawable) {
         super.init(drawable);
+
+        System.out.println("W: " + canvasWidth + ", H: " + canvasHeight);
 
         drawable.getContext().makeCurrent();
         final GL3 gl = drawable.getGL().getGL3();

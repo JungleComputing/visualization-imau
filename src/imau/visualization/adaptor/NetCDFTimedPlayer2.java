@@ -3,12 +3,14 @@ package imau.visualization.adaptor;
 import imau.visualization.ImauSettings;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import javax.media.opengl.GL3;
 import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 
 import openglCommon.math.VecF3;
+import openglCommon.math.VectorFMath;
 import util.CustomJSlider;
 import util.ImauInputHandler;
 
@@ -42,11 +44,54 @@ public class NetCDFTimedPlayer2 implements Runnable {
     private long                      waittime           = settings
                                                                  .getWaittimeMovie();
 
+    private final ArrayList<VecF3>    bezierPoints, fixedPoints;
+    private final ArrayList<Integer>  bezierSteps;
+
     public NetCDFTimedPlayer2(CustomJSlider timeBar2,
             JFormattedTextField frameCounter) {
         this.timeBar = timeBar2;
         this.frameCounter = frameCounter;
         this.inputHandler = ImauInputHandler.getInstance();
+
+        bezierPoints = new ArrayList<VecF3>();
+
+        fixedPoints = new ArrayList<VecF3>();
+        bezierSteps = new ArrayList<Integer>();
+
+        fixedPoints.add(new VecF3(394, 624, -80)); // Europa
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(379, 702, -140)); // Gulf Stream
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(359, 651, -140)); // Equator
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(320, 599, -90)); // South Africa
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(339, 540, -140)); // India
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(382, 487, -80)); // Japan
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(353, 360, -110)); // Panama
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(311, 326, -110)); // Argentina
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(412, 302, -140)); // Greenland
+        bezierSteps.add(60);
+        fixedPoints.add(new VecF3(394, 264, -80)); // Europa
+
+        VecF3 lastPoint = fixedPoints.get(0);
+        VecF3 still = new VecF3(0, 0, 0);
+        for (int i = 1; i < fixedPoints.size(); i++) {
+            VecF3 newPoint = fixedPoints.get(i);
+
+            VecF3[] bezierPointsTemp = VectorFMath.bezierCurve(
+                    bezierSteps.get(i - 1), lastPoint, still, still, newPoint);
+
+            for (int j = 1; j < bezierPointsTemp.length; j++) {
+                bezierPoints.add(bezierPointsTemp[j]);
+            }
+
+            lastPoint = newPoint;
+        }
     }
 
     public void close() {
@@ -130,16 +175,25 @@ public class NetCDFTimedPlayer2 implements Runnable {
     }
 
     public synchronized void setScreenshotNeeded(boolean value) {
+        if (value) {
+            final VecF3 rotation = inputHandler.getRotation();
+            final float viewDist = inputHandler.getViewDist();
+
+            System.out.println("Simulation frame: " + frameNumber
+                    + ", Rotation x: " + rotation.get(0) + " y: "
+                    + rotation.get(1) + " , viewDist: " + viewDist);
+
+            screenshotFilename = settings.getScreenshotPath()
+                    + String.format("%05d", (frameNumber)) + ".png";
+        }
         needsScreenshot = value;
     }
 
     public synchronized boolean isScreenshotNeeded() {
-        screenshotFilename = settings.getScreenshotPath()
-                + String.format("%05d", (frameNumber)) + ".png";
         return needsScreenshot;
     }
 
-    public String getScreenshotFileName() {
+    public synchronized String getScreenshotFileName() {
         return screenshotFilename;
     }
 
@@ -154,6 +208,10 @@ public class NetCDFTimedPlayer2 implements Runnable {
                 settings.getInitialRotationY(), 0f));
         inputHandler.setViewDist(settings.getInitialZoom());
 
+        // inputHandler.setRotation(new VecF3(bezierPoints.get(0).get(0),
+        // bezierPoints.get(0).get(1), 0f));
+        // inputHandler.setViewDist(bezierPoints.get(0).get(2));
+
         stop();
 
         while (running) {
@@ -165,22 +223,20 @@ public class NetCDFTimedPlayer2 implements Runnable {
                         startTime = System.currentTimeMillis();
 
                         if (currentState == states.MOVIEMAKING) {
+                            final VecF3 rotation = inputHandler.getRotation();
                             if (settings.getMovieRotate()) {
-                                final VecF3 rotation = inputHandler
-                                        .getRotation();
-                                System.out.println("Simulation frame: "
-                                        + frameNumber + ", Rotation x: "
-                                        + rotation.get(0) + " y: "
-                                        + rotation.get(1));
-
+                                // rotation.set(
+                                // 1,
+                                // rotation.get(1)
+                                // + settings
+                                // .getMovieRotationSpeedDef());
+                                // inputHandler.setRotation(rotation);
+                                inputHandler.setRotation(new VecF3(bezierPoints
+                                        .get(frameNumber).get(0), bezierPoints
+                                        .get(frameNumber).get(1), 0f));
+                                inputHandler.setViewDist(bezierPoints.get(
+                                        frameNumber).get(2));
                                 setScreenshotNeeded(true);
-
-                                rotation.set(
-                                        1,
-                                        rotation.get(1)
-                                                + settings
-                                                        .getMovieRotationSpeedDef());
-                                inputHandler.setRotation(rotation);
                             } else {
                                 setScreenshotNeeded(true);
                             }

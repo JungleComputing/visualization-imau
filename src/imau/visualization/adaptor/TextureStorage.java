@@ -5,6 +5,8 @@ import imau.visualization.adaptor.ImageMaker.Dimensions;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
+import com.jogamp.common.nio.Buffers;
+
 public class TextureStorage {
     private final HashMap<Integer, SurfaceTextureDescription>    oldScreen;
     private final HashMap<Integer, SurfaceTextureDescription>    newScreen;
@@ -18,6 +20,9 @@ public class TextureStorage {
 
     private final NetCDFDatasetManager2                          manager;
 
+    private final ByteBuffer                                     EMPTY_SURFACE_BUFFER;
+    private final ByteBuffer                                     EMPTY_LEGEND_BUFFER;
+
     public TextureStorage(NetCDFDatasetManager2 manager, int width, int height) {
         oldScreen = new HashMap<Integer, SurfaceTextureDescription>();
         newScreen = new HashMap<Integer, SurfaceTextureDescription>();
@@ -29,6 +34,9 @@ public class TextureStorage {
         this.width = width;
         this.height = height;
         this.manager = manager;
+
+        EMPTY_SURFACE_BUFFER = Buffers.newDirectByteBuffer(width * height * 4);
+        EMPTY_LEGEND_BUFFER = Buffers.newDirectByteBuffer(1 * 500 * 4);
     }
 
     public synchronized ByteBuffer getSurfaceImage(int screenNumber) {
@@ -47,7 +55,7 @@ public class TextureStorage {
         if (result != null) {
             return result;
         } else {
-            return ByteBuffer.allocate(width * height * 4);
+            return EMPTY_SURFACE_BUFFER;
         }
 
     }
@@ -68,7 +76,7 @@ public class TextureStorage {
         if (result != null) {
             return result;
         } else {
-            return ByteBuffer.allocate(1 * 500 * 4);
+            return EMPTY_LEGEND_BUFFER;
         }
     }
 
@@ -150,6 +158,20 @@ public class TextureStorage {
         boolean failure = false;
 
         for (SurfaceTextureDescription desc : newScreen.values()) {
+            if (surfaceStorage.get(desc) == null
+                    || legendStorage.get(desc) == null
+                    || dimensionsStorage.get(desc) == null) {
+                failure = true;
+            }
+        }
+
+        return !failure;
+    }
+
+    public boolean doneWithNextRequest() {
+        boolean failure = false;
+
+        for (SurfaceTextureDescription desc : futureScreen.values()) {
             if (surfaceStorage.get(desc) == null
                     || legendStorage.get(desc) == null
                     || dimensionsStorage.get(desc) == null) {

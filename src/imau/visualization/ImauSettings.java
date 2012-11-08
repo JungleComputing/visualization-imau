@@ -26,8 +26,8 @@ public class ImauSettings {
         Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
     };
 
-    private static final int IMAGE_WIDTH                = 3600;
-    private static final int IMAGE_HEIGHT               = 2431;
+    private static final int IMAGE_WIDTH                = 900;
+    private static final int IMAGE_HEIGHT               = 602;
 
     private boolean          STEREO_RENDERING           = true;
     private boolean          STEREO_SWITCHED            = true;
@@ -306,6 +306,7 @@ public class ImauSettings {
             INITIAL_ROTATION_X = props.getFloatProperty("INITIAL_ROTATION_X");
             INITIAL_ROTATION_Y = props.getFloatProperty("INITIAL_ROTATION_Y");
             INITIAL_ZOOM = props.getFloatProperty("INITIAL_ZOOM");
+            TIME_STEP_SIZE = props.getIntProperty("TIME_STEP_SIZE");
 
             // Setting per movie frame
             MOVIE_ROTATE = props.getBooleanProperty("MOVIE_ROTATE");
