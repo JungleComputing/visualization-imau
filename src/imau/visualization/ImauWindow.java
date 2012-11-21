@@ -1,15 +1,13 @@
 package imau.visualization;
 
-import imau.visualization.adaptor.FBO;
 import imau.visualization.adaptor.GlobeState;
-import imau.visualization.adaptor.GlobeState.DataMode;
-import imau.visualization.adaptor.ImageMaker;
-import imau.visualization.adaptor.IntPBO;
-import imau.visualization.adaptor.NetCDFTexture;
-import imau.visualization.adaptor.NetCDFTimedPlayer2;
+import imau.visualization.adaptor.NetCDFTimedPlayer;
 import imau.visualization.adaptor.SurfaceTextureDescription;
-import imau.visualization.adaptor.Texture2D;
-import imau.visualization.adaptor.WrongFrameException;
+import imau.visualization.adaptor.GlobeState.DataMode;
+import imau.visualization.glExt.ByteBufferTexture;
+import imau.visualization.glExt.FBO;
+import imau.visualization.glExt.IntPBO;
+import imau.visualization.glExt.Texture2D;
 import imau.visualization.jni.SageInterface;
 
 import java.awt.Dimension;
@@ -80,7 +78,7 @@ public class ImauWindow extends CommonWindow {
 
     private GlobeState          ltState, rtState, lbState, rbState;
 
-    private NetCDFTimedPlayer2  timer;
+    private NetCDFTimedPlayer   timer;
 
     public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
@@ -107,17 +105,12 @@ public class ImauWindow extends CommonWindow {
         final GL3 gl = drawable.getContext().getGL().getGL3();
         gl.glViewport(0, 0, canvasWidth, canvasHeight);
 
-        NetCDFTimedPlayer2 timer = ImauPanel.getTimer();
+        NetCDFTimedPlayer timer = ImauPanel.getTimer();
         if (timer.isInitialized()) {
             this.timer = timer;
 
-            try {
-                displayContext(timer, ltFBO, rtFBO, lbFBO, rbFBO,
-                        atmosphereFBO, hudTextFBO, legendTextureFBO,
-                        sphereTextureFBO);
-            } catch (WrongFrameException e) {
-                System.out.println(e.getMessage());
-            }
+            displayContext(timer, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO,
+                    hudTextFBO, legendTextureFBO, sphereTextureFBO);
         }
 
         try {
@@ -192,10 +185,9 @@ public class ImauWindow extends CommonWindow {
         reshaped = false;
     }
 
-    private void displayContext(NetCDFTimedPlayer2 timer, FBO ltFBO, FBO rtFBO,
+    private void displayContext(NetCDFTimedPlayer timer, FBO ltFBO, FBO rtFBO,
             FBO lbFBO, FBO rbFBO, FBO atmosphereFBO, FBO hudTextFBO,
-            FBO legendTextureFBO, FBO sphereTextureFBO)
-            throws WrongFrameException {
+            FBO legendTextureFBO, FBO sphereTextureFBO) {
         final int width = GLContext.getCurrent().getGLDrawable().getWidth();
         final int height = GLContext.getCurrent().getGLDrawable().getHeight();
         final float aspect = (float) width / (float) height;
@@ -273,11 +265,11 @@ public class ImauWindow extends CommonWindow {
         // varNameTextLT, legendTextLTmin,
         // legendTextLTmax);
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
+        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
                 .getSurfaceImage(0), settings.getImageWidth(),
                 settings.getImageHeight());
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
+        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
                 .getLegendImage(0), 1, 500);
         surface.init(gl);
         legend.init(gl);
@@ -333,11 +325,11 @@ public class ImauWindow extends CommonWindow {
             rtState = state;
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
+        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
                 .getSurfaceImage(1), settings.getImageWidth(),
                 settings.getImageHeight());
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
+        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
                 .getLegendImage(1), 1, 500);
         surface.init(gl);
         legend.init(gl);
@@ -392,11 +384,11 @@ public class ImauWindow extends CommonWindow {
             // varNameTextLB, legendTextLBmin, legendTextLBmax);
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
+        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
                 .getSurfaceImage(2), settings.getImageWidth(),
                 settings.getImageHeight());
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
+        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
                 .getLegendImage(2), 1, 500);
         surface.init(gl);
         legend.init(gl);
@@ -451,11 +443,11 @@ public class ImauWindow extends CommonWindow {
             // varNameTextRB, legendTextRBmin, legendTextRBmax);
         }
 
-        surface = new NetCDFTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
+        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
                 .getSurfaceImage(3), settings.getImageWidth(),
                 settings.getImageHeight());
         heightMap = surface;
-        legend = new NetCDFTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
+        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
                 .getLegendImage(3), 1, 500);
         surface.init(gl);
         legend.init(gl);
@@ -1021,85 +1013,7 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void setHUDVars(final GL3 gl, ImageMaker.Dimensions dims,
-            SurfaceTextureDescription desc, MultiColorText txtVar,
-            MultiColorText txtMin, MultiColorText txtMax)
-            throws WrongFrameException {
-        String variableName = desc.getVarName();
-        // String units = GlobeState.verbalizeUnits(state.getVariableIndex());
-        // variableName += " in " + units;
-        String min = Float.toString(dims.min);
-        String max = Float.toString(dims.max);
-        txtVar.setString(gl, variableName, Color4.white, fontSize);
-        txtMin.setString(gl, min, Color4.white, fontSize);
-        txtMax.setString(gl, max, Color4.white, fontSize);
-    }
-
     public void makeSnapshot() {
-        // try {
-        // final int status = offScreenContext.makeCurrent();
-        // if ((status != GLContext.CONTEXT_CURRENT)
-        // && (status != GLContext.CONTEXT_CURRENT_NEW)) {
-        // System.err.println("Error swapping context to offscreen.");
-        // }
-        // } catch (final GLException e) {
-        // System.err
-        // .println("Exception while swapping context to offscreen.");
-        // e.printStackTrace();
-        // }
-        //
-        // final int width = offScreenContext.getGLDrawable().getWidth();
-        // final int height = offScreenContext.getGLDrawable().getHeight();
-        //
-        // final GL3 gl = offScreenContext.getGL().getGL3();
-        // gl.glViewport(0, 0, width, height);
-        //
-        // // Anti-Aliasing
-        // gl.glEnable(GL.GL_LINE_SMOOTH);
-        // gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
-        // gl.glEnable(GL2GL3.GL_POLYGON_SMOOTH);
-        // gl.glHint(GL2GL3.GL_POLYGON_SMOOTH_HINT, GL.GL_NICEST);
-        //
-        // // Depth testing
-        // gl.glEnable(GL.GL_DEPTH_TEST);
-        // gl.glDepthFunc(GL.GL_LEQUAL);
-        // gl.glClearDepth(1.0f);
-        //
-        // // Culling
-        // gl.glEnable(GL.GL_CULL_FACE);
-        // gl.glCullFace(GL.GL_BACK);
-        //
-        // // Enable Blending (needed for both Transparency and
-        // // Anti-Aliasing
-        // gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-        // gl.glEnable(GL.GL_BLEND);
-        //
-        // gl.glClearColor(0f, 0f, 0f, 0f);
-        //
-        // boolean sync = false;
-        // // while (!sync) {
-        // // try {
-        // // displayContext(timer, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO,
-        // // hudTextFBO,
-        // // legendTextureFBO, sphereTextureFBO);
-        // // sync = true;
-        // // } catch (WrongFrameException e) {
-        // // System.out.println("Screenshotter: " + e.getMessage());
-        // // }
-        // // }
-        //
-        // final Picture p = new Picture(width, height);
-        //
-        // gl.glFinish();
-        //
-        // p.copyFrameBufferToFile(settings.getScreenshotPath(), fileName);
-        //
-        // try {
-        // offScreenContext.release();
-        // } catch (final GLException e) {
-        // e.printStackTrace();
-        // }
-
         if (timer != null) {
             timer.setScreenshotNeeded(true);
         }

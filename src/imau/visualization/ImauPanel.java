@@ -1,8 +1,7 @@
 package imau.visualization;
 
-import imau.visualization.adaptor.ColormapInterpreter;
 import imau.visualization.adaptor.GlobeState;
-import imau.visualization.adaptor.NetCDFTimedPlayer2;
+import imau.visualization.adaptor.NetCDFTimedPlayer;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.awt.BorderLayout;
@@ -44,6 +43,7 @@ import openglCommon.CommonPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import util.ColormapInterpreter;
 import util.CustomJSlider;
 import util.GoggleSwing;
 import util.ImauInputHandler;
@@ -72,7 +72,7 @@ public class ImauPanel extends CommonPanel {
     private final JPanel              dataConfig, visualConfig, movieConfig;
 
     private final ImauWindow          imauWindow;
-    private static NetCDFTimedPlayer2 timer;
+    private static NetCDFTimedPlayer timer;
 
     private File                      file1;
 
@@ -90,7 +90,7 @@ public class ImauPanel extends CommonPanel {
         timeBar.setPaintTicks(true);
         timeBar.setSnapToTicks(true);
 
-        timer = new NetCDFTimedPlayer2(timeBar, frameCounter);
+        timer = new NetCDFTimedPlayer(timeBar, frameCounter);
 
         // Make the menu bar
         final JMenuBar menuBar = new JMenuBar();
@@ -366,7 +366,8 @@ public class ImauPanel extends CommonPanel {
             public void stateChanged(ChangeEvent e) {
                 final JSlider source = (JSlider) e.getSource();
                 if (source.hasFocus()) {
-                    timer.setFrame(timeBar.getValue(), false);
+                    timer.setFrame(timeBar.getValue() - timeBar.getMinimum(),
+                            false);
                     playButton.setIcon(playIcon);
                 }
             }
@@ -386,8 +387,10 @@ public class ImauPanel extends CommonPanel {
                 if (source.hasFocus()) {
                     if (source == frameCounter) {
                         if (timer.isInitialized()) {
-                            timer.setFrame(((Number) frameCounter.getValue())
-                                    .intValue(), false);
+                            timer.setFrame(
+                                    ((Number) frameCounter.getValue())
+                                            .intValue() - timeBar.getMinimum(),
+                                    false);
                         }
                         playButton.setIcon(playIcon);
                     }
@@ -896,7 +899,7 @@ public class ImauPanel extends CommonPanel {
             if (timer.isInitialized()) {
                 timer.close();
             }
-            timer = new NetCDFTimedPlayer2(timeBar, frameCounter);
+            timer = new NetCDFTimedPlayer(timeBar, frameCounter);
 
             timer.init(file1, file2);
             new Thread(timer).start();
@@ -922,7 +925,7 @@ public class ImauPanel extends CommonPanel {
             if (timer.isInitialized()) {
                 timer.close();
             }
-            timer = new NetCDFTimedPlayer2(timeBar, frameCounter);
+            timer = new NetCDFTimedPlayer(timeBar, frameCounter);
 
             timer.init(file);
             new Thread(timer).start();
@@ -979,7 +982,7 @@ public class ImauPanel extends CommonPanel {
         }
     }
 
-    public static NetCDFTimedPlayer2 getTimer() {
+    public static NetCDFTimedPlayer getTimer() {
         return timer;
     }
 }
