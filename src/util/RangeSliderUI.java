@@ -1,7 +1,5 @@
 package util;
 
-import imau.visualization.adaptor.ColormapInterpreter;
-import imau.visualization.adaptor.ColormapInterpreter.Dimensions;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -19,6 +17,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
+
+import util.ColormapInterpreter.Dimensions;
 
 /**
  * UI delegate for the RangeSlider component. RangeSliderUI paints two thumbs,
