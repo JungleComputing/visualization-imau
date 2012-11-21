@@ -1,7 +1,7 @@
 package imau.visualization;
 
 import imau.visualization.data.GlobeState;
-import imau.visualization.data.NetCDFTimedPlayer;
+import imau.visualization.data.ImauTimedPlayer;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.awt.BorderLayout;
@@ -72,7 +72,7 @@ public class ImauPanel extends CommonPanel {
     private final JPanel              dataConfig, visualConfig, movieConfig;
 
     private final ImauWindow          imauWindow;
-    private static NetCDFTimedPlayer timer;
+    private static ImauTimedPlayer timer;
 
     private File                      file1;
 
@@ -90,7 +90,7 @@ public class ImauPanel extends CommonPanel {
         timeBar.setPaintTicks(true);
         timeBar.setSnapToTicks(true);
 
-        timer = new NetCDFTimedPlayer(timeBar, frameCounter);
+        timer = new ImauTimedPlayer(timeBar, frameCounter);
 
         // Make the menu bar
         final JMenuBar menuBar = new JMenuBar();
@@ -899,7 +899,7 @@ public class ImauPanel extends CommonPanel {
             if (timer.isInitialized()) {
                 timer.close();
             }
-            timer = new NetCDFTimedPlayer(timeBar, frameCounter);
+            timer = new ImauTimedPlayer(timeBar, frameCounter);
 
             timer.init(file1, file2);
             new Thread(timer).start();
@@ -925,7 +925,7 @@ public class ImauPanel extends CommonPanel {
             if (timer.isInitialized()) {
                 timer.close();
             }
-            timer = new NetCDFTimedPlayer(timeBar, frameCounter);
+            timer = new ImauTimedPlayer(timeBar, frameCounter);
 
             timer.init(file);
             new Thread(timer).start();
@@ -982,7 +982,7 @@ public class ImauPanel extends CommonPanel {
         }
     }
 
-    public static NetCDFTimedPlayer getTimer() {
+    public static ImauTimedPlayer getTimer() {
         return timer;
     }
 }

@@ -15,7 +15,7 @@ import openglCommon.math.VectorFMath;
 import util.CustomJSlider;
 import util.ImauInputHandler;
 
-public class NetCDFTimedPlayer implements Runnable {
+public class ImauTimedPlayer implements Runnable {
     public static enum states {
         UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
     }
@@ -48,7 +48,7 @@ public class NetCDFTimedPlayer implements Runnable {
     private final ArrayList<VecF3>    bezierPoints, fixedPoints;
     private final ArrayList<Integer>  bezierSteps;
 
-    public NetCDFTimedPlayer(CustomJSlider timeBar2,
+    public ImauTimedPlayer(CustomJSlider timeBar2,
             JFormattedTextField frameCounter) {
         this.timeBar = timeBar2;
         this.frameCounter = frameCounter;

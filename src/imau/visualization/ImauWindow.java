@@ -1,7 +1,7 @@
 package imau.visualization;
 
 import imau.visualization.data.GlobeState;
-import imau.visualization.data.NetCDFTimedPlayer;
+import imau.visualization.data.ImauTimedPlayer;
 import imau.visualization.data.SurfaceTextureDescription;
 import imau.visualization.data.GlobeState.DataMode;
 import imau.visualization.glExt.ByteBufferTexture;
@@ -78,7 +78,7 @@ public class ImauWindow extends CommonWindow {
 
     private GlobeState          ltState, rtState, lbState, rbState;
 
-    private NetCDFTimedPlayer   timer;
+    private ImauTimedPlayer   timer;
 
     public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
@@ -105,7 +105,7 @@ public class ImauWindow extends CommonWindow {
         final GL3 gl = drawable.getContext().getGL().getGL3();
         gl.glViewport(0, 0, canvasWidth, canvasHeight);
 
-        NetCDFTimedPlayer timer = ImauPanel.getTimer();
+        ImauTimedPlayer timer = ImauPanel.getTimer();
         if (timer.isInitialized()) {
             this.timer = timer;
 
@@ -185,7 +185,7 @@ public class ImauWindow extends CommonWindow {
         reshaped = false;
     }
 
-    private void displayContext(NetCDFTimedPlayer timer, FBO ltFBO, FBO rtFBO,
+    private void displayContext(ImauTimedPlayer timer, FBO ltFBO, FBO rtFBO,
             FBO lbFBO, FBO rbFBO, FBO atmosphereFBO, FBO hudTextFBO,
             FBO legendTextureFBO, FBO sphereTextureFBO) {
         final int width = GLContext.getCurrent().getGLDrawable().getWidth();
