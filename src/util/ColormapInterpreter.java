@@ -1,6 +1,6 @@
 package util;
 
-import imau.visualization.adaptor.GlobeState;
+import imau.visualization.data.GlobeState;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
