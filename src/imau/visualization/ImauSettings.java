@@ -1,7 +1,7 @@
 package imau.visualization;
 
-import imau.visualization.adaptor.GlobeState;
-import imau.visualization.adaptor.GlobeState.Variable;
+import imau.visualization.data.GlobeState;
+import imau.visualization.data.GlobeState.Variable;
 import openglCommon.util.TypedProperties;
 
 import org.slf4j.Logger;

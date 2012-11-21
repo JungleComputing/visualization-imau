@@ -1,9 +1,9 @@
 package imau.visualization;
 
-import imau.visualization.adaptor.GlobeState;
-import imau.visualization.adaptor.NetCDFTimedPlayer;
-import imau.visualization.adaptor.SurfaceTextureDescription;
-import imau.visualization.adaptor.GlobeState.DataMode;
+import imau.visualization.data.GlobeState;
+import imau.visualization.data.NetCDFTimedPlayer;
+import imau.visualization.data.SurfaceTextureDescription;
+import imau.visualization.data.GlobeState.DataMode;
 import imau.visualization.glExt.ByteBufferTexture;
 import imau.visualization.glExt.FBO;
 import imau.visualization.glExt.IntPBO;

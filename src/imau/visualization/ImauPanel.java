@@ -1,7 +1,7 @@
 package imau.visualization;
 
-import imau.visualization.adaptor.GlobeState;
-import imau.visualization.adaptor.NetCDFTimedPlayer;
+import imau.visualization.data.GlobeState;
+import imau.visualization.data.NetCDFTimedPlayer;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.awt.BorderLayout;
