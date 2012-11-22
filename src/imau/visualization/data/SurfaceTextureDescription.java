@@ -85,7 +85,7 @@ public class SurfaceTextureDescription {
     public boolean equals(Object thatObject) {
         if (this == thatObject)
             return true;
-        if (!(thatObject instanceof GlobeState))
+        if (!(thatObject instanceof SurfaceTextureDescription))
             return false;
 
         // cast to native object is now safe

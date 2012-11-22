@@ -20,14 +20,14 @@ public class SurfaceTextureBuilder implements Runnable {
 
     protected SurfaceTextureDescription description;
 
-    private final ImauDataArray           inputArray;
+    private final ImauDataArray         inputArray;
     private final TextureStorage        texStore;
     private boolean                     initialized;
     private final int                   imageHeight;
     private final int                   blankRows;
 
-    public SurfaceTextureBuilder(TextureStorage texStore, ImauDataArray inputArray,
-            int imageHeight, int blankRows) {
+    public SurfaceTextureBuilder(TextureStorage texStore,
+            ImauDataArray inputArray, int imageHeight, int blankRows) {
         this.texStore = texStore;
         this.inputArray = inputArray;
         this.description = inputArray.getDescription();
@@ -100,7 +100,7 @@ public class SurfaceTextureBuilder implements Runnable {
     public boolean equals(Object thatObject) {
         if (this == thatObject)
             return true;
-        if (!(thatObject instanceof GlobeState))
+        if (!(thatObject instanceof SurfaceTextureBuilder))
             return false;
 
         // cast to native object is now safe

@@ -52,32 +52,21 @@ public class ImauDataArray implements Runnable {
                 }
             }
 
-            int[] origin = null, size = null;
+            int depthDim = 0;
             if (dims.size() > 3) {
                 if (dims.get(0).getLength() == 1 || dims.size() > 4) {
-                    // Peel off the time 'dimension'
-                    origin = new int[] { 0, description.getDepth(), 0, 0 };
-                    size = new int[] { 1, 1, height, width };
+                    depthDim = 1;
                 } else if (dims.size() > 2) {
-                    // Select the correct the depth
-                    origin = new int[] { description.getDepth(), 0, 0 };
-                    size = new int[] { 1, height, width };
+                    depthDim = 0;
                 }
             }
 
             if (ncFile2 == null) {
                 try {
                     Array ncdfArray2D;
-
-                    if (dims.size() > 3) {
-                        if (dims.get(0).getLength() == 1 || dims.size() > 4) {
-                            ncdfArray2D = ncdfVar1.read(origin, size).reduce();
-                        } else {
-                            throw new IOException(
-                                    "Unanticipated NetCDF variable dimensions.");
-                        }
-                    } else if (dims.size() > 2) {
-                        ncdfArray2D = ncdfVar1.read(origin, size).reduce();
+                    if (dims.size() > 2) {
+                        ncdfArray2D = ncdfVar1.slice(depthDim,
+                                description.getDepth()).read();
                     } else {
                         ncdfArray2D = ncdfVar1.read();
                     }
@@ -102,17 +91,11 @@ public class ImauDataArray implements Runnable {
                             .getVarName());
 
                     Array ncdfArray2D1, ncdfArray2D2;
-                    if (dims.size() > 3) {
-                        if (dims.get(0).getLength() == 1 || dims.size() > 4) {
-                            ncdfArray2D1 = ncdfVar1.read(origin, size).reduce();
-                            ncdfArray2D2 = ncdfVar2.read(origin, size).reduce();
-                        } else {
-                            throw new IOException(
-                                    "Unanticipated NetCDF variable dimensions.");
-                        }
-                    } else if (dims.size() > 2) {
-                        ncdfArray2D1 = ncdfVar1.read(origin, size).reduce();
-                        ncdfArray2D2 = ncdfVar2.read(origin, size).reduce();
+                    if (dims.size() > 2) {
+                        ncdfArray2D1 = ncdfVar1.slice(depthDim,
+                                description.getDepth()).read();
+                        ncdfArray2D2 = ncdfVar2.slice(depthDim,
+                                description.getDepth()).read();
                     } else {
                         ncdfArray2D1 = ncdfVar1.read();
                         ncdfArray2D2 = ncdfVar2.read();
@@ -180,7 +163,7 @@ public class ImauDataArray implements Runnable {
     public boolean equals(Object thatObject) {
         if (this == thatObject)
             return true;
-        if (!(thatObject instanceof GlobeState))
+        if (!(thatObject instanceof ImauDataArray))
             return false;
 
         // cast to native object is now safe

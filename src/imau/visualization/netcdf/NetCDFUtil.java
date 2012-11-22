@@ -222,6 +222,92 @@ public class NetCDFUtil {
         return current;
     }
 
+    public static ArrayList<String> getUsedDimensionNamesBySubstring(
+            NetcdfFile ncfile, String subString)
+            throws NetCDFNoSuchVariableException {
+        List<Dimension> dims = ncfile.getDimensions();
+
+        ArrayList<String> result = new ArrayList<String>();
+        for (Dimension d : dims) {
+            if (d.getName().contains(subString)) {
+                result.add(d.getName());
+            }
+        }
+
+        return result;
+    }
+
+    public static ArrayList<String> getVarNames(NetcdfFile ncfile,
+            ArrayList<String> latCandidates, ArrayList<String> lonCandidates) {
+        ArrayList<String> varNames = new ArrayList<String>();
+
+        List<Variable> variables = ncfile.getVariables();
+        for (Variable v : variables) {
+
+            List<Dimension> availableDims = v.getDimensions();
+            List<String> availableDimNames = new ArrayList<String>();
+
+            for (Dimension d : availableDims) {
+                availableDimNames.add(d.getName());
+            }
+
+            boolean successLat = false;
+            for (String name : latCandidates) {
+                if (availableDimNames.contains(name)) {
+                    successLat = true;
+                }
+            }
+            boolean successLon = false;
+            for (String name : lonCandidates) {
+                if (availableDimNames.contains(name)) {
+                    successLon = true;
+                }
+            }
+
+            if (successLat && successLon) {
+                varNames.add(v.getFullName());
+            }
+        }
+
+        return varNames;
+    }
+
+    public static String getFancyVarName(NetcdfFile ncfile, String varName) {
+        List<Variable> vars = ncfile.getVariables();
+
+        for (Variable v : vars) {
+            if (v.getFullName().compareTo(varName) == 0) {
+                return v.getDescription();
+            }
+        }
+
+        return "";
+    }
+
+    public static String getFancyVarUnits(NetcdfFile ncfile, String varName) {
+        List<Variable> vars = ncfile.getVariables();
+
+        for (Variable v : vars) {
+            if (v.getFullName().compareTo(varName) == 0) {
+                return v.getUnitsString();
+            }
+        }
+
+        return "";
+    }
+
+    public static int[] getDimensions(NetcdfFile ncfile, String varName) {
+        List<Variable> vars = ncfile.getVariables();
+
+        for (Variable v : vars) {
+            if (v.getFullName().compareTo(varName) == 0) {
+                return v.getShape();
+            }
+        }
+
+        return null;
+    }
+
     public static Dimension[] getUsedDimensionsBySubstring(NetcdfFile ncfile,
             String subString) throws NetCDFNoSuchVariableException {
         List<Dimension> dims = ncfile.getDimensions();

@@ -18,11 +18,12 @@ public class LegendTextureBuilder implements Runnable {
 
     protected SurfaceTextureDescription description;
 
-    private final ImauDataArray           inputArray;
+    private final ImauDataArray         inputArray;
     private final TextureStorage        texStore;
     private boolean                     initialized;
 
-    public LegendTextureBuilder(TextureStorage texStore, ImauDataArray inputArray) {
+    public LegendTextureBuilder(TextureStorage texStore,
+            ImauDataArray inputArray) {
         this.texStore = texStore;
         this.inputArray = inputArray;
         this.description = inputArray.getDescription();
@@ -67,7 +68,7 @@ public class LegendTextureBuilder implements Runnable {
     public boolean equals(Object thatObject) {
         if (this == thatObject)
             return true;
-        if (!(thatObject instanceof GlobeState))
+        if (!(thatObject instanceof LegendTextureBuilder))
             return false;
 
         // cast to native object is now safe

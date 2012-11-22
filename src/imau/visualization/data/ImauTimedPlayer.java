@@ -36,7 +36,7 @@ public class ImauTimedPlayer implements Runnable {
 
     private final ImauInputHandler    inputHandler;
 
-    private ImauDatasetManager     dsManager;
+    private ImauDatasetManager        dsManager;
     private TextureStorage            texStorage;
 
     private boolean                   needsScreenshot    = false;
@@ -335,5 +335,9 @@ public class ImauTimedPlayer implements Runnable {
 
     public TextureStorage getTextureStorage() {
         return texStorage;
+    }
+
+    public ArrayList<String> getVariables() {
+        return dsManager.getVariables();
     }
 }

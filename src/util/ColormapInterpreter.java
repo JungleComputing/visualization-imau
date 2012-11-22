@@ -1,7 +1,5 @@
 package util;
 
-import imau.visualization.data.GlobeState;
-
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
@@ -19,7 +17,6 @@ import javax.swing.JComboBox;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 public class ColormapInterpreter {
     private final static Logger logger = LoggerFactory
@@ -59,7 +56,7 @@ public class ColormapInterpreter {
         public boolean equals(Object thatObject) {
             if (this == thatObject)
                 return true;
-            if (!(thatObject instanceof GlobeState))
+            if (!(thatObject instanceof Dimensions))
                 return false;
 
             // cast to native object is now safe

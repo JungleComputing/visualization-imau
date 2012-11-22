@@ -2,6 +2,7 @@ package imau.visualization;
 
 import imau.visualization.data.GlobeState;
 import imau.visualization.data.ImauTimedPlayer;
+import imau.visualization.data.SurfaceTextureDescription;
 import imau.visualization.netcdf.NetCDFUtil;
 
 import java.awt.BorderLayout;
@@ -43,6 +44,7 @@ import openglCommon.CommonPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ucar.nc2.NetcdfFile;
 import util.ColormapInterpreter;
 import util.CustomJSlider;
 import util.GoggleSwing;
@@ -55,31 +57,34 @@ public class ImauPanel extends CommonPanel {
         NONE, DATA, VISUAL, MOVIE
     }
 
-    private final ImauSettings        settings           = ImauSettings
-                                                                 .getInstance();
-    private final static Logger       logger             = LoggerFactory
-                                                                 .getLogger(ImauPanel.class);
+    private final ImauSettings     settings           = ImauSettings
+                                                              .getInstance();
+    private final static Logger    logger             = LoggerFactory
+                                                              .getLogger(ImauPanel.class);
 
-    private static final long         serialVersionUID   = 1L;
+    private static final long      serialVersionUID   = 1L;
 
-    protected CustomJSlider           timeBar;
+    protected CustomJSlider        timeBar;
 
-    protected JFormattedTextField     frameCounter, stepSizeField;
-    private TweakState                currentConfigState = TweakState.NONE;
+    protected JFormattedTextField  frameCounter, stepSizeField;
+    private TweakState             currentConfigState = TweakState.NONE;
 
-    private final JPanel              configPanel;
+    private final JPanel           configPanel;
 
-    private final JPanel              dataConfig, visualConfig, movieConfig;
+    private final JPanel           dataConfig, visualConfig, movieConfig;
 
-    private final ImauWindow          imauWindow;
+    private final ImauWindow       imauWindow;
     private static ImauTimedPlayer timer;
 
-    private File                      file1;
+    private File                   file1;
+    private ArrayList<String>      variables;
 
     public ImauPanel(ImauWindow imauWindow, String path, String cmdlnfileName,
             String cmdlnfileName2) {
         super(imauWindow, ImauInputHandler.getInstance());
         this.imauWindow = imauWindow;
+
+        variables = new ArrayList<String>();
 
         timeBar = new CustomJSlider(new BasicSliderUI(timeBar));
         timeBar.setValue(0);
@@ -404,6 +409,8 @@ public class ImauPanel extends CommonPanel {
     }
 
     private void createMovieTweakPanel() {
+        movieConfig.removeAll();
+
         final ItemListener listener = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent arg0) {
@@ -455,6 +462,8 @@ public class ImauPanel extends CommonPanel {
     }
 
     private void createDataTweakPanel() {
+        dataConfig.removeAll();
+
         final ItemListener listener = new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent arg0) {
@@ -501,22 +510,9 @@ public class ImauPanel extends CommonPanel {
 
         dataConfig.add(GoggleSwing.vBoxedComponents(vcomponents, true));
 
-        String[] dataModes = { GlobeState.verbalizeDataMode(0),
-                GlobeState.verbalizeDataMode(1),
-                GlobeState.verbalizeDataMode(2) };
-        String[] variables = { GlobeState.verbalizeVariable(0),
-                GlobeState.verbalizeVariable(1),
-                GlobeState.verbalizeVariable(2),
-                GlobeState.verbalizeVariable(3),
-                GlobeState.verbalizeVariable(4),
-                GlobeState.verbalizeVariable(5),
-                GlobeState.verbalizeVariable(6),
-                GlobeState.verbalizeVariable(7),
-                GlobeState.verbalizeVariable(8),
-                GlobeState.verbalizeVariable(9),
-                GlobeState.verbalizeVariable(10),
-                GlobeState.verbalizeVariable(11),
-                GlobeState.verbalizeVariable(12) };
+        String[] dataModes = { settings.verbalizeDataMode(0),
+                settings.verbalizeDataMode(1), settings.verbalizeDataMode(2) };
+
         final String[] colorMaps = ColormapInterpreter.getColormapNames();
 
         final JComboBox dataModeComboBoxLT = new JComboBox(dataModes);
@@ -528,86 +524,86 @@ public class ImauPanel extends CommonPanel {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 int selection = dataModeComboBoxLT.getSelectedIndex();
-                if (selection == -1) {
-                    selection = 0;
+                if (selection == 1) {
+                    settings.setLTDataMode(false, false, true);
+                } else if (selection == 2) {
+                    settings.setLTDataMode(false, true, false);
+                } else {
+                    settings.setLTDataMode(false, false, false);
                 }
-                settings.setLTDataMode(GlobeState.getDataModeByIndex(selection));
             }
         });
         dataModeComboBoxRT.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 int selection = dataModeComboBoxRT.getSelectedIndex();
-                if (selection == -1) {
-                    selection = 0;
+                if (selection == 1) {
+                    settings.setRTDataMode(false, false, true);
+                } else if (selection == 2) {
+                    settings.setRTDataMode(false, true, false);
+                } else {
+                    settings.setRTDataMode(false, false, false);
                 }
-                settings.setRTDataMode(GlobeState.getDataModeByIndex(selection));
             }
         });
         dataModeComboBoxLB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 int selection = dataModeComboBoxLB.getSelectedIndex();
-                if (selection == -1) {
-                    selection = 0;
+                if (selection == 1) {
+                    settings.setLBDataMode(false, false, true);
+                } else if (selection == 2) {
+                    settings.setLBDataMode(false, true, false);
+                } else {
+                    settings.setLBDataMode(false, false, false);
                 }
-                settings.setLBDataMode(GlobeState.getDataModeByIndex(selection));
             }
         });
         dataModeComboBoxRB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 int selection = dataModeComboBoxRB.getSelectedIndex();
-                if (selection == -1) {
-                    selection = 0;
+                if (selection == 1) {
+                    settings.setRBDataMode(false, false, true);
+                } else if (selection == 2) {
+                    settings.setRBDataMode(false, true, false);
+                } else {
+                    settings.setRBDataMode(false, false, false);
                 }
-                settings.setRBDataMode(GlobeState.getDataModeByIndex(selection));
             }
         });
 
-        final JComboBox comboBoxLT = new JComboBox(variables);
-        final JComboBox comboBoxRT = new JComboBox(variables);
-        final JComboBox comboBoxLB = new JComboBox(variables);
-        final JComboBox comboBoxRB = new JComboBox(variables);
+        final JComboBox comboBoxLT = new JComboBox(
+                variables.toArray(new String[0]));
+        final JComboBox comboBoxRT = new JComboBox(
+                variables.toArray(new String[0]));
+        final JComboBox comboBoxLB = new JComboBox(
+                variables.toArray(new String[0]));
+        final JComboBox comboBoxRB = new JComboBox(
+                variables.toArray(new String[0]));
 
         comboBoxLT.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                int selection = comboBoxLT.getSelectedIndex();
-                if (selection == -1) {
-                    selection = 0;
-                }
-                settings.setLTVariable(GlobeState.getVariableByIndex(selection));
+                settings.setLTVariable((String) comboBoxLT.getSelectedItem());
             }
         });
         comboBoxRT.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                int selection = comboBoxRT.getSelectedIndex();
-                if (selection == -1) {
-                    selection = 0;
-                }
-                settings.setRTVariable(GlobeState.getVariableByIndex(selection));
+                settings.setRTVariable((String) comboBoxRT.getSelectedItem());
             }
         });
         comboBoxLB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                int selection = comboBoxLB.getSelectedIndex();
-                if (selection == -1) {
-                    selection = 0;
-                }
-                settings.setLBVariable(GlobeState.getVariableByIndex(selection));
+                settings.setLBVariable((String) comboBoxLB.getSelectedItem());
             }
         });
         comboBoxRB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                int selection = comboBoxRB.getSelectedIndex();
-                if (selection == -1) {
-                    selection = 0;
-                }
-                settings.setRBVariable(GlobeState.getVariableByIndex(selection));
+                settings.setRBVariable((String) comboBoxRB.getSelectedItem());
             }
         });
 
@@ -645,20 +641,28 @@ public class ImauPanel extends CommonPanel {
         vcomponentsLB.add(lbLabel);
         vcomponentsRB.add(rbLabel);
 
-        GlobeState LTC = settings.getLTState();
-        GlobeState RTC = settings.getRTState();
-        GlobeState LBC = settings.getLBState();
-        GlobeState RBC = settings.getRBState();
+        SurfaceTextureDescription LTC = settings.getLTSurfaceDescription();
+        SurfaceTextureDescription RTC = settings.getRTSurfaceDescription();
+        SurfaceTextureDescription LBC = settings.getLBSurfaceDescription();
+        SurfaceTextureDescription RBC = settings.getRBSurfaceDescription();
 
         dataModeComboBoxLT.setSelectedIndex(LTC.getDataModeIndex());
         dataModeComboBoxRT.setSelectedIndex(RTC.getDataModeIndex());
         dataModeComboBoxLB.setSelectedIndex(LBC.getDataModeIndex());
         dataModeComboBoxRB.setSelectedIndex(RBC.getDataModeIndex());
 
-        comboBoxLT.setSelectedIndex(LTC.getVariableIndex());
-        comboBoxRT.setSelectedIndex(RTC.getVariableIndex());
-        comboBoxLB.setSelectedIndex(LBC.getVariableIndex());
-        comboBoxRB.setSelectedIndex(RBC.getVariableIndex());
+        if (variables.size() > LTC.getVariableIndex()) {
+            comboBoxLT.setSelectedIndex(LTC.getVariableIndex());
+        }
+        if (variables.size() > RTC.getVariableIndex()) {
+            comboBoxRT.setSelectedIndex(RTC.getVariableIndex());
+        }
+        if (variables.size() > LBC.getVariableIndex()) {
+            comboBoxLB.setSelectedIndex(LBC.getVariableIndex());
+        }
+        if (variables.size() > RBC.getVariableIndex()) {
+            comboBoxRB.setSelectedIndex(RBC.getVariableIndex());
+        }
 
         comboBoxLTColorMaps.setSelectedItem(ColormapInterpreter
                 .getIndexOfColormap(LTC.getColorMap()));
@@ -854,6 +858,8 @@ public class ImauPanel extends CommonPanel {
     }
 
     private void createVisualTweakPanel() {
+        visualConfig.removeAll();
+
         final float heightDistortionSpacing = 0.001f;
         final JLabel heightDistortionSetting = new JLabel(""
                 + settings.getHeightDistortion());
@@ -904,6 +910,13 @@ public class ImauPanel extends CommonPanel {
             timer.init(file1, file2);
             new Thread(timer).start();
 
+            variables = new ArrayList<String>();
+            NetcdfFile ncfile = NetCDFUtil.open(file1);
+            for (String v : timer.getVariables()) {
+                variables.add(NetCDFUtil.getFancyVarName(ncfile, v));
+            }
+            createDataTweakPanel();
+
             final String path = NetCDFUtil.getPath(file1) + "screenshots/";
 
             settings.setScreenshotPath(path);
@@ -929,6 +942,13 @@ public class ImauPanel extends CommonPanel {
 
             timer.init(file);
             new Thread(timer).start();
+
+            variables = new ArrayList<String>();
+            NetcdfFile ncfile = NetCDFUtil.open(file1);
+            for (String v : timer.getVariables()) {
+                variables.add(NetCDFUtil.getFancyVarName(ncfile, v));
+            }
+            createDataTweakPanel();
 
             final String path = NetCDFUtil.getPath(file) + "screenshots/";
 
