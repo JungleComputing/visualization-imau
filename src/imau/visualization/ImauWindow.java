@@ -221,7 +221,7 @@ public class ImauWindow extends CommonWindow {
         Texture2D surface, heightMap, legend;
 
         currentDesc = settings.getLTSurfaceDescription();
-        if (currentDesc != ltDescription || reshaped) {
+        if (!currentDesc.equals(ltDescription) || reshaped) {
             timer.getTextureStorage().requestNewConfiguration(0, currentDesc);
 
             String variableName = currentDesc.getVarName();
@@ -271,7 +271,7 @@ public class ImauWindow extends CommonWindow {
         legend.delete(gl);
 
         currentDesc = settings.getRTSurfaceDescription();
-        if (currentDesc != rtDescription || reshaped) {
+        if (!currentDesc.equals(rtDescription) || reshaped) {
             timer.getTextureStorage().requestNewConfiguration(1, currentDesc);
 
             String variableName = currentDesc.getVarName();
@@ -321,7 +321,7 @@ public class ImauWindow extends CommonWindow {
         legend.delete(gl);
 
         currentDesc = settings.getLBSurfaceDescription();
-        if (currentDesc != lbDescription || reshaped) {
+        if (!currentDesc.equals(lbDescription) || reshaped) {
             timer.getTextureStorage().requestNewConfiguration(2, currentDesc);
 
             String variableName = currentDesc.getVarName();
@@ -371,7 +371,7 @@ public class ImauWindow extends CommonWindow {
         legend.delete(gl);
 
         currentDesc = settings.getRBSurfaceDescription();
-        if (currentDesc != rbDescription || reshaped) {
+        if (!currentDesc.equals(rbDescription) || reshaped) {
             timer.getTextureStorage().requestNewConfiguration(3, currentDesc);
 
             String variableName = currentDesc.getVarName();

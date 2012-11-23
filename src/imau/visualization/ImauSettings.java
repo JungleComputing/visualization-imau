@@ -28,59 +28,59 @@ public class ImauSettings {
         Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
     };
 
-    private static final int             IMAGE_WIDTH                = 900;
-    private static final int             IMAGE_HEIGHT               = 602;
+    private static final int             IMAGE_WIDTH                     = 900;
+    private static final int             IMAGE_HEIGHT                    = 602;
 
-    private boolean                      STEREO_RENDERING           = true;
-    private boolean                      STEREO_SWITCHED            = true;
+    private boolean                      STEREO_RENDERING                = true;
+    private boolean                      STEREO_SWITCHED                 = true;
 
-    private float                        STEREO_OCULAR_DISTANCE_MIN = 0f;
-    private float                        STEREO_OCULAR_DISTANCE_DEF = .2f;
-    private float                        STEREO_OCULAR_DISTANCE_MAX = 1f;
+    private float                        STEREO_OCULAR_DISTANCE_MIN      = 0f;
+    private float                        STEREO_OCULAR_DISTANCE_DEF      = .2f;
+    private float                        STEREO_OCULAR_DISTANCE_MAX      = 1f;
 
     // Size settings for default startup and screenshots
-    private int                          DEFAULT_SCREEN_WIDTH       = 1024;
-    private int                          DEFAULT_SCREEN_HEIGHT      = 768;
+    private int                          DEFAULT_SCREEN_WIDTH            = 1024;
+    private int                          DEFAULT_SCREEN_HEIGHT           = 768;
 
-    private int                          SCREENSHOT_SCREEN_WIDTH    = 1280;
-    private int                          SCREENSHOT_SCREEN_HEIGHT   = 720;
+    private int                          SCREENSHOT_SCREEN_WIDTH         = 1280;
+    private int                          SCREENSHOT_SCREEN_HEIGHT        = 720;
 
     // Settings for the initial view
-    private int                          INITIAL_SIMULATION_FRAME   = 0;
-    private float                        INITIAL_ROTATION_X         = 17f;
-    private float                        INITIAL_ROTATION_Y         = -25f;
-    private float                        INITIAL_ZOOM               = -390.0f;
+    private int                          INITIAL_SIMULATION_FRAME        = 0;
+    private float                        INITIAL_ROTATION_X              = 17f;
+    private float                        INITIAL_ROTATION_Y              = -25f;
+    private float                        INITIAL_ZOOM                    = -390.0f;
 
     // Setting per movie frame
-    private boolean                      MOVIE_ROTATE               = true;
-    private float                        MOVIE_ROTATION_SPEED_MIN   = -1f;
-    private float                        MOVIE_ROTATION_SPEED_MAX   = 1f;
-    private float                        MOVIE_ROTATION_SPEED_DEF   = -0.25f;
+    private boolean                      MOVIE_ROTATE                    = true;
+    private float                        MOVIE_ROTATION_SPEED_MIN        = -1f;
+    private float                        MOVIE_ROTATION_SPEED_MAX        = 1f;
+    private float                        MOVIE_ROTATION_SPEED_DEF        = -0.25f;
 
     // Settings for the gas cloud octree
-    private int                          MAX_OCTREE_DEPTH           = 25;
-    private float                        OCTREE_EDGES               = 800f;
+    private int                          MAX_OCTREE_DEPTH                = 25;
+    private float                        OCTREE_EDGES                    = 800f;
 
     // Settings that should never change, but are listed here to make sure they
     // can be found if necessary
-    private int                          MAX_EXPECTED_MODELS        = 1000;
+    private int                          MAX_EXPECTED_MODELS             = 1000;
 
-    protected String                     SCREENSHOT_PATH            = System.getProperty("user.dir")
-                                                                            + System.getProperty("path.separator");
+    protected String                     SCREENSHOT_PATH                 = System.getProperty("user.dir")
+                                                                                 + System.getProperty("path.separator");
 
-    private long                         WAITTIME_FOR_RETRY         = 10000;
-    private long                         WAITTIME_FOR_MOVIE         = 1000;
-    private int                          TIME_STEP_SIZE             = 1;
-    private float                        EPSILON                    = 1.0E-7f;
+    private long                         WAITTIME_FOR_RETRY              = 10000;
+    private long                         WAITTIME_FOR_MOVIE              = 1000;
+    private int                          TIME_STEP_SIZE                  = 1;
+    private float                        EPSILON                         = 1.0E-7f;
 
-    private int                          FILE_EXTENSION_LENGTH      = 2;
-    private int                          FILE_NUMBER_LENGTH         = 4;
+    private int                          FILE_EXTENSION_LENGTH           = 2;
+    private int                          FILE_NUMBER_LENGTH              = 4;
 
-    private final String[]               ACCEPTABLE_POSTFIXES       = { ".nc" };
+    private final String[]               ACCEPTABLE_POSTFIXES            = { ".nc" };
 
-    private String                       CURRENT_POSTFIX            = "nc";
+    private String                       CURRENT_POSTFIX                 = "nc";
 
-    private int                          PREPROCESSING_AMOUNT       = 2;
+    private int                          PREPROCESSING_AMOUNT            = 2;
 
     private final HashMap<String, Float> minValues;
     private final HashMap<String, Float> diffMinValues;
@@ -91,30 +91,31 @@ public class ImauSettings {
     private final HashMap<String, Float> currentMaxValues;
     private final HashMap<String, Float> currentDiffMaxValues;
 
-    private int                          DEPTH_MIN                  = 0;
-    private int                          DEPTH_DEF                  = 0;
-    private int                          DEPTH_MAX                  = 41;
+    private int                          DEPTH_MIN                       = 0;
+    private int                          DEPTH_DEF                       = 0;
+    private int                          DEPTH_MAX                       = 41;
 
-    private int                          WINDOW_SELECTION           = 0;
+    private int                          WINDOW_SELECTION                = 0;
 
-    private final boolean                DYNAMIC_DIMENSIONS         = false;
+    private boolean                      IMAGE_STREAM_OUTPUT             = false;
+    private final int                    SAGE_FRAMES_PER_SECOND          = 10;
+    private boolean                      IMAGE_STREAM_GL_ONLY            = true;
 
-    private boolean                      IMAGE_STREAM_OUTPUT        = false;
-    private final int                    SAGE_FRAMES_PER_SECOND     = 10;
-    private boolean                      IMAGE_STREAM_GL_ONLY       = true;
+    private float                        HEIGHT_DISTORION                = 0f;
+    private final float                  HEIGHT_DISTORION_MIN            = 0f;
+    private final float                  HEIGHT_DISTORION_MAX            = .01f;
 
-    private float                        HEIGHT_DISTORION           = 0f;
-    private final float                  HEIGHT_DISTORION_MIN       = 0f;
-    private final float                  HEIGHT_DISTORION_MAX       = .01f;
+    private String                       SAGE_DIRECTORY                  = "/home/maarten/sage-code/sage";
 
-    private String                       SAGE_DIRECTORY             = "/home/maarten/sage-code/sage";
-
-    private final boolean                TOUCH_CONNECTED            = false;
+    private final boolean                TOUCH_CONNECTED                 = false;
 
     private SurfaceTextureDescription    ltDescription;
     private SurfaceTextureDescription    rtDescription;
     private SurfaceTextureDescription    lbDescription;
     private SurfaceTextureDescription    rbDescription;
+
+    private final String                 grid_width_dimension_substring  = "lon";
+    private final String                 grid_height_dimension_substring = "lat";
 
     private ImauSettings() {
         super();
@@ -174,8 +175,8 @@ public class ImauSettings {
 
         minValues.put("TEMP", -2f);
         maxValues.put("TEMP", 30f);
-        currentMinValues.put("TEMP", -2f);
-        currentMaxValues.put("TEMP", 30f);
+        currentMinValues.put("TEMP", 0f);
+        currentMaxValues.put("TEMP", 20f);
         diffMinValues.put("TEMP", -15f);
         diffMaxValues.put("TEMP", 15f);
         currentDiffMinValues.put("TEMP", -15f);
@@ -322,6 +323,11 @@ public class ImauSettings {
                     .getBooleanProperty("IMAGE_STREAM_OUTPUT"));
 
             System.out.println(IMAGE_STREAM_OUTPUT ? "true" : "false");
+
+            // grid_width_dimension_substring = props
+            // .getProperty("grid_width_dimension_substring");
+            // grid_height_dimension_substring = props
+            // .getProperty("grid_height_dimension_substring");
 
         } catch (NumberFormatException e) {
             logger.warn(e.getMessage());
@@ -907,16 +913,17 @@ public class ImauSettings {
         SCREENSHOT_PATH = newPath;
     }
 
-    public void setVariableRange(int whichglobe, String varName, int minValue,
-            int maxValue) {
-        float minFloatValue = 0f, maxFloatValue = 0f;
+    public void setVariableRange(int whichglobe, String varName,
+            int sliderLowerValue, int sliderUpperValue) {
+
         float diff = (maxValues.get(varName) - minValues.get(varName));
-        currentMinValues.put(varName,
-                (minValue / 100f) * diff + minValues.get(varName));
-        currentMinValues.put(varName,
-                (maxValue / 100f) * diff + minValues.get(varName));
-        minFloatValue = currentMinValues.get(varName);
-        maxFloatValue = currentMaxValues.get(varName);
+
+        currentMinValues.put(varName, (sliderLowerValue / 100f) * diff
+                + minValues.get(varName));
+        currentMaxValues.put(varName, (sliderUpperValue / 100f) * diff
+                + minValues.get(varName));
+        float minFloatValue = currentMinValues.get(varName);
+        float maxFloatValue = currentMaxValues.get(varName);
 
         if (whichglobe == 0) {
             SurfaceTextureDescription state = ltDescription;
@@ -999,12 +1006,20 @@ public class ImauSettings {
 
         float min = getVarMin(state.getVarName());
         float max = getVarMax(state.getVarName());
-        float currentMax = getCurrentVarMin(state.getVarName());
+        float currentMax = getCurrentVarMax(state.getVarName());
 
         float diff = max - min;
         float result = (currentMax - min) / diff;
 
         return (int) (result * 100) - 1;
+    }
+
+    public String getWidthSubstring() {
+        return grid_width_dimension_substring;
+    }
+
+    public String getHeightSubstring() {
+        return grid_height_dimension_substring;
     }
 
     // public String verbalizeDataMode(int index) {

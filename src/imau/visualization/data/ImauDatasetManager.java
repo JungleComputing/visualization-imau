@@ -125,7 +125,7 @@ public class ImauDatasetManager {
         } else {
             logger.debug("Opening dataset with initial files: "
                     + file1.getAbsolutePath() + " and "
-                    + file1.getAbsolutePath());
+                    + file2.getAbsolutePath());
         }
         this.file1 = file1;
         this.file2 = file2;
@@ -190,20 +190,24 @@ public class ImauDatasetManager {
 
         try {
             ArrayList<String> latQualifiers1 = NetCDFUtil
-                    .getUsedDimensionNamesBySubstring(ncFile1, "lat");
+                    .getUsedDimensionNamesBySubstring(ncFile1,
+                            settings.getHeightSubstring());
             ArrayList<String> lonQualifiers1 = NetCDFUtil
-                    .getUsedDimensionNamesBySubstring(ncFile1, "lon");
+                    .getUsedDimensionNamesBySubstring(ncFile1,
+                            settings.getWidthSubstring());
 
             ArrayList<String> varQualifiers1 = NetCDFUtil.getVarNames(ncFile1,
                     latQualifiers1, lonQualifiers1);
 
-            if (file2 == null) {
+            if (file2 != null) {
                 NetcdfFile ncFile2 = NetCDFUtil.open(file2);
 
                 ArrayList<String> latQualifiers2 = NetCDFUtil
-                        .getUsedDimensionNamesBySubstring(ncFile2, "lat");
+                        .getUsedDimensionNamesBySubstring(ncFile2,
+                                settings.getHeightSubstring());
                 ArrayList<String> lonQualifiers2 = NetCDFUtil
-                        .getUsedDimensionNamesBySubstring(ncFile2, "lon");
+                        .getUsedDimensionNamesBySubstring(ncFile2,
+                                settings.getWidthSubstring());
 
                 ArrayList<String> varQualifiers2 = NetCDFUtil.getVarNames(
                         ncFile2, latQualifiers2, lonQualifiers2);
@@ -241,14 +245,35 @@ public class ImauDatasetManager {
         float latMin = -90f;
         float latMax = 90f;
         try {
-            Array t_lat = NetCDFUtil.getData(ncFile1, "t_lat");
-            latArraySize = (int) t_lat.getSize();
+            ArrayList<String> latQualifiers1 = NetCDFUtil
+                    .getUsedDimensionNamesBySubstring(ncFile1,
+                            settings.getHeightSubstring());
+            ArrayList<String> lonQualifiers1 = NetCDFUtil
+                    .getUsedDimensionNamesBySubstring(ncFile1,
+                            settings.getWidthSubstring());
 
-            Array t_lon = NetCDFUtil.getData(ncFile1, "t_lon");
-            lonArraySize = (int) t_lon.getSize();
+            int i = 0;
 
-            latMin = t_lat.getFloat(0) + 90f;
-            latMax = t_lat.getFloat(latArraySize - 1) + 90f;
+            latArraySize = 0;
+            while (latArraySize == 0) {
+                Array t_lat = NetCDFUtil
+                        .getData(ncFile1, latQualifiers1.get(i));
+                latArraySize = (int) t_lat.getSize();
+
+                latMin = t_lat.getFloat(0) + 90f;
+                latMax = t_lat.getFloat(latArraySize - 1) + 90f;
+
+                i++;
+            }
+
+            i = 0;
+            lonArraySize = 0;
+            while (lonArraySize == 0) {
+                Array t_lon = NetCDFUtil
+                        .getData(ncFile1, lonQualifiers1.get(i));
+                lonArraySize = (int) t_lon.getSize();
+                i++;
+            }
         } catch (NetCDFNoSuchVariableException e) {
             e.printStackTrace();
         }
