@@ -340,4 +340,20 @@ public class ImauTimedPlayer implements Runnable {
     public ArrayList<String> getVariables() {
         return dsManager.getVariables();
     }
+
+    public String getVariableFancyName(String varName) {
+        return dsManager.getVariableFancyName(varName);
+    }
+
+    public String getVariableUnits(String varName) {
+        return dsManager.getVariableUnits(varName);
+    }
+
+    public int getImageWidth() {
+        return dsManager.getImageWidth();
+    }
+
+    public int getImageHeight() {
+        return dsManager.getImageHeight();
+    }
 }

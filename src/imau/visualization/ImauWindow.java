@@ -1,9 +1,7 @@
 package imau.visualization;
 
-import imau.visualization.data.GlobeState;
 import imau.visualization.data.ImauTimedPlayer;
 import imau.visualization.data.SurfaceTextureDescription;
-import imau.visualization.data.GlobeState.DataMode;
 import imau.visualization.glExt.ByteBufferTexture;
 import imau.visualization.glExt.FBO;
 import imau.visualization.glExt.IntPBO;
@@ -47,38 +45,40 @@ import util.ImauInputHandler;
 
 public class ImauWindow extends CommonWindow {
 
-    private final ImauSettings  settings     = ImauSettings.getInstance();
+    private final ImauSettings        settings     = ImauSettings.getInstance();
 
-    private Quad                fsq;
-    private Program             texturedSphereProgram, legendProgram,
+    private Quad                      fsq;
+    private Program                   texturedSphereProgram, legendProgram,
             atmProgram, gaussianBlurShader, flatten3Shader, postprocessShader,
             textProgram;
     // private Texture2D worldTex;
 
-    private Model               sphereModel, legendModel, atmModel;
+    private Model                     sphereModel, legendModel, atmModel;
 
-    private FBO                 ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO,
-            hudTextFBO, legendTextureFBO, sphereTextureFBO;
+    private FBO                       ltFBO, rtFBO, lbFBO, rbFBO,
+            atmosphereFBO, hudTextFBO, legendTextureFBO, sphereTextureFBO;
 
-    private IntPBO              finalPBO;
+    private IntPBO                    finalPBO;
 
-    private final BufferedImage currentImage = null;
+    private final BufferedImage       currentImage = null;
 
-    private SageInterface       sage;
+    private SageInterface             sage;
 
-    private MultiColorText      varNameTextLT, varNameTextRT, varNameTextLB,
-            varNameTextRB, legendTextLTmin, legendTextRTmin, legendTextLBmin,
-            legendTextRBmin, legendTextLTmax, legendTextRTmax, legendTextLBmax,
-            legendTextRBmax, dateTextLT, dateTextRT, dateTextLB, dateTextRB,
-            datasetTextLT, datasetTextRT, datasetTextLB, datasetTextRB;
+    private MultiColorText            varNameTextLT, varNameTextRT,
+            varNameTextLB, varNameTextRB, legendTextLTmin, legendTextRTmin,
+            legendTextLBmin, legendTextRBmin, legendTextLTmax, legendTextRTmax,
+            legendTextLBmax, legendTextRBmax, dateTextLT, dateTextRT,
+            dateTextLB, dateTextRB, datasetTextLT, datasetTextRT,
+            datasetTextLB, datasetTextRB;
 
-    private int                 fontSize     = 80;
+    private int                       fontSize     = 80;
 
-    private boolean             reshaped     = false;
+    private boolean                   reshaped     = false;
 
-    private GlobeState          ltState, rtState, lbState, rbState;
+    private SurfaceTextureDescription ltDescription, rtDescription,
+            lbDescription, rbDescription;
 
-    private ImauTimedPlayer   timer;
+    private ImauTimedPlayer           timer;
 
     public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
@@ -217,60 +217,48 @@ public class ImauWindow extends CommonWindow {
         drawAtmosphere(gl, mv, atmProgram, atmosphereFBO);
         blur(gl, atmosphereFBO, fsq, 1, 2, 4);
 
-        GlobeState state;
+        SurfaceTextureDescription currentDesc;
         Texture2D surface, heightMap, legend;
 
-        state = settings.getLTState();
-        if (state != ltState || reshaped) {
-            SurfaceTextureDescription desc = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(), state
-                            .getVariable().toString(), state.getColorMap(),
-                    settings.isDynamicDimensions(),
-                    state.getDataMode() == DataMode.DIFF ? true : false,
-                    state.getDataMode() == DataMode.SECOND_DATASET ? true
-                            : false, state.getLowerBound(),
-                    state.getUpperBound());
+        currentDesc = settings.getLTSurfaceDescription();
+        if (currentDesc != ltDescription || reshaped) {
+            timer.getTextureStorage().requestNewConfiguration(0, currentDesc);
 
-            timer.getTextureStorage().requestNewConfiguration(0, desc);
+            String variableName = currentDesc.getVarName();
+            String fancyName = timer.getVariableFancyName(variableName);
+            String units = timer.getVariableUnits(variableName);
+            fancyName += " in " + units;
+            varNameTextLT.setString(gl, fancyName, Color4.white, fontSize);
 
-            String variableName = settings
-                    .bandNameToString(state.getVariable());
-            String units = GlobeState.verbalizeUnits(state.getVariableIndex());
-            variableName += " in " + units;
             String min, max;
-            if (desc.isDiff()) {
-                min = Float.toString(settings.getCurrentVarDiffMin(state
-                        .getVariable()));
-                max = Float.toString(settings.getCurrentVarDiffMax(state
-                        .getVariable()));
+            if (currentDesc.isDiff()) {
+                min = Float.toString(settings.getCurrentVarDiffMin(currentDesc
+                        .getVarName()));
+                max = Float.toString(settings.getCurrentVarDiffMax(currentDesc
+                        .getVarName()));
             } else {
-                min = Float.toString(settings.getCurrentVarMin(state
-                        .getVariable()));
-                max = Float.toString(settings.getCurrentVarMax(state
-                        .getVariable()));
+                min = Float.toString(settings.getCurrentVarMin(currentDesc
+                        .getVarName()));
+                max = Float.toString(settings.getCurrentVarMax(currentDesc
+                        .getVarName()));
             }
-            varNameTextLT.setString(gl, variableName, Color4.white, fontSize);
-            dateTextLT.setString(gl, settings.getMonth(state.getFrameNumber()),
+            dateTextLT.setString(gl,
+                    settings.getMonth(currentDesc.getFrameNumber()),
                     Color4.white, fontSize);
-            datasetTextLT.setString(gl,
-                    GlobeState.verbalizeDataMode(state.getDataModeIndex()),
+            datasetTextLT.setString(gl, currentDesc.verbalizeDataMode(),
                     Color4.white, fontSize);
             legendTextLTmin.setString(gl, min, Color4.white, fontSize);
             legendTextLTmax.setString(gl, max, Color4.white, fontSize);
 
-            ltState = state;
+            ltDescription = currentDesc;
         }
 
-        // setHUDVars(gl, timer.getTextureStorage().getDimensions(0), desc,
-        // varNameTextLT, legendTextLTmin,
-        // legendTextLTmax);
-
-        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
-                .getSurfaceImage(0), settings.getImageWidth(),
-                settings.getImageHeight());
+        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer
+                .getTextureStorage().getSurfaceImage(0), timer.getImageWidth(),
+                timer.getImageHeight());
         heightMap = surface;
-        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
-                .getLegendImage(0), 1, 500);
+        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer
+                .getTextureStorage().getLegendImage(0), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
@@ -282,55 +270,45 @@ public class ImauWindow extends CommonWindow {
         surface.delete(gl);
         legend.delete(gl);
 
-        state = settings.getRTState();
-        if (state != rtState || reshaped) {
-            SurfaceTextureDescription desc = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(), state
-                            .getVariable().toString(), state.getColorMap(),
-                    settings.isDynamicDimensions(),
-                    state.getDataMode() == DataMode.DIFF ? true : false,
-                    state.getDataMode() == DataMode.SECOND_DATASET ? true
-                            : false, state.getLowerBound(),
-                    state.getUpperBound());
-            timer.getTextureStorage().requestNewConfiguration(1, desc);
+        currentDesc = settings.getRTSurfaceDescription();
+        if (currentDesc != rtDescription || reshaped) {
+            timer.getTextureStorage().requestNewConfiguration(1, currentDesc);
 
-            // setHUDVars(gl, timer.getTextureStorage().getDimensions(1), desc,
-            // varNameTextRT, legendTextRTmin,
-            // legendTextRTmax);
+            String variableName = currentDesc.getVarName();
+            String fancyName = timer.getVariableFancyName(variableName);
+            String units = timer.getVariableUnits(variableName);
+            fancyName += " in " + units;
+            varNameTextRT.setString(gl, fancyName, Color4.white, fontSize);
 
-            String variableName = settings
-                    .bandNameToString(state.getVariable());
-            String units = GlobeState.verbalizeUnits(state.getVariableIndex());
-            variableName += " in " + units;
             String min, max;
-            if (desc.isDiff()) {
-                min = Float.toString(settings.getCurrentVarDiffMin(state
-                        .getVariable()));
-                max = Float.toString(settings.getCurrentVarDiffMax(state
-                        .getVariable()));
+            if (currentDesc.isDiff()) {
+                min = Float.toString(settings.getCurrentVarDiffMin(currentDesc
+                        .getVarName()));
+                max = Float.toString(settings.getCurrentVarDiffMax(currentDesc
+                        .getVarName()));
             } else {
-                min = Float.toString(settings.getCurrentVarMin(state
-                        .getVariable()));
-                max = Float.toString(settings.getCurrentVarMax(state
-                        .getVariable()));
+                min = Float.toString(settings.getCurrentVarMin(currentDesc
+                        .getVarName()));
+                max = Float.toString(settings.getCurrentVarMax(currentDesc
+                        .getVarName()));
             }
-            varNameTextRT.setString(gl, variableName, Color4.white, fontSize);
-            dateTextRT.setString(gl, settings.getMonth(state.getFrameNumber()),
+            dateTextRT.setString(gl,
+                    settings.getMonth(currentDesc.getFrameNumber()),
                     Color4.white, fontSize);
-            datasetTextRT.setString(gl,
-                    GlobeState.verbalizeDataMode(state.getDataModeIndex()),
+            datasetTextRT.setString(gl, currentDesc.verbalizeDataMode(),
                     Color4.white, fontSize);
             legendTextRTmin.setString(gl, min, Color4.white, fontSize);
             legendTextRTmax.setString(gl, max, Color4.white, fontSize);
-            rtState = state;
+
+            rtDescription = currentDesc;
         }
 
-        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
-                .getSurfaceImage(1), settings.getImageWidth(),
-                settings.getImageHeight());
+        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer
+                .getTextureStorage().getSurfaceImage(1), timer.getImageWidth(),
+                timer.getImageHeight());
         heightMap = surface;
-        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
-                .getLegendImage(1), 1, 500);
+        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer
+                .getTextureStorage().getLegendImage(1), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
@@ -342,54 +320,45 @@ public class ImauWindow extends CommonWindow {
         surface.delete(gl);
         legend.delete(gl);
 
-        state = settings.getLBState();
-        if (state != lbState || reshaped) {
-            SurfaceTextureDescription desc = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(), state
-                            .getVariable().toString(), state.getColorMap(),
-                    settings.isDynamicDimensions(),
-                    state.getDataMode() == DataMode.DIFF ? true : false,
-                    state.getDataMode() == DataMode.SECOND_DATASET ? true
-                            : false, state.getLowerBound(),
-                    state.getUpperBound());
-            timer.getTextureStorage().requestNewConfiguration(2, desc);
+        currentDesc = settings.getLBSurfaceDescription();
+        if (currentDesc != lbDescription || reshaped) {
+            timer.getTextureStorage().requestNewConfiguration(2, currentDesc);
 
-            String variableName = settings
-                    .bandNameToString(state.getVariable());
-            String units = GlobeState.verbalizeUnits(state.getVariableIndex());
-            variableName += " in " + units;
+            String variableName = currentDesc.getVarName();
+            String fancyName = timer.getVariableFancyName(variableName);
+            String units = timer.getVariableUnits(variableName);
+            fancyName += " in " + units;
+            varNameTextLB.setString(gl, fancyName, Color4.white, fontSize);
+
             String min, max;
-            if (desc.isDiff()) {
-                min = Float.toString(settings.getCurrentVarDiffMin(state
-                        .getVariable()));
-                max = Float.toString(settings.getCurrentVarDiffMax(state
-                        .getVariable()));
+            if (currentDesc.isDiff()) {
+                min = Float.toString(settings.getCurrentVarDiffMin(currentDesc
+                        .getVarName()));
+                max = Float.toString(settings.getCurrentVarDiffMax(currentDesc
+                        .getVarName()));
             } else {
-                min = Float.toString(settings.getCurrentVarMin(state
-                        .getVariable()));
-                max = Float.toString(settings.getCurrentVarMax(state
-                        .getVariable()));
+                min = Float.toString(settings.getCurrentVarMin(currentDesc
+                        .getVarName()));
+                max = Float.toString(settings.getCurrentVarMax(currentDesc
+                        .getVarName()));
             }
-            varNameTextLB.setString(gl, variableName, Color4.white, fontSize);
-            dateTextLB.setString(gl, settings.getMonth(state.getFrameNumber()),
+            dateTextLB.setString(gl,
+                    settings.getMonth(currentDesc.getFrameNumber()),
                     Color4.white, fontSize);
-            datasetTextLB.setString(gl,
-                    GlobeState.verbalizeDataMode(state.getDataModeIndex()),
+            datasetTextLB.setString(gl, currentDesc.verbalizeDataMode(),
                     Color4.white, fontSize);
             legendTextLBmin.setString(gl, min, Color4.white, fontSize);
             legendTextLBmax.setString(gl, max, Color4.white, fontSize);
 
-            lbState = state;
-            // setHUDVars(gl, timer.getTextureStorage().getDimensions(2), desc,
-            // varNameTextLB, legendTextLBmin, legendTextLBmax);
+            lbDescription = currentDesc;
         }
 
-        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
-                .getSurfaceImage(2), settings.getImageWidth(),
-                settings.getImageHeight());
+        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer
+                .getTextureStorage().getSurfaceImage(2), timer.getImageWidth(),
+                timer.getImageHeight());
         heightMap = surface;
-        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
-                .getLegendImage(2), 1, 500);
+        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer
+                .getTextureStorage().getLegendImage(2), 1, 500);
         surface.init(gl);
         legend.init(gl);
 
@@ -401,54 +370,45 @@ public class ImauWindow extends CommonWindow {
         surface.delete(gl);
         legend.delete(gl);
 
-        state = settings.getRBState();
-        if (state != rbState || reshaped) {
-            SurfaceTextureDescription desc = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(), state
-                            .getVariable().toString(), state.getColorMap(),
-                    settings.isDynamicDimensions(),
-                    state.getDataMode() == DataMode.DIFF ? true : false,
-                    state.getDataMode() == DataMode.SECOND_DATASET ? true
-                            : false, state.getLowerBound(),
-                    state.getUpperBound());
-            timer.getTextureStorage().requestNewConfiguration(3, desc);
+        currentDesc = settings.getRBSurfaceDescription();
+        if (currentDesc != rbDescription || reshaped) {
+            timer.getTextureStorage().requestNewConfiguration(3, currentDesc);
 
-            String variableName = settings
-                    .bandNameToString(state.getVariable());
-            String units = GlobeState.verbalizeUnits(state.getVariableIndex());
-            variableName += " in " + units;
+            String variableName = currentDesc.getVarName();
+            String fancyName = timer.getVariableFancyName(variableName);
+            String units = timer.getVariableUnits(variableName);
+            fancyName += " in " + units;
+            varNameTextRB.setString(gl, fancyName, Color4.white, fontSize);
+
             String min, max;
-            if (desc.isDiff()) {
-                min = Float.toString(settings.getCurrentVarDiffMin(state
-                        .getVariable()));
-                max = Float.toString(settings.getCurrentVarDiffMax(state
-                        .getVariable()));
+            if (currentDesc.isDiff()) {
+                min = Float.toString(settings.getCurrentVarDiffMin(currentDesc
+                        .getVarName()));
+                max = Float.toString(settings.getCurrentVarDiffMax(currentDesc
+                        .getVarName()));
             } else {
-                min = Float.toString(settings.getCurrentVarMin(state
-                        .getVariable()));
-                max = Float.toString(settings.getCurrentVarMax(state
-                        .getVariable()));
+                min = Float.toString(settings.getCurrentVarMin(currentDesc
+                        .getVarName()));
+                max = Float.toString(settings.getCurrentVarMax(currentDesc
+                        .getVarName()));
             }
-            varNameTextRB.setString(gl, variableName, Color4.white, fontSize);
-            dateTextRB.setString(gl, settings.getMonth(state.getFrameNumber()),
+            dateTextRB.setString(gl,
+                    settings.getMonth(currentDesc.getFrameNumber()),
                     Color4.white, fontSize);
-            datasetTextRB.setString(gl,
-                    GlobeState.verbalizeDataMode(state.getDataModeIndex()),
+            datasetTextRB.setString(gl, currentDesc.verbalizeDataMode(),
                     Color4.white, fontSize);
             legendTextRBmin.setString(gl, min, Color4.white, fontSize);
             legendTextRBmax.setString(gl, max, Color4.white, fontSize);
 
-            rbState = state;
-            // setHUDVars(gl, timer.getTextureStorage().getDimensions(3), desc,
-            // varNameTextRB, legendTextRBmin, legendTextRBmax);
+            rbDescription = currentDesc;
         }
 
-        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer.getTextureStorage()
-                .getSurfaceImage(3), settings.getImageWidth(),
-                settings.getImageHeight());
+        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer
+                .getTextureStorage().getSurfaceImage(3), timer.getImageWidth(),
+                timer.getImageHeight());
         heightMap = surface;
-        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer.getTextureStorage()
-                .getLegendImage(3), 1, 500);
+        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer
+                .getTextureStorage().getLegendImage(3), 1, 500);
         surface.init(gl);
         legend.init(gl);
 

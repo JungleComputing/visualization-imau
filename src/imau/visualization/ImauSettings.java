@@ -953,13 +953,13 @@ public class ImauSettings {
         }
     }
 
-    public int getImageWidth() {
-        return IMAGE_WIDTH;
-    }
-
-    public int getImageHeight() {
-        return IMAGE_HEIGHT;
-    }
+    // public int getImageWidth() {
+    // return IMAGE_WIDTH;
+    // }
+    //
+    // public int getImageHeight() {
+    // return IMAGE_HEIGHT;
+    // }
 
     public int getRangeSliderLowerValue(int whichglobe) {
         SurfaceTextureDescription state = null;
@@ -1007,17 +1007,17 @@ public class ImauSettings {
         return (int) (result * 100) - 1;
     }
 
-    public String verbalizeDataMode(int index) {
-        String result = "";
-
-        if (index == 0) {
-            result = "Control";
-        } else if (index == 1) {
-            result = "0.5 Sv";
-        } else if (index == 2) {
-            result = "Difference";
-        }
-
-        return result;
-    }
+    // public String verbalizeDataMode(int index) {
+    // String result = "";
+    //
+    // if (index == 0) {
+    // result = "Control";
+    // } else if (index == 1) {
+    // result = "0.5 Sv";
+    // } else if (index == 2) {
+    // result = "Difference";
+    // }
+    //
+    // return result;
+    // }
 }

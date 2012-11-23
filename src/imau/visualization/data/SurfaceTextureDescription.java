@@ -101,4 +101,30 @@ public class SurfaceTextureDescription {
                     .compareTo(that.colorMap) == 0);
     }
 
+    public int getDataModeIndex() {
+        if (!diff) {
+            if (secondSet) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        return 2;
+    }
+
+    public String verbalizeDataMode() {
+        if (!diff) {
+            if (secondSet) {
+                return "0.5 Sv";
+            } else {
+                return "Control";
+            }
+        }
+
+        return "Difference";
+    }
+
+    public static String[] getDataModes() {
+        return new String[] { "Control", "0.5 Sv", "Difference" };
+    }
 }

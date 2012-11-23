@@ -1,6 +1,5 @@
 package imau.visualization;
 
-import imau.visualization.data.GlobeState;
 import imau.visualization.data.ImauTimedPlayer;
 import imau.visualization.data.SurfaceTextureDescription;
 import imau.visualization.netcdf.NetCDFUtil;
@@ -44,7 +43,6 @@ import openglCommon.CommonPanel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ucar.nc2.NetcdfFile;
 import util.ColormapInterpreter;
 import util.CustomJSlider;
 import util.GoggleSwing;
@@ -510,8 +508,7 @@ public class ImauPanel extends CommonPanel {
 
         dataConfig.add(GoggleSwing.vBoxedComponents(vcomponents, true));
 
-        String[] dataModes = { settings.verbalizeDataMode(0),
-                settings.verbalizeDataMode(1), settings.verbalizeDataMode(2) };
+        String[] dataModes = SurfaceTextureDescription.getDataModes();
 
         final String[] colorMaps = ColormapInterpreter.getColormapNames();
 
@@ -641,37 +638,33 @@ public class ImauPanel extends CommonPanel {
         vcomponentsLB.add(lbLabel);
         vcomponentsRB.add(rbLabel);
 
-        SurfaceTextureDescription LTC = settings.getLTSurfaceDescription();
-        SurfaceTextureDescription RTC = settings.getRTSurfaceDescription();
-        SurfaceTextureDescription LBC = settings.getLBSurfaceDescription();
-        SurfaceTextureDescription RBC = settings.getRBSurfaceDescription();
+        SurfaceTextureDescription ltDescription = settings
+                .getLTSurfaceDescription();
+        SurfaceTextureDescription rtDescription = settings
+                .getRTSurfaceDescription();
+        SurfaceTextureDescription lbDescription = settings
+                .getLBSurfaceDescription();
+        SurfaceTextureDescription rbDescription = settings
+                .getRBSurfaceDescription();
 
-        dataModeComboBoxLT.setSelectedIndex(LTC.getDataModeIndex());
-        dataModeComboBoxRT.setSelectedIndex(RTC.getDataModeIndex());
-        dataModeComboBoxLB.setSelectedIndex(LBC.getDataModeIndex());
-        dataModeComboBoxRB.setSelectedIndex(RBC.getDataModeIndex());
+        dataModeComboBoxLT.setSelectedIndex(ltDescription.getDataModeIndex());
+        dataModeComboBoxRT.setSelectedIndex(rtDescription.getDataModeIndex());
+        dataModeComboBoxLB.setSelectedIndex(lbDescription.getDataModeIndex());
+        dataModeComboBoxRB.setSelectedIndex(rbDescription.getDataModeIndex());
 
-        if (variables.size() > LTC.getVariableIndex()) {
-            comboBoxLT.setSelectedIndex(LTC.getVariableIndex());
-        }
-        if (variables.size() > RTC.getVariableIndex()) {
-            comboBoxRT.setSelectedIndex(RTC.getVariableIndex());
-        }
-        if (variables.size() > LBC.getVariableIndex()) {
-            comboBoxLB.setSelectedIndex(LBC.getVariableIndex());
-        }
-        if (variables.size() > RBC.getVariableIndex()) {
-            comboBoxRB.setSelectedIndex(RBC.getVariableIndex());
-        }
+        comboBoxLT.setSelectedItem(ltDescription.getVarName());
+        comboBoxRT.setSelectedItem(rtDescription.getVarName());
+        comboBoxLB.setSelectedItem(lbDescription.getVarName());
+        comboBoxRB.setSelectedItem(rbDescription.getVarName());
 
         comboBoxLTColorMaps.setSelectedItem(ColormapInterpreter
-                .getIndexOfColormap(LTC.getColorMap()));
+                .getIndexOfColormap(ltDescription.getColorMap()));
         comboBoxRTColorMaps.setSelectedItem(ColormapInterpreter
-                .getIndexOfColormap(RTC.getColorMap()));
+                .getIndexOfColormap(rtDescription.getColorMap()));
         comboBoxLBColorMaps.setSelectedItem(ColormapInterpreter
-                .getIndexOfColormap(LBC.getColorMap()));
+                .getIndexOfColormap(lbDescription.getColorMap()));
         comboBoxRBColorMaps.setSelectedItem(ColormapInterpreter
-                .getIndexOfColormap(RBC.getColorMap()));
+                .getIndexOfColormap(rbDescription.getColorMap()));
 
         dataModeComboBoxLT.setMinimumSize(new Dimension(100, 25));
         dataModeComboBoxRT.setMinimumSize(new Dimension(100, 25));
@@ -723,13 +716,13 @@ public class ImauPanel extends CommonPanel {
         RangeSlider legendSliderLB = new RangeSlider();
         RangeSlider legendSliderRB = new RangeSlider();
 
-        ((RangeSliderUI) legendSliderLT.getUI()).setRangeColorMap(LTC
+        ((RangeSliderUI) legendSliderLT.getUI()).setRangeColorMap(ltDescription
                 .getColorMap());
-        ((RangeSliderUI) legendSliderRT.getUI()).setRangeColorMap(RTC
+        ((RangeSliderUI) legendSliderRT.getUI()).setRangeColorMap(rtDescription
                 .getColorMap());
-        ((RangeSliderUI) legendSliderLB.getUI()).setRangeColorMap(LBC
+        ((RangeSliderUI) legendSliderLB.getUI()).setRangeColorMap(lbDescription
                 .getColorMap());
-        ((RangeSliderUI) legendSliderRB.getUI()).setRangeColorMap(RBC
+        ((RangeSliderUI) legendSliderRB.getUI()).setRangeColorMap(rbDescription
                 .getColorMap());
 
         legendSliderLT.setMinimum(0);
@@ -764,38 +757,38 @@ public class ImauPanel extends CommonPanel {
             }
         });
 
-        final RangeSliderUI frsRT = ((RangeSliderUI) legendSliderLT.getUI());
+        final RangeSliderUI frsRT = ((RangeSliderUI) legendSliderRT.getUI());
         comboBoxRTColorMaps.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 settings.setRTColorMap(colorMaps[comboBoxRTColorMaps
                         .getSelectedIndex()]);
 
-                frsRT.setRangeColorMap(colorMaps[comboBoxLTColorMaps
+                frsRT.setRangeColorMap(colorMaps[comboBoxRTColorMaps
                         .getSelectedIndex()]);
             }
         });
 
-        final RangeSliderUI frsLB = ((RangeSliderUI) legendSliderLT.getUI());
+        final RangeSliderUI frsLB = ((RangeSliderUI) legendSliderLB.getUI());
         comboBoxLBColorMaps.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 settings.setLBColorMap(colorMaps[comboBoxLBColorMaps
                         .getSelectedIndex()]);
 
-                frsLB.setRangeColorMap(colorMaps[comboBoxLTColorMaps
+                frsLB.setRangeColorMap(colorMaps[comboBoxLBColorMaps
                         .getSelectedIndex()]);
             }
         });
 
-        final RangeSliderUI frsRB = ((RangeSliderUI) legendSliderLT.getUI());
+        final RangeSliderUI frsRB = ((RangeSliderUI) legendSliderRB.getUI());
         comboBoxRBColorMaps.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 settings.setRBColorMap(colorMaps[comboBoxRBColorMaps
                         .getSelectedIndex()]);
 
-                frsRB.setRangeColorMap(colorMaps[comboBoxLTColorMaps
+                frsRB.setRangeColorMap(colorMaps[comboBoxRBColorMaps
                         .getSelectedIndex()]);
             }
         });
@@ -804,8 +797,10 @@ public class ImauPanel extends CommonPanel {
             @Override
             public void stateChanged(ChangeEvent e) {
                 RangeSlider slider = (RangeSlider) e.getSource();
-                GlobeState state = settings.getLTState();
-                String var = state.getVariable().toString();
+                SurfaceTextureDescription texDesc = settings
+                        .getLTSurfaceDescription();
+
+                String var = texDesc.getVarName();
                 settings.setVariableRange(0, var, slider.getValue(),
                         slider.getUpperValue());
             }
@@ -814,8 +809,10 @@ public class ImauPanel extends CommonPanel {
             @Override
             public void stateChanged(ChangeEvent e) {
                 RangeSlider slider = (RangeSlider) e.getSource();
-                GlobeState state = settings.getRTState();
-                String var = state.getVariable().toString();
+                SurfaceTextureDescription texDesc = settings
+                        .getRTSurfaceDescription();
+
+                String var = texDesc.getVarName();
                 settings.setVariableRange(1, var, slider.getValue(),
                         slider.getUpperValue());
             }
@@ -824,8 +821,10 @@ public class ImauPanel extends CommonPanel {
             @Override
             public void stateChanged(ChangeEvent e) {
                 RangeSlider slider = (RangeSlider) e.getSource();
-                GlobeState state = settings.getLBState();
-                String var = state.getVariable().toString();
+                SurfaceTextureDescription texDesc = settings
+                        .getLBSurfaceDescription();
+
+                String var = texDesc.getVarName();
                 settings.setVariableRange(2, var, slider.getValue(),
                         slider.getUpperValue());
             }
@@ -834,8 +833,10 @@ public class ImauPanel extends CommonPanel {
             @Override
             public void stateChanged(ChangeEvent e) {
                 RangeSlider slider = (RangeSlider) e.getSource();
-                GlobeState state = settings.getRBState();
-                String var = state.getVariable().toString();
+                SurfaceTextureDescription texDesc = settings
+                        .getRBSurfaceDescription();
+
+                String var = texDesc.getVarName();
                 settings.setVariableRange(3, var, slider.getValue(),
                         slider.getUpperValue());
             }
@@ -880,21 +881,21 @@ public class ImauPanel extends CommonPanel {
                 settings.getHeightDistortionMax(), heightDistortionSpacing,
                 settings.getHeightDistortion(), heightDistortionSetting));
 
-        final ItemListener checkBoxListener = new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    settings.setDynamicDimensions(true);
-                } else {
-                    settings.setDynamicDimensions(false);
-                }
-                timer.redraw();
-            }
-        };
-        visualConfig.add(GoggleSwing.checkboxBox(
-                "",
-                new GoggleSwing.CheckBoxItem("Dynamic dimensions", settings
-                        .isDynamicDimensions(), checkBoxListener)));
+        // final ItemListener checkBoxListener = new ItemListener() {
+        // @Override
+        // public void itemStateChanged(ItemEvent e) {
+        // if (e.getStateChange() == ItemEvent.SELECTED) {
+        // settings.setDynamicDimensions(true);
+        // } else {
+        // settings.setDynamicDimensions(false);
+        // }
+        // timer.redraw();
+        // }
+        // };
+        // visualConfig.add(GoggleSwing.checkboxBox(
+        // "",
+        // new GoggleSwing.CheckBoxItem("Dynamic dimensions", settings
+        // .isDynamicDimensions(), checkBoxListener)));
 
     }
 
@@ -911,9 +912,8 @@ public class ImauPanel extends CommonPanel {
             new Thread(timer).start();
 
             variables = new ArrayList<String>();
-            NetcdfFile ncfile = NetCDFUtil.open(file1);
             for (String v : timer.getVariables()) {
-                variables.add(NetCDFUtil.getFancyVarName(ncfile, v));
+                variables.add(v);
             }
             createDataTweakPanel();
 
@@ -944,9 +944,8 @@ public class ImauPanel extends CommonPanel {
             new Thread(timer).start();
 
             variables = new ArrayList<String>();
-            NetcdfFile ncfile = NetCDFUtil.open(file1);
             for (String v : timer.getVariables()) {
-                variables.add(NetCDFUtil.getFancyVarName(ncfile, v));
+                variables.add(v);
             }
             createDataTweakPanel();
 

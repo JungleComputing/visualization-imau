@@ -7,6 +7,7 @@ import imau.visualization.netcdf.NetCDFUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import org.slf4j.Logger;
@@ -23,6 +24,8 @@ public class ImauDatasetManager {
 
     private final ArrayList<Integer>        availableFrameSequenceNumbers;
     private final ArrayList<String>         availableVariables;
+    private final HashMap<String, String>   variableUnits;
+    private final HashMap<String, String>   variableFancyNames;
 
     private final IOPoolWorker[]            ioThreads;
     private final CPUPoolWorker[]           cpuThreads;
@@ -36,6 +39,9 @@ public class ImauDatasetManager {
 
     private final int                       imageHeight;
     private final int                       blankRows;
+
+    private int                             latArraySize;
+    private int                             lonArraySize;
 
     public void IOJobExecute(ImauDataArray r) {
         synchronized (ioQueue) {
@@ -123,8 +129,6 @@ public class ImauDatasetManager {
         }
         this.file1 = file1;
         this.file2 = file2;
-        this.texStorage = new TextureStorage(this, settings.getImageWidth(),
-                settings.getImageHeight());
 
         ioQueue = new LinkedList<ImauDataArray>();
         cpuQueue = new LinkedList<Runnable>();
@@ -179,6 +183,8 @@ public class ImauDatasetManager {
         }
 
         availableVariables = new ArrayList<String>();
+        variableUnits = new HashMap<String, String>();
+        variableFancyNames = new HashMap<String, String>();
 
         NetcdfFile ncFile1 = NetCDFUtil.open(file1);
 
@@ -205,6 +211,10 @@ public class ImauDatasetManager {
                 for (String s : varQualifiers1) {
                     if (varQualifiers2.contains(s)) {
                         availableVariables.add(s);
+                        variableUnits.put(s,
+                                NetCDFUtil.getFancyVarUnits(ncFile1, s));
+                        variableFancyNames.put(s,
+                                NetCDFUtil.getFancyVarName(ncFile1, s));
                     }
                 }
 
@@ -212,6 +222,10 @@ public class ImauDatasetManager {
             } else {
                 for (String s : varQualifiers1) {
                     availableVariables.add(s);
+                    variableUnits.put(s,
+                            NetCDFUtil.getFancyVarUnits(ncFile1, s));
+                    variableFancyNames.put(s,
+                            NetCDFUtil.getFancyVarName(ncFile1, s));
                 }
             }
         } catch (NetCDFNoSuchVariableException e1) {
@@ -224,24 +238,28 @@ public class ImauDatasetManager {
             logger.debug(s);
         }
 
-        Array t_lat;
         float latMin = -90f;
         float latMax = 90f;
-        int arraySize = 602;
         try {
-            t_lat = NetCDFUtil.getData(ncFile1, "t_lat");
-            arraySize = (int) t_lat.getSize();
+            Array t_lat = NetCDFUtil.getData(ncFile1, "t_lat");
+            latArraySize = (int) t_lat.getSize();
+
+            Array t_lon = NetCDFUtil.getData(ncFile1, "t_lon");
+            lonArraySize = (int) t_lon.getSize();
 
             latMin = t_lat.getFloat(0) + 90f;
-            latMax = t_lat.getFloat(arraySize - 1) + 90f;
+            latMax = t_lat.getFloat(latArraySize - 1) + 90f;
         } catch (NetCDFNoSuchVariableException e) {
             e.printStackTrace();
         }
 
         NetCDFUtil.close(ncFile1);
 
-        imageHeight = (int) Math.floor((180f / (latMax - latMin)) * arraySize);
+        imageHeight = (int) Math.floor((180f / (latMax - latMin))
+                * latArraySize);
         blankRows = (int) Math.floor(180f / latMax);
+
+        this.texStorage = new TextureStorage(this, lonArraySize, imageHeight);
     }
 
     public void buildImages(SurfaceTextureDescription desc) {
@@ -319,5 +337,21 @@ public class ImauDatasetManager {
 
     public ArrayList<String> getVariables() {
         return availableVariables;
+    }
+
+    public String getVariableFancyName(String varName) {
+        return variableFancyNames.get(varName);
+    }
+
+    public String getVariableUnits(String varName) {
+        return variableUnits.get(varName);
+    }
+
+    public int getImageWidth() {
+        return lonArraySize;
+    }
+
+    public int getImageHeight() {
+        return latArraySize;
     }
 }
