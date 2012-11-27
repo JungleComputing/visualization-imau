@@ -117,6 +117,8 @@ public class ImauSettings {
     private final String                 grid_width_dimension_substring  = "lon";
     private final String                 grid_height_dimension_substring = "lat";
 
+    private final int                    MAX_NUMBER_OF_SCREENS           = 4;
+
     private ImauSettings() {
         super();
         minValues = new HashMap<String, Float>();
@@ -128,8 +130,8 @@ public class ImauSettings {
         currentDiffMinValues = new HashMap<String, Float>();
         currentDiffMaxValues = new HashMap<String, Float>();
 
-        minValues.put("SSH", -200f);
-        maxValues.put("SSH", 100f);
+        minValues.put("SSH", -250f);
+        maxValues.put("SSH", 250f);
         currentMinValues.put("SSH", -200f);
         currentMaxValues.put("SSH", 100f);
         diffMinValues.put("SSH", -100f);
@@ -137,8 +139,8 @@ public class ImauSettings {
         currentDiffMinValues.put("SSH", -100f);
         currentDiffMaxValues.put("SSH", 100f);
 
-        minValues.put("SHF", -400f);
-        maxValues.put("SHF", 250f);
+        minValues.put("SHF", -500f);
+        maxValues.put("SHF", 500f);
         currentMinValues.put("SHF", -400f);
         currentMaxValues.put("SHF", 250f);
         diffMinValues.put("SHF", -150f);
@@ -156,7 +158,7 @@ public class ImauSettings {
         currentDiffMaxValues.put("SFWF", 1E-4f);
 
         minValues.put("HMXL", 0f);
-        maxValues.put("HMXL", 150000f);
+        maxValues.put("HMXL", 300000f);
         currentMinValues.put("HMXL", 0f);
         currentMaxValues.put("HMXL", 150000f);
         diffMinValues.put("HMXL", -50000f);
@@ -173,10 +175,10 @@ public class ImauSettings {
         currentDiffMinValues.put("SALT", -0.025f);
         currentDiffMaxValues.put("SALT", 0.025f);
 
-        minValues.put("TEMP", -2f);
-        maxValues.put("TEMP", 30f);
-        currentMinValues.put("TEMP", 0f);
-        currentMaxValues.put("TEMP", 20f);
+        minValues.put("TEMP", -10f);
+        maxValues.put("TEMP", 50f);
+        currentMinValues.put("TEMP", -2f);
+        currentMaxValues.put("TEMP", 30f);
         diffMinValues.put("TEMP", -15f);
         diffMaxValues.put("TEMP", 15f);
         currentDiffMinValues.put("TEMP", -15f);
@@ -203,14 +205,14 @@ public class ImauSettings {
         minValues.put("KE", 0f);
         maxValues.put("KE", 10000f);
         currentMinValues.put("KE", 0f);
-        currentMaxValues.put("KE", 10000f);
+        currentMaxValues.put("KE", 20000f);
         diffMinValues.put("KE", -5000f);
         diffMaxValues.put("KE", 5000f);
         currentDiffMinValues.put("KE", -5000f);
         currentDiffMaxValues.put("KE", 5000f);
 
         minValues.put("PD", 1f);
-        maxValues.put("PD", 1.04f);
+        maxValues.put("PD", 1.1f);
         currentMinValues.put("PD", 1f);
         currentMaxValues.put("PD", 1.04f);
         diffMinValues.put("PD", -0.01f);
@@ -237,7 +239,7 @@ public class ImauSettings {
         currentDiffMaxValues.put("TAUY", .5f);
 
         minValues.put("H2", 0f);
-        maxValues.put("H2", 100000f);
+        maxValues.put("H2", 200000f);
         currentMinValues.put("H2", 0f);
         currentMaxValues.put("H2", 100000f);
         diffMinValues.put("H2", -50000f);
@@ -1020,6 +1022,10 @@ public class ImauSettings {
 
     public String getHeightSubstring() {
         return grid_height_dimension_substring;
+    }
+
+    public int getNumScreens() {
+        return MAX_NUMBER_OF_SCREENS;
     }
 
     // public String verbalizeDataMode(int index) {

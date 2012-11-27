@@ -284,7 +284,8 @@ public class ImauDatasetManager {
                 * latArraySize);
         blankRows = (int) Math.floor(180f / latMax);
 
-        this.texStorage = new TextureStorage(this, lonArraySize, imageHeight);
+        this.texStorage = new TextureStorage(this, settings.getNumScreens(),
+                lonArraySize, imageHeight);
     }
 
     public void buildImages(SurfaceTextureDescription desc) {

@@ -321,7 +321,6 @@ public class ImauTimedPlayer implements Runnable {
             boolean overrideUpdate) {
         if (dsManager != null) {
             if (newFrameNumber != frameNumber || overrideUpdate) {
-                texStorage.requestNewFrame(newFrameNumber);
 
                 frameNumber = newFrameNumber;
                 settings.setFrameNumber(newFrameNumber);

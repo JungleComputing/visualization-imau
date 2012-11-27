@@ -83,7 +83,6 @@ public class SurfaceTextureBuilder implements Runnable {
                 outBuf.flip();
 
                 texStore.setSurfaceImage(description, outBuf);
-                texStore.setDimensions(description, dims);
 
             } catch (UninitializedException e) {
                 e.printStackTrace();

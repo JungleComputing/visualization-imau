@@ -1,39 +1,36 @@
 package imau.visualization.data;
 
-
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 
-import util.ColormapInterpreter.Dimensions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.jogamp.common.nio.Buffers;
 
 public class TextureStorage {
-    private final HashMap<Integer, SurfaceTextureDescription>    oldScreen;
-    private final HashMap<Integer, SurfaceTextureDescription>    newScreen;
-    private final HashMap<Integer, SurfaceTextureDescription>    futureScreen;
-    private final HashMap<SurfaceTextureDescription, ByteBuffer> surfaceStorage;
-    private final HashMap<SurfaceTextureDescription, ByteBuffer> legendStorage;
-    private final HashMap<SurfaceTextureDescription, Dimensions> dimensionsStorage;
+    private final static Logger                            logger = LoggerFactory
+                                                                          .getLogger(TextureStorage.class);
 
-    private final int                                            width;
-    private final int                                            height;
+    private final SurfaceTextureDescription[]              oldScreenA;
+    private final SurfaceTextureDescription[]              newScreenA;
+    private HashMap<SurfaceTextureDescription, ByteBuffer> surfaceStorage;
+    private HashMap<SurfaceTextureDescription, ByteBuffer> legendStorage;
 
-    private final ImauDatasetManager                           manager;
+    private final ImauDatasetManager                       manager;
 
-    private final ByteBuffer                                     EMPTY_SURFACE_BUFFER;
-    private final ByteBuffer                                     EMPTY_LEGEND_BUFFER;
+    private final ByteBuffer                               EMPTY_SURFACE_BUFFER;
+    private final ByteBuffer                               EMPTY_LEGEND_BUFFER;
 
-    public TextureStorage(ImauDatasetManager manager, int width, int height) {
-        oldScreen = new HashMap<Integer, SurfaceTextureDescription>();
-        newScreen = new HashMap<Integer, SurfaceTextureDescription>();
-        futureScreen = new HashMap<Integer, SurfaceTextureDescription>();
+    public TextureStorage(ImauDatasetManager manager, int screens, int width,
+            int height) {
+        oldScreenA = new SurfaceTextureDescription[screens];
+        newScreenA = new SurfaceTextureDescription[screens];
+
         surfaceStorage = new HashMap<SurfaceTextureDescription, ByteBuffer>();
         legendStorage = new HashMap<SurfaceTextureDescription, ByteBuffer>();
-        dimensionsStorage = new HashMap<SurfaceTextureDescription, Dimensions>();
 
-        this.width = width;
-        this.height = height;
         this.manager = manager;
 
         EMPTY_SURFACE_BUFFER = Buffers.newDirectByteBuffer(width * height * 4);
@@ -41,19 +38,28 @@ public class TextureStorage {
     }
 
     public synchronized ByteBuffer getSurfaceImage(int screenNumber) {
-        ByteBuffer result = null;
-        if (newScreen.containsKey(screenNumber)) {
-            if (surfaceStorage.containsKey(newScreen.get(screenNumber))) {
-                SurfaceTextureDescription desc = oldScreen.remove(screenNumber);
-                surfaceStorage.remove(desc);
+        if (screenNumber < 0 || screenNumber > oldScreenA.length - 1) {
+            logger.error("Get request for screen number out of range: "
+                    + screenNumber);
+        }
 
-                result = surfaceStorage.get(newScreen.get(screenNumber));
+        ByteBuffer result = null;
+        if (newScreenA[screenNumber] != null) {
+            SurfaceTextureDescription newDesc = newScreenA[screenNumber];
+
+            if (surfaceStorage.containsKey(newDesc)) {
+                SurfaceTextureDescription oldDesc = oldScreenA[screenNumber];
+                surfaceStorage.remove(oldDesc);
+
+                result = surfaceStorage.get(newDesc);
             } else {
-                result = surfaceStorage.get(oldScreen.get(screenNumber));
+                result = surfaceStorage.get(oldScreenA[screenNumber]);
             }
         }
 
         if (result != null) {
+            System.out
+                    .println("Surface storage size: " + surfaceStorage.size());
             return result;
         } else {
             return EMPTY_SURFACE_BUFFER;
@@ -62,123 +68,125 @@ public class TextureStorage {
     }
 
     public synchronized ByteBuffer getLegendImage(int screenNumber) {
-        ByteBuffer result = null;
-        if (newScreen.containsKey(screenNumber)) {
-            if (legendStorage.containsKey(newScreen.get(screenNumber))) {
-                SurfaceTextureDescription desc = oldScreen.remove(screenNumber);
-                legendStorage.remove(desc);
+        if (screenNumber < 0 || screenNumber > oldScreenA.length - 1) {
+            logger.error("Get request for legend number out of range: "
+                    + screenNumber);
+        }
 
-                result = legendStorage.get(newScreen.get(screenNumber));
+        ByteBuffer result = null;
+        if (newScreenA[screenNumber] != null) {
+            SurfaceTextureDescription newDesc = newScreenA[screenNumber];
+
+            if (legendStorage.containsKey(newDesc)) {
+                SurfaceTextureDescription oldDesc = oldScreenA[screenNumber];
+                legendStorage.remove(oldDesc);
+
+                result = legendStorage.get(newDesc);
             } else {
-                result = legendStorage.get(oldScreen.get(screenNumber));
+                result = legendStorage.get(oldScreenA[screenNumber]);
             }
         }
 
         if (result != null) {
+            System.out.println("Legend storage size: " + surfaceStorage.size());
             return result;
         } else {
             return EMPTY_LEGEND_BUFFER;
         }
     }
 
-    public synchronized Dimensions getDimensions(int screenNumber) {
-        // if (newScreen.containsKey(screenNumber)) {
-        // if (dimensionsStorage.containsKey(newScreen.get(screenNumber))) {
-        // SurfaceTextureDescription desc = oldScreen.remove(screenNumber);
-        // dimensionsStorage.remove(desc);
-        //
-        // return dimensionsStorage.get(newScreen.get(screenNumber));
-        // } else {
-        // return dimensionsStorage.get(oldScreen.get(screenNumber));
-        // }
-        // }
-
-        return new Dimensions(0, 0);
-    }
-
     public synchronized void requestNewConfiguration(int screenNumber,
             SurfaceTextureDescription newDesc) {
-        SurfaceTextureDescription oldDesc = newScreen.get(screenNumber);
-        oldScreen.put(screenNumber, oldDesc);
-
-        newScreen.put(screenNumber, newDesc);
-        if (!surfaceStorage.containsValue(newDesc)
-                || !legendStorage.containsValue(newDesc)
-                || !dimensionsStorage.containsValue(newDesc)) {
-            manager.buildImages(newDesc);
+        if (screenNumber < 0 || screenNumber > oldScreenA.length - 1) {
+            logger.error("Configuration request for screen number out of range: "
+                    + screenNumber);
         }
-    }
 
-    public synchronized void requestNewFrame(int frameNumber) {
-        for (int i = 0; i < 4; i++) {
-            if (oldScreen.containsKey(i)) {
-                SurfaceTextureDescription oldDesc = newScreen.get(i);
-                oldScreen.put(i, oldDesc);
+        SurfaceTextureDescription oldDesc = newScreenA[screenNumber];
+        oldScreenA[screenNumber] = oldDesc;
 
-                SurfaceTextureDescription newDesc = new SurfaceTextureDescription(
-                        frameNumber, oldDesc.getDepth(), oldDesc.getVarName(),
-                        oldDesc.getColorMap(), oldDesc.isDynamicDimensions(),
-                        oldDesc.isDiff(), oldDesc.isSecondSet(),
-                        oldDesc.getLowerBound(), oldDesc.getUpperBound());
+        newScreenA[screenNumber] = newDesc;
 
-                newScreen.put(i, newDesc);
-                manager.buildImages(newDesc);
+        // Do some checking to see if the buffers are in sync
+        if (surfaceStorage.containsValue(newDesc)
+                && !legendStorage.containsValue(newDesc)) {
+            surfaceStorage.remove(newDesc);
+        }
+        if (legendStorage.containsValue(newDesc)
+                && !surfaceStorage.containsValue(newDesc)) {
+            legendStorage.remove(newDesc);
+        }
 
-                // requestNewConfiguration(i, newDesc);
-                // SurfaceTextureDescription futureDesc = new
-                // SurfaceTextureDescription(
-                // frameNumber + 1, oldDesc.getDepth(),
-                // oldDesc.getVarName(), oldDesc.getColorMap(),
-                // oldDesc.isDynamicDimensions(), oldDesc.isDiff(),
-                // oldDesc.isSecondSet(), oldDesc.getLowerBound(),
-                // oldDesc.getUpperBound());
-                //
-                // futureScreen.put(i, futureDesc);
-                // manager.buildImages(futureDesc);
+        // Check if there are textures in the storage that are unused, and
+        // remove them if so
+        ArrayList<SurfaceTextureDescription> usedDescs = new ArrayList<SurfaceTextureDescription>();
+        for (int i = 0; i < oldScreenA.length; i++) {
+            usedDescs.add(oldScreenA[i]);
+            usedDescs.add(newScreenA[i]);
+        }
+
+        HashMap<SurfaceTextureDescription, ByteBuffer> newSurfaceStore = new HashMap<SurfaceTextureDescription, ByteBuffer>();
+        for (SurfaceTextureDescription storedSurfaceDesc : surfaceStorage
+                .keySet()) {
+            if (usedDescs.contains(storedSurfaceDesc)) {
+                newSurfaceStore.put(storedSurfaceDesc,
+                        surfaceStorage.get(storedSurfaceDesc));
             }
+        }
+        surfaceStorage = newSurfaceStore;
+
+        HashMap<SurfaceTextureDescription, ByteBuffer> newLegendStore = new HashMap<SurfaceTextureDescription, ByteBuffer>();
+        for (SurfaceTextureDescription storedLegendSurfaceDesc : legendStorage
+                .keySet()) {
+            if (usedDescs.contains(storedLegendSurfaceDesc)) {
+                newLegendStore.put(storedLegendSurfaceDesc,
+                        legendStorage.get(storedLegendSurfaceDesc));
+            }
+        }
+        legendStorage = newLegendStore;
+
+        if (!surfaceStorage.containsValue(newDesc)
+                && !legendStorage.containsValue(newDesc)) {
+            manager.buildImages(newDesc);
         }
     }
 
     public synchronized void setSurfaceImage(SurfaceTextureDescription desc,
             ByteBuffer data) {
-        if (newScreen.containsValue(desc)) {
+        boolean failure = true;
+
+        // Only add this surface texture if it is still needed.
+        for (int i = 0; i < newScreenA.length; i++) {
+            if (newScreenA[i] == desc) {
+                failure = false;
+            }
+        }
+
+        if (!failure) {
             surfaceStorage.put(desc, data);
         }
     }
 
     public void setLegendImage(SurfaceTextureDescription desc, ByteBuffer data) {
-        if (newScreen.containsValue(desc)) {
-            legendStorage.put(desc, data);
+        boolean failure = true;
+        // Only add this legend texture if it is still needed.
+        for (int i = 0; i < newScreenA.length; i++) {
+            if (newScreenA[i] == desc) {
+                failure = false;
+            }
         }
-    }
 
-    public void setDimensions(SurfaceTextureDescription desc, Dimensions dims) {
-        if (newScreen.containsValue(desc)) {
-            dimensionsStorage.put(desc, dims);
+        if (!failure) {
+            legendStorage.put(desc, data);
         }
     }
 
     public boolean doneWithLastRequest() {
         boolean failure = false;
 
-        for (SurfaceTextureDescription desc : newScreen.values()) {
+        for (SurfaceTextureDescription desc : newScreenA) {
             if (surfaceStorage.get(desc) == null
-                    || legendStorage.get(desc) == null
-                    || dimensionsStorage.get(desc) == null) {
-                failure = true;
-            }
-        }
-
-        return !failure;
-    }
-
-    public boolean doneWithNextRequest() {
-        boolean failure = false;
-
-        for (SurfaceTextureDescription desc : futureScreen.values()) {
-            if (surfaceStorage.get(desc) == null
-                    || legendStorage.get(desc) == null
-                    || dimensionsStorage.get(desc) == null) {
+                    || legendStorage.get(desc) == null) {
                 failure = true;
             }
         }

@@ -579,31 +579,6 @@ public class ImauPanel extends CommonPanel {
         final JComboBox comboBoxRB = new JComboBox(
                 variables.toArray(new String[0]));
 
-        comboBoxLT.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setLTVariable((String) comboBoxLT.getSelectedItem());
-            }
-        });
-        comboBoxRT.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setRTVariable((String) comboBoxRT.getSelectedItem());
-            }
-        });
-        comboBoxLB.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setLBVariable((String) comboBoxLB.getSelectedItem());
-            }
-        });
-        comboBoxRB.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setRBVariable((String) comboBoxRB.getSelectedItem());
-            }
-        });
-
         final JComboBox comboBoxLTColorMaps = ColormapInterpreter
                 .getLegendJComboBox(new Dimension(200, 25));
         final JComboBox comboBoxRTColorMaps = ColormapInterpreter
@@ -711,10 +686,10 @@ public class ImauPanel extends CommonPanel {
         vcomponentsLB.add(comboBoxLBColorMaps);
         vcomponentsRB.add(comboBoxRBColorMaps);
 
-        RangeSlider legendSliderLT = new RangeSlider();
-        RangeSlider legendSliderRT = new RangeSlider();
-        RangeSlider legendSliderLB = new RangeSlider();
-        RangeSlider legendSliderRB = new RangeSlider();
+        final RangeSlider legendSliderLT = new RangeSlider();
+        final RangeSlider legendSliderRT = new RangeSlider();
+        final RangeSlider legendSliderLB = new RangeSlider();
+        final RangeSlider legendSliderRB = new RangeSlider();
 
         ((RangeSliderUI) legendSliderLT.getUI()).setRangeColorMap(ltDescription
                 .getColorMap());
@@ -778,6 +753,7 @@ public class ImauPanel extends CommonPanel {
 
                 frsLB.setRangeColorMap(colorMaps[comboBoxLBColorMaps
                         .getSelectedIndex()]);
+
             }
         });
 
@@ -839,6 +815,55 @@ public class ImauPanel extends CommonPanel {
                 String var = texDesc.getVarName();
                 settings.setVariableRange(3, var, slider.getValue(),
                         slider.getUpperValue());
+            }
+        });
+
+        comboBoxLT.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                String var = (String) ((JComboBox) e.getSource())
+                        .getSelectedItem();
+
+                settings.setLTVariable(var);
+                legendSliderLT.setValue(settings.getRangeSliderLowerValue(0));
+                legendSliderLT.setUpperValue(settings
+                        .getRangeSliderUpperValue(0));
+            }
+        });
+        comboBoxRT.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                String var = (String) ((JComboBox) e.getSource())
+                        .getSelectedItem();
+
+                settings.setRTVariable(var);
+                legendSliderRT.setValue(settings.getRangeSliderLowerValue(1));
+                legendSliderRT.setUpperValue(settings
+                        .getRangeSliderUpperValue(1));
+            }
+        });
+        comboBoxLB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                String var = (String) ((JComboBox) e.getSource())
+                        .getSelectedItem();
+
+                settings.setLBVariable(var);
+                legendSliderLB.setValue(settings.getRangeSliderLowerValue(2));
+                legendSliderLB.setUpperValue(settings
+                        .getRangeSliderUpperValue(2));
+            }
+        });
+        comboBoxRB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                String var = (String) ((JComboBox) e.getSource())
+                        .getSelectedItem();
+
+                settings.setRBVariable(var);
+                legendSliderRB.setValue(settings.getRangeSliderLowerValue(3));
+                legendSliderRB.setUpperValue(settings
+                        .getRangeSliderUpperValue(3));
             }
         });
 
