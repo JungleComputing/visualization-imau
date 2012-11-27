@@ -58,8 +58,6 @@ public class TextureStorage {
         }
 
         if (result != null) {
-            System.out
-                    .println("Surface storage size: " + surfaceStorage.size());
             return result;
         } else {
             return EMPTY_SURFACE_BUFFER;
@@ -88,7 +86,6 @@ public class TextureStorage {
         }
 
         if (result != null) {
-            System.out.println("Legend storage size: " + surfaceStorage.size());
             return result;
         } else {
             return EMPTY_LEGEND_BUFFER;
