@@ -1,6 +1,5 @@
 package nl.esciencecenter.visualization.esalsa;
 
-
 import java.util.HashMap;
 
 import nl.esciencecenter.visualization.esalsa.data.SurfaceTextureDescription;
@@ -27,9 +26,6 @@ public class ImauSettings {
     public enum Months {
         Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
     };
-
-    private static final int             IMAGE_WIDTH                     = 900;
-    private static final int             IMAGE_HEIGHT                    = 602;
 
     private boolean                      STEREO_RENDERING                = true;
     private boolean                      STEREO_SWITCHED                 = true;
@@ -130,139 +126,6 @@ public class ImauSettings {
         currentDiffMinValues = new HashMap<String, Float>();
         currentDiffMaxValues = new HashMap<String, Float>();
 
-        minValues.put("SSH", -250f);
-        maxValues.put("SSH", 250f);
-        currentMinValues.put("SSH", -200f);
-        currentMaxValues.put("SSH", 100f);
-        diffMinValues.put("SSH", -100f);
-        diffMaxValues.put("SSH", 100f);
-        currentDiffMinValues.put("SSH", -100f);
-        currentDiffMaxValues.put("SSH", 100f);
-
-        minValues.put("SHF", -500f);
-        maxValues.put("SHF", 500f);
-        currentMinValues.put("SHF", -400f);
-        currentMaxValues.put("SHF", 250f);
-        diffMinValues.put("SHF", -150f);
-        diffMaxValues.put("SHF", 150f);
-        currentDiffMinValues.put("SHF", -150f);
-        currentDiffMaxValues.put("SHF", 150f);
-
-        minValues.put("SFWF", -3E-4f);
-        maxValues.put("SFWF", 3E-4f);
-        currentMinValues.put("SFWF", -3E-4f);
-        currentMaxValues.put("SFWF", 3E-4f);
-        diffMinValues.put("SFWF", -1E-4f);
-        diffMaxValues.put("SFWF", 1E-4f);
-        currentDiffMinValues.put("SFWF", -1E-4f);
-        currentDiffMaxValues.put("SFWF", 1E-4f);
-
-        minValues.put("HMXL", 0f);
-        maxValues.put("HMXL", 300000f);
-        currentMinValues.put("HMXL", 0f);
-        currentMaxValues.put("HMXL", 150000f);
-        diffMinValues.put("HMXL", -50000f);
-        diffMaxValues.put("HMXL", 50000f);
-        currentDiffMinValues.put("HMXL", -50000f);
-        currentDiffMaxValues.put("HMXL", 50000f);
-
-        minValues.put("SALT", 0.00f);
-        maxValues.put("SALT", 0.05f);
-        currentMinValues.put("SALT", 0.03f);
-        currentMaxValues.put("SALT", 0.04f);
-        diffMinValues.put("SALT", -0.025f);
-        diffMaxValues.put("SALT", 0.025f);
-        currentDiffMinValues.put("SALT", -0.025f);
-        currentDiffMaxValues.put("SALT", 0.025f);
-
-        minValues.put("TEMP", -10f);
-        maxValues.put("TEMP", 50f);
-        currentMinValues.put("TEMP", -2f);
-        currentMaxValues.put("TEMP", 30f);
-        diffMinValues.put("TEMP", -15f);
-        diffMaxValues.put("TEMP", 15f);
-        currentDiffMinValues.put("TEMP", -15f);
-        currentDiffMaxValues.put("TEMP", 15f);
-
-        minValues.put("UVEL", -200f);
-        maxValues.put("UVEL", 200f);
-        currentMinValues.put("UVEL", -200f);
-        currentMaxValues.put("UVEL", 200f);
-        diffMinValues.put("UVEL", -100f);
-        diffMaxValues.put("UVEL", 100f);
-        currentDiffMinValues.put("UVEL", -100f);
-        currentDiffMaxValues.put("UVEL", 100f);
-
-        minValues.put("VVEL", -200f);
-        maxValues.put("VVEL", 200f);
-        currentMinValues.put("VVEL", -200f);
-        currentMaxValues.put("VVEL", 200f);
-        diffMinValues.put("VVEL", -100f);
-        diffMaxValues.put("VVEL", 100f);
-        currentDiffMinValues.put("VVEL", -100f);
-        currentDiffMaxValues.put("VVEL", 100f);
-
-        minValues.put("KE", 0f);
-        maxValues.put("KE", 10000f);
-        currentMinValues.put("KE", 0f);
-        currentMaxValues.put("KE", 20000f);
-        diffMinValues.put("KE", -5000f);
-        diffMaxValues.put("KE", 5000f);
-        currentDiffMinValues.put("KE", -5000f);
-        currentDiffMaxValues.put("KE", 5000f);
-
-        minValues.put("PD", 1f);
-        maxValues.put("PD", 1.1f);
-        currentMinValues.put("PD", 1f);
-        currentMaxValues.put("PD", 1.04f);
-        diffMinValues.put("PD", -0.01f);
-        diffMaxValues.put("PD", 0.01f);
-        currentDiffMinValues.put("PD", -0.01f);
-        currentDiffMaxValues.put("PD", 0.01f);
-
-        minValues.put("TAUX", -1f);
-        maxValues.put("TAUX", 1f);
-        currentMinValues.put("TAUX", -1f);
-        currentMaxValues.put("TAUX", 1f);
-        diffMinValues.put("TAUX", -.5f);
-        diffMaxValues.put("TAUX", .5f);
-        currentDiffMinValues.put("TAUX", -.5f);
-        currentDiffMaxValues.put("TAUX", .5f);
-
-        minValues.put("TAUY", -1f);
-        maxValues.put("TAUY", 1f);
-        currentMinValues.put("TAUY", -1f);
-        currentMaxValues.put("TAUY", 1f);
-        diffMinValues.put("TAUY", -.5f);
-        diffMaxValues.put("TAUY", .5f);
-        currentDiffMinValues.put("TAUY", -.5f);
-        currentDiffMaxValues.put("TAUY", .5f);
-
-        minValues.put("H2", 0f);
-        maxValues.put("H2", 200000f);
-        currentMinValues.put("H2", 0f);
-        currentMaxValues.put("H2", 100000f);
-        diffMinValues.put("H2", -50000f);
-        diffMaxValues.put("H2", 50000f);
-        currentDiffMinValues.put("H2", -50000f);
-        currentDiffMaxValues.put("H2", 50000f);
-
-        ltDescription = new SurfaceTextureDescription(7502, 0, "TEMP",
-                "default", false, false, false, currentMinValues.get("TEMP"),
-                currentMaxValues.get("TEMP"));
-
-        rtDescription = new SurfaceTextureDescription(7502, 0, "KE", "rainbow",
-                false, false, false, currentMinValues.get("KE"),
-                currentMaxValues.get("KE"));
-
-        lbDescription = new SurfaceTextureDescription(7502, 0, "SALT",
-                "inv_diff", false, false, false, currentMinValues.get("SALT"),
-                currentMaxValues.get("SALT"));
-
-        rbDescription = new SurfaceTextureDescription(7502, 0, "HMXL",
-                "hotres", false, false, false, currentMinValues.get("HMXL"),
-                currentMaxValues.get("HMXL"));
-
         try {
             final TypedProperties props = new TypedProperties();
             props.loadFromFile("settings.properties");
@@ -326,6 +189,177 @@ public class ImauSettings {
 
             System.out.println(IMAGE_STREAM_OUTPUT ? "true" : "false");
 
+            minValues.put("SSH", props.getFloatProperty("MIN_SSH"));
+            maxValues.put("SSH", props.getFloatProperty("MAX_SSH"));
+            currentMinValues.put("SSH", props.getFloatProperty("SET_MIN_SSH"));
+            currentMaxValues.put("SSH", props.getFloatProperty("SET_MAX_SSH"));
+            diffMinValues.put("SSH", props.getFloatProperty("DIFF_MIN_SSH"));
+            diffMaxValues.put("SSH", props.getFloatProperty("DIFF_MAX_SSH"));
+            currentDiffMinValues.put("SSH",
+                    props.getFloatProperty("SET_DIFF_MIN_SSH"));
+            currentDiffMaxValues.put("SSH",
+                    props.getFloatProperty("SET_DIFF_MAX_SSH"));
+            minValues.put("SHF", props.getFloatProperty("MIN_SHF"));
+            maxValues.put("SHF", props.getFloatProperty("MAX_SHF"));
+            currentMinValues.put("SHF", props.getFloatProperty("SET_MIN_SHF"));
+            currentMaxValues.put("SHF", props.getFloatProperty("SET_MAX_SHF"));
+            diffMinValues.put("SHF", props.getFloatProperty("DIFF_MIN_SHF"));
+            diffMaxValues.put("SHF", props.getFloatProperty("DIFF_MAX_SHF"));
+            currentDiffMinValues.put("SHF",
+                    props.getFloatProperty("SET_DIFF_MIN_SHF"));
+            currentDiffMaxValues.put("SHF",
+                    props.getFloatProperty("SET_DIFF_MAX_SHF"));
+            minValues.put("SFWF", props.getFloatProperty("MIN_SFWF"));
+            maxValues.put("SFWF", props.getFloatProperty("MAX_SFWF"));
+            currentMinValues
+                    .put("SFWF", props.getFloatProperty("SET_MIN_SFWF"));
+            currentMaxValues
+                    .put("SFWF", props.getFloatProperty("SET_MAX_SFWF"));
+            diffMinValues.put("SFWF", props.getFloatProperty("DIFF_MIN_SFWF"));
+            diffMaxValues.put("SFWF", props.getFloatProperty("DIFF_MAX_SFWF"));
+            currentDiffMinValues.put("SFWF",
+                    props.getFloatProperty("SET_DIFF_MIN_SFWF"));
+            currentDiffMaxValues.put("SFWF",
+                    props.getFloatProperty("SET_DIFF_MAX_SFWF"));
+            minValues.put("HMXL", props.getFloatProperty("MIN_HMXL"));
+            maxValues.put("HMXL", props.getFloatProperty("MAX_HMXL"));
+            currentMinValues
+                    .put("HMXL", props.getFloatProperty("SET_MIN_HMXL"));
+            currentMaxValues
+                    .put("HMXL", props.getFloatProperty("SET_MAX_HMXL"));
+            diffMinValues.put("HMXL", props.getFloatProperty("DIFF_MIN_HMXL"));
+            diffMaxValues.put("HMXL", props.getFloatProperty("DIFF_MAX_HMXL"));
+            currentDiffMinValues.put("HMXL",
+                    props.getFloatProperty("SET_DIFF_MIN_HMXL"));
+            currentDiffMaxValues.put("HMXL",
+                    props.getFloatProperty("SET_DIFF_MAX_HMXL"));
+            minValues.put("XMXL", props.getFloatProperty("MIN_XMXL"));
+            maxValues.put("XMXL", props.getFloatProperty("MAX_XMXL"));
+            currentMinValues
+                    .put("XMXL", props.getFloatProperty("SET_MIN_XMXL"));
+            currentMaxValues
+                    .put("XMXL", props.getFloatProperty("SET_MAX_XMXL"));
+            diffMinValues.put("XMXL", props.getFloatProperty("DIFF_MIN_XMXL"));
+            diffMaxValues.put("XMXL", props.getFloatProperty("DIFF_MAX_XMXL"));
+            currentDiffMinValues.put("XMXL",
+                    props.getFloatProperty("SET_DIFF_MIN_XMXL"));
+            currentDiffMaxValues.put("XMXL",
+                    props.getFloatProperty("SET_DIFF_MAX_XMXL"));
+            minValues.put("TMXL", props.getFloatProperty("MIN_TMXL"));
+            maxValues.put("TMXL", props.getFloatProperty("MAX_TMXL"));
+            currentMinValues
+                    .put("TMXL", props.getFloatProperty("SET_MIN_TMXL"));
+            currentMaxValues
+                    .put("TMXL", props.getFloatProperty("SET_MAX_TMXL"));
+            diffMinValues.put("TMXL", props.getFloatProperty("DIFF_MIN_TMXL"));
+            diffMaxValues.put("TMXL", props.getFloatProperty("DIFF_MAX_TMXL"));
+            currentDiffMinValues.put("TMXL",
+                    props.getFloatProperty("SET_DIFF_MIN_TMXL"));
+            currentDiffMaxValues.put("TMXL",
+                    props.getFloatProperty("SET_DIFF_MAX_TMXL"));
+            minValues.put("SALT", props.getFloatProperty("MIN_SALT"));
+            maxValues.put("SALT", props.getFloatProperty("MAX_SALT"));
+            currentMinValues
+                    .put("SALT", props.getFloatProperty("SET_MIN_SALT"));
+            currentMaxValues
+                    .put("SALT", props.getFloatProperty("SET_MAX_SALT"));
+            diffMinValues.put("SALT", props.getFloatProperty("DIFF_MIN_SALT"));
+            diffMaxValues.put("SALT", props.getFloatProperty("DIFF_MAX_SALT"));
+            currentDiffMinValues.put("SALT",
+                    props.getFloatProperty("SET_DIFF_MIN_SALT"));
+            currentDiffMaxValues.put("SALT",
+                    props.getFloatProperty("SET_DIFF_MAX_SALT"));
+            minValues.put("TEMP", props.getFloatProperty("MIN_TEMP"));
+            maxValues.put("TEMP", props.getFloatProperty("MAX_TEMP"));
+            currentMinValues
+                    .put("TEMP", props.getFloatProperty("SET_MIN_TEMP"));
+            currentMaxValues
+                    .put("TEMP", props.getFloatProperty("SET_MAX_TEMP"));
+            diffMinValues.put("TEMP", props.getFloatProperty("DIFF_MIN_TEMP"));
+            diffMaxValues.put("TEMP", props.getFloatProperty("DIFF_MAX_TEMP"));
+            currentDiffMinValues.put("TEMP",
+                    props.getFloatProperty("SET_DIFF_MIN_TEMP"));
+            currentDiffMaxValues.put("TEMP",
+                    props.getFloatProperty("SET_DIFF_MAX_TEMP"));
+            minValues.put("UVEL", props.getFloatProperty("MIN_UVEL"));
+            maxValues.put("UVEL", props.getFloatProperty("MAX_UVEL"));
+            currentMinValues
+                    .put("UVEL", props.getFloatProperty("SET_MIN_UVEL"));
+            currentMaxValues
+                    .put("UVEL", props.getFloatProperty("SET_MAX_UVEL"));
+            diffMinValues.put("UVEL", props.getFloatProperty("DIFF_MIN_UVEL"));
+            diffMaxValues.put("UVEL", props.getFloatProperty("DIFF_MAX_UVEL"));
+            currentDiffMinValues.put("UVEL",
+                    props.getFloatProperty("SET_DIFF_MIN_UVEL"));
+            currentDiffMaxValues.put("UVEL",
+                    props.getFloatProperty("SET_DIFF_MAX_UVEL"));
+            minValues.put("VVEL", props.getFloatProperty("MIN_VVEL"));
+            maxValues.put("VVEL", props.getFloatProperty("MAX_VVEL"));
+            currentMinValues
+                    .put("VVEL", props.getFloatProperty("SET_MIN_VVEL"));
+            currentMaxValues
+                    .put("VVEL", props.getFloatProperty("SET_MAX_VVEL"));
+            diffMinValues.put("VVEL", props.getFloatProperty("DIFF_MIN_VVEL"));
+            diffMaxValues.put("VVEL", props.getFloatProperty("DIFF_MAX_VVEL"));
+            currentDiffMinValues.put("VVEL",
+                    props.getFloatProperty("SET_DIFF_MIN_VVEL"));
+            currentDiffMaxValues.put("VVEL",
+                    props.getFloatProperty("SET_DIFF_MAX_VVEL"));
+            minValues.put("KE", props.getFloatProperty("MIN_KE"));
+            maxValues.put("KE", props.getFloatProperty("MAX_KE"));
+            currentMinValues.put("KE", props.getFloatProperty("SET_MIN_KE"));
+            currentMaxValues.put("KE", props.getFloatProperty("SET_MAX_KE"));
+            diffMinValues.put("KE", props.getFloatProperty("DIFF_MIN_KE"));
+            diffMaxValues.put("KE", props.getFloatProperty("DIFF_MAX_KE"));
+            currentDiffMinValues.put("KE",
+                    props.getFloatProperty("SET_DIFF_MIN_KE"));
+            currentDiffMaxValues.put("KE",
+                    props.getFloatProperty("SET_DIFF_MAX_KE"));
+            minValues.put("PD", props.getFloatProperty("MIN_PD"));
+            maxValues.put("PD", props.getFloatProperty("MAX_PD"));
+            currentMinValues.put("PD", props.getFloatProperty("SET_MIN_PD"));
+            currentMaxValues.put("PD", props.getFloatProperty("SET_MAX_PD"));
+            diffMinValues.put("PD", props.getFloatProperty("DIFF_MIN_PD"));
+            diffMaxValues.put("PD", props.getFloatProperty("DIFF_MAX_PD"));
+            currentDiffMinValues.put("PD",
+                    props.getFloatProperty("SET_DIFF_MIN_PD"));
+            currentDiffMaxValues.put("PD",
+                    props.getFloatProperty("SET_DIFF_MAX_PD"));
+            minValues.put("TAUX", props.getFloatProperty("MIN_TAUX"));
+            maxValues.put("TAUX", props.getFloatProperty("MAX_TAUX"));
+            currentMinValues
+                    .put("TAUX", props.getFloatProperty("SET_MIN_TAUX"));
+            currentMaxValues
+                    .put("TAUX", props.getFloatProperty("SET_MAX_TAUX"));
+            diffMinValues.put("TAUX", props.getFloatProperty("DIFF_MIN_TAUX"));
+            diffMaxValues.put("TAUX", props.getFloatProperty("DIFF_MAX_TAUX"));
+            currentDiffMinValues.put("TAUX",
+                    props.getFloatProperty("SET_DIFF_MIN_TAUX"));
+            currentDiffMaxValues.put("TAUX",
+                    props.getFloatProperty("SET_DIFF_MAX_TAUX"));
+            minValues.put("TAUY", props.getFloatProperty("MIN_TAUY"));
+            maxValues.put("TAUY", props.getFloatProperty("MAX_TAUY"));
+            currentMinValues
+                    .put("TAUY", props.getFloatProperty("SET_MIN_TAUY"));
+            currentMaxValues
+                    .put("TAUY", props.getFloatProperty("SET_MAX_TAUY"));
+            diffMinValues.put("TAUY", props.getFloatProperty("DIFF_MIN_TAUY"));
+            diffMaxValues.put("TAUY", props.getFloatProperty("DIFF_MAX_TAUY"));
+            currentDiffMinValues.put("TAUY",
+                    props.getFloatProperty("SET_DIFF_MIN_TAUY"));
+            currentDiffMaxValues.put("TAUY",
+                    props.getFloatProperty("SET_DIFF_MAX_TAUY"));
+            minValues.put("H2", props.getFloatProperty("MIN_H2"));
+            maxValues.put("H2", props.getFloatProperty("MAX_H2"));
+            currentMinValues.put("H2", props.getFloatProperty("SET_MIN_H2"));
+            currentMaxValues.put("H2", props.getFloatProperty("SET_MAX_H2"));
+            diffMinValues.put("H2", props.getFloatProperty("DIFF_MIN_H2"));
+            diffMaxValues.put("H2", props.getFloatProperty("DIFF_MAX_H2"));
+            currentDiffMinValues.put("H2",
+                    props.getFloatProperty("SET_DIFF_MIN_H2"));
+            currentDiffMaxValues.put("H2",
+                    props.getFloatProperty("SET_DIFF_MAX_H2"));
+
             // grid_width_dimension_substring = props
             // .getProperty("grid_width_dimension_substring");
             // grid_height_dimension_substring = props
@@ -334,6 +368,22 @@ public class ImauSettings {
         } catch (NumberFormatException e) {
             logger.warn(e.getMessage());
         }
+
+        ltDescription = new SurfaceTextureDescription(7502, 0, "TEMP",
+                "default", false, false, false, currentMinValues.get("TEMP"),
+                currentMaxValues.get("TEMP"));
+
+        rtDescription = new SurfaceTextureDescription(7502, 0, "KE", "rainbow",
+                false, false, false, currentMinValues.get("KE"),
+                currentMaxValues.get("KE"));
+
+        lbDescription = new SurfaceTextureDescription(7502, 0, "SALT",
+                "inv_diff", false, false, false, currentMinValues.get("SALT"),
+                currentMaxValues.get("SALT"));
+
+        rbDescription = new SurfaceTextureDescription(7502, 0, "HMXL",
+                "hotres", false, false, false, currentMinValues.get("HMXL"),
+                currentMaxValues.get("HMXL"));
     }
 
     public void setWaittimeBeforeRetry(long value) {

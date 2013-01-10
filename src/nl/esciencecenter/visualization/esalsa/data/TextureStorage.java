@@ -48,9 +48,6 @@ public class TextureStorage {
             SurfaceTextureDescription newDesc = newScreenA[screenNumber];
 
             if (surfaceStorage.containsKey(newDesc)) {
-                SurfaceTextureDescription oldDesc = oldScreenA[screenNumber];
-                surfaceStorage.remove(oldDesc);
-
                 result = surfaceStorage.get(newDesc);
             } else {
                 result = surfaceStorage.get(oldScreenA[screenNumber]);
@@ -76,9 +73,6 @@ public class TextureStorage {
             SurfaceTextureDescription newDesc = newScreenA[screenNumber];
 
             if (legendStorage.containsKey(newDesc)) {
-                SurfaceTextureDescription oldDesc = oldScreenA[screenNumber];
-                legendStorage.remove(oldDesc);
-
                 result = legendStorage.get(newDesc);
             } else {
                 result = legendStorage.get(oldScreenA[screenNumber]);
