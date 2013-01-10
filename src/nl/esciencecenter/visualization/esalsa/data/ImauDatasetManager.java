@@ -1,6 +1,5 @@
 package nl.esciencecenter.visualization.esalsa.data;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -379,6 +378,6 @@ public class ImauDatasetManager {
     }
 
     public int getImageHeight() {
-        return latArraySize;
+        return imageHeight;
     }
 }

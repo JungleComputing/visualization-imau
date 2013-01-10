@@ -370,10 +370,10 @@ public class ImauSettings {
         }
 
         ltDescription = new SurfaceTextureDescription(7502, 0, "TEMP",
-                "default", false, false, false, currentMinValues.get("TEMP"),
+                "realistic", false, false, false, currentMinValues.get("TEMP"),
                 currentMaxValues.get("TEMP"));
 
-        rtDescription = new SurfaceTextureDescription(7502, 0, "KE", "rainbow",
+        rtDescription = new SurfaceTextureDescription(7502, 0, "KE", "hotres",
                 false, false, false, currentMinValues.get("KE"),
                 currentMaxValues.get("KE"));
 
@@ -381,9 +381,9 @@ public class ImauSettings {
                 "inv_diff", false, false, false, currentMinValues.get("SALT"),
                 currentMaxValues.get("SALT"));
 
-        rbDescription = new SurfaceTextureDescription(7502, 0, "HMXL",
-                "hotres", false, false, false, currentMinValues.get("HMXL"),
-                currentMaxValues.get("HMXL"));
+        rbDescription = new SurfaceTextureDescription(7502, 0, "SSH",
+                "default", false, false, false, currentMinValues.get("SSH"),
+                currentMaxValues.get("SSH"));
     }
 
     public void setWaittimeBeforeRetry(long value) {
