@@ -1,6 +1,5 @@
 package nl.esciencecenter.visualization.esalsa;
 
-
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -22,10 +21,10 @@ import nl.esciencecenter.visualization.esalsa.data.SurfaceTextureDescription;
 import nl.esciencecenter.visualization.esalsa.glExt.ByteBufferTexture;
 import nl.esciencecenter.visualization.esalsa.glExt.FBO;
 import nl.esciencecenter.visualization.esalsa.glExt.IntPBO;
+import nl.esciencecenter.visualization.esalsa.glExt.PostprocShaderCreator;
 import nl.esciencecenter.visualization.esalsa.glExt.Texture2D;
 import nl.esciencecenter.visualization.esalsa.jni.SageInterface;
 import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
-
 import openglCommon.CommonWindow;
 import openglCommon.datastructures.Material;
 import openglCommon.exceptions.CompilationFailedException;
@@ -46,44 +45,66 @@ import openglCommon.shaders.Program;
 
 public class ImauWindow extends CommonWindow {
 
-    private final ImauSettings        settings     = ImauSettings.getInstance();
+    private final ImauSettings          settings      = ImauSettings
+                                                              .getInstance();
 
-    private Quad                      fsq;
-    private Program                   texturedSphereProgram, legendProgram,
+    private Quad                        fsq;
+    private Program                     texturedSphereProgram, legendProgram,
             atmProgram, gaussianBlurShader, flatten3Shader, postprocessShader,
             textProgram;
     // private Texture2D worldTex;
 
-    private Model                     sphereModel, legendModel, atmModel;
+    private Model                       sphereModel, legendModel, atmModel;
 
-    private FBO                       ltFBO, rtFBO, lbFBO, rbFBO,
-            atmosphereFBO, hudTextFBO, legendTextureFBO, sphereTextureFBO;
+    // private FBO ltFBO, rtFBO, lbFBO, rbFBO;
+    private FBO                         atmosphereFBO, hudTextFBO,
+            legendTextureFBO, sphereTextureFBO;
 
-    private IntPBO                    finalPBO;
+    private IntPBO                      finalPBO;
 
-    private final BufferedImage       currentImage = null;
+    private final BufferedImage         currentImage  = null;
 
-    private SageInterface             sage;
+    private SageInterface               sage;
 
-    private MultiColorText            varNameTextLT, varNameTextRT,
-            varNameTextLB, varNameTextRB, legendTextLTmin, legendTextRTmin,
-            legendTextLBmin, legendTextRBmin, legendTextLTmax, legendTextRTmax,
-            legendTextLBmax, legendTextRBmax, dateTextLT, dateTextRT,
-            dateTextLB, dateTextRB, datasetTextLT, datasetTextRT,
-            datasetTextLB, datasetTextRB;
+    // private MultiColorText varNameTextLT, varNameTextRT,
+    // varNameTextLB, varNameTextRB, legendTextLTmin, legendTextRTmin,
+    // legendTextLBmin, legendTextRBmin, legendTextLTmax, legendTextRTmax,
+    // legendTextLBmax, legendTextRBmax, dateTextLT, dateTextRT,
+    // dateTextLB, dateTextRB, datasetTextLT, datasetTextRT,
+    // datasetTextLB, datasetTextRB;
+    //
+    // private SurfaceTextureDescription ltDescription, rtDescription,
+    // lbDescription, rbDescription;
 
-    private int                       fontSize     = 80;
+    private int                         fontSize      = 80;
 
-    private boolean                   reshaped     = false;
+    private boolean                     reshaped      = false;
 
-    private SurfaceTextureDescription ltDescription, rtDescription,
-            lbDescription, rbDescription;
+    private SurfaceTextureDescription[] cachedTextureDescriptions;
+    private FBO[]                       cachedFBOs;
+    private MultiColorText[]            varNames;
+    private MultiColorText[]            legendTextsMin;
+    private MultiColorText[]            legendTextsMax;
+    private MultiColorText[]            dates;
+    private MultiColorText[]            dataSets;
 
-    private ImauTimedPlayer           timer;
+    private int                         cachedScreens = 1;
+
+    private ImauTimedPlayer             timer;
 
     public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
         super(inputHandler, post_process);
 
+        cachedScreens = settings.getNumScreensRows()
+                * settings.getNumScreensCols();
+
+        cachedTextureDescriptions = new SurfaceTextureDescription[cachedScreens];
+        cachedFBOs = new FBO[cachedScreens];
+        varNames = new MultiColorText[cachedScreens];
+        legendTextsMin = new MultiColorText[cachedScreens];
+        legendTextsMax = new MultiColorText[cachedScreens];
+        dates = new MultiColorText[cachedScreens];
+        dataSets = new MultiColorText[cachedScreens];
     }
 
     @Override
@@ -99,10 +120,6 @@ public class ImauWindow extends CommonWindow {
             e.printStackTrace();
         }
 
-        // final int width = GLContext.getCurrent().getGLDrawable().getWidth();
-        // final int height =
-        // GLContext.getCurrent().getGLDrawable().getHeight();
-
         final GL3 gl = drawable.getContext().getGL().getGL3();
         gl.glViewport(0, 0, canvasWidth, canvasHeight);
 
@@ -110,8 +127,15 @@ public class ImauWindow extends CommonWindow {
         if (timer.isInitialized()) {
             this.timer = timer;
 
-            displayContext(timer, ltFBO, rtFBO, lbFBO, rbFBO, atmosphereFBO,
-                    hudTextFBO, legendTextureFBO, sphereTextureFBO);
+            int currentScreens = settings.getNumScreensRows()
+                    * settings.getNumScreensCols();
+            if (currentScreens != cachedScreens) {
+                initDatastores(gl);
+                timer.reinitializeDatastores();
+            }
+
+            displayContext(timer, atmosphereFBO, hudTextFBO, legendTextureFBO,
+                    sphereTextureFBO);
         }
 
         try {
@@ -186,9 +210,8 @@ public class ImauWindow extends CommonWindow {
         reshaped = false;
     }
 
-    private void displayContext(ImauTimedPlayer timer, FBO ltFBO, FBO rtFBO,
-            FBO lbFBO, FBO rbFBO, FBO atmosphereFBO, FBO hudTextFBO,
-            FBO legendTextureFBO, FBO sphereTextureFBO) {
+    private void displayContext(ImauTimedPlayer timer, FBO atmosphereFBO,
+            FBO hudTextFBO, FBO legendTextureFBO, FBO sphereTextureFBO) {
         final int width = GLContext.getCurrent().getGLDrawable().getWidth();
         final int height = GLContext.getCurrent().getGLDrawable().getHeight();
         final float aspect = (float) width / (float) height;
@@ -221,209 +244,61 @@ public class ImauWindow extends CommonWindow {
         SurfaceTextureDescription currentDesc;
         Texture2D surface, heightMap, legend;
 
-        currentDesc = settings.getLTSurfaceDescription();
-        if (!currentDesc.equals(ltDescription) || reshaped) {
-            timer.getTextureStorage().requestNewConfiguration(0, currentDesc);
+        for (int i = 0; i < cachedScreens; i++) {
+            currentDesc = settings.getSurfaceDescription(i);
+            if (!currentDesc.equals(cachedTextureDescriptions[i]) || reshaped) {
+                timer.getTextureStorage().requestNewConfiguration(i,
+                        currentDesc);
 
-            String variableName = currentDesc.getVarName();
-            String fancyName = timer.getVariableFancyName(variableName);
-            String units = timer.getVariableUnits(variableName);
-            fancyName += " in " + units;
-            varNameTextLT.setString(gl, fancyName, Color4.white, fontSize);
+                String variableName = currentDesc.getVarName();
+                String fancyName = timer.getVariableFancyName(variableName);
+                String units = timer.getVariableUnits(variableName);
+                fancyName += " in " + units;
+                varNames[i].setString(gl, fancyName, Color4.white, fontSize);
 
-            String min, max;
-            if (currentDesc.isDiff()) {
-                min = Float.toString(settings.getCurrentVarDiffMin(currentDesc
-                        .getVarName()));
-                max = Float.toString(settings.getCurrentVarDiffMax(currentDesc
-                        .getVarName()));
-            } else {
-                min = Float.toString(settings.getCurrentVarMin(currentDesc
-                        .getVarName()));
-                max = Float.toString(settings.getCurrentVarMax(currentDesc
-                        .getVarName()));
+                String min, max;
+                if (currentDesc.isDiff()) {
+                    min = Float.toString(settings
+                            .getCurrentVarDiffMin(currentDesc.getVarName()));
+                    max = Float.toString(settings
+                            .getCurrentVarDiffMax(currentDesc.getVarName()));
+                } else {
+                    min = Float.toString(settings.getCurrentVarMin(currentDesc
+                            .getVarName()));
+                    max = Float.toString(settings.getCurrentVarMax(currentDesc
+                            .getVarName()));
+                }
+                dates[i].setString(gl,
+                        settings.getMonth(currentDesc.getFrameNumber()),
+                        Color4.white, fontSize);
+                dataSets[i].setString(gl, currentDesc.verbalizeDataMode(),
+                        Color4.white, fontSize);
+                legendTextsMin[i].setString(gl, min, Color4.white, fontSize);
+                legendTextsMax[i].setString(gl, max, Color4.white, fontSize);
+
+                cachedTextureDescriptions[i] = currentDesc;
             }
-            dateTextLT.setString(gl,
-                    settings.getMonth(currentDesc.getFrameNumber()),
-                    Color4.white, fontSize);
-            datasetTextLT.setString(gl, currentDesc.verbalizeDataMode(),
-                    Color4.white, fontSize);
-            legendTextLTmin.setString(gl, min, Color4.white, fontSize);
-            legendTextLTmax.setString(gl, max, Color4.white, fontSize);
 
-            ltDescription = currentDesc;
+            surface = new ByteBufferTexture(GL3.GL_TEXTURE4, timer
+                    .getTextureStorage().getSurfaceImage(i),
+                    timer.getImageWidth(), timer.getImageHeight());
+            heightMap = surface;
+            legend = new ByteBufferTexture(GL3.GL_TEXTURE5, timer
+                    .getTextureStorage().getLegendImage(i), 1, 500);
+            surface.init(gl);
+            legend.init(gl);
+
+            drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
+                    sphereTextureFBO, width, height, gl, mv, legend, surface,
+                    heightMap, varNames[i], dates[i], dataSets[i],
+                    legendTextsMin[i], legendTextsMax[i], cachedFBOs[i]);
+
+            surface.delete(gl);
+            legend.delete(gl);
         }
-
-        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer
-                .getTextureStorage().getSurfaceImage(0), timer.getImageWidth(),
-                timer.getImageHeight());
-        heightMap = surface;
-        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer
-                .getTextureStorage().getLegendImage(0), 1, 500);
-        surface.init(gl);
-        legend.init(gl);
-
-        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
-                sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextLT, dateTextLT, datasetTextLT,
-                legendTextLTmin, legendTextLTmax, ltFBO);
-
-        surface.delete(gl);
-        legend.delete(gl);
-
-        currentDesc = settings.getRTSurfaceDescription();
-        if (!currentDesc.equals(rtDescription) || reshaped) {
-            timer.getTextureStorage().requestNewConfiguration(1, currentDesc);
-
-            String variableName = currentDesc.getVarName();
-            String fancyName = timer.getVariableFancyName(variableName);
-            String units = timer.getVariableUnits(variableName);
-            fancyName += " in " + units;
-            varNameTextRT.setString(gl, fancyName, Color4.white, fontSize);
-
-            String min, max;
-            if (currentDesc.isDiff()) {
-                min = Float.toString(settings.getCurrentVarDiffMin(currentDesc
-                        .getVarName()));
-                max = Float.toString(settings.getCurrentVarDiffMax(currentDesc
-                        .getVarName()));
-            } else {
-                min = Float.toString(settings.getCurrentVarMin(currentDesc
-                        .getVarName()));
-                max = Float.toString(settings.getCurrentVarMax(currentDesc
-                        .getVarName()));
-            }
-            dateTextRT.setString(gl,
-                    settings.getMonth(currentDesc.getFrameNumber()),
-                    Color4.white, fontSize);
-            datasetTextRT.setString(gl, currentDesc.verbalizeDataMode(),
-                    Color4.white, fontSize);
-            legendTextRTmin.setString(gl, min, Color4.white, fontSize);
-            legendTextRTmax.setString(gl, max, Color4.white, fontSize);
-
-            rtDescription = currentDesc;
-        }
-
-        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer
-                .getTextureStorage().getSurfaceImage(1), timer.getImageWidth(),
-                timer.getImageHeight());
-        heightMap = surface;
-        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer
-                .getTextureStorage().getLegendImage(1), 1, 500);
-        surface.init(gl);
-        legend.init(gl);
-
-        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
-                sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextRT, dateTextRT, datasetTextRT,
-                legendTextRTmin, legendTextRTmax, rtFBO);
-
-        surface.delete(gl);
-        legend.delete(gl);
-
-        currentDesc = settings.getLBSurfaceDescription();
-        if (!currentDesc.equals(lbDescription) || reshaped) {
-            timer.getTextureStorage().requestNewConfiguration(2, currentDesc);
-
-            String variableName = currentDesc.getVarName();
-            String fancyName = timer.getVariableFancyName(variableName);
-            String units = timer.getVariableUnits(variableName);
-            fancyName += " in " + units;
-            varNameTextLB.setString(gl, fancyName, Color4.white, fontSize);
-
-            String min, max;
-            if (currentDesc.isDiff()) {
-                min = Float.toString(settings.getCurrentVarDiffMin(currentDesc
-                        .getVarName()));
-                max = Float.toString(settings.getCurrentVarDiffMax(currentDesc
-                        .getVarName()));
-            } else {
-                min = Float.toString(settings.getCurrentVarMin(currentDesc
-                        .getVarName()));
-                max = Float.toString(settings.getCurrentVarMax(currentDesc
-                        .getVarName()));
-            }
-            dateTextLB.setString(gl,
-                    settings.getMonth(currentDesc.getFrameNumber()),
-                    Color4.white, fontSize);
-            datasetTextLB.setString(gl, currentDesc.verbalizeDataMode(),
-                    Color4.white, fontSize);
-            legendTextLBmin.setString(gl, min, Color4.white, fontSize);
-            legendTextLBmax.setString(gl, max, Color4.white, fontSize);
-
-            lbDescription = currentDesc;
-        }
-
-        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer
-                .getTextureStorage().getSurfaceImage(2), timer.getImageWidth(),
-                timer.getImageHeight());
-        heightMap = surface;
-        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer
-                .getTextureStorage().getLegendImage(2), 1, 500);
-        surface.init(gl);
-        legend.init(gl);
-
-        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
-                sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextLB, dateTextLB, datasetTextLB,
-                legendTextLBmin, legendTextLBmax, lbFBO);
-
-        surface.delete(gl);
-        legend.delete(gl);
-
-        currentDesc = settings.getRBSurfaceDescription();
-        if (!currentDesc.equals(rbDescription) || reshaped) {
-            timer.getTextureStorage().requestNewConfiguration(3, currentDesc);
-
-            String variableName = currentDesc.getVarName();
-            String fancyName = timer.getVariableFancyName(variableName);
-            String units = timer.getVariableUnits(variableName);
-            fancyName += " in " + units;
-            varNameTextRB.setString(gl, fancyName, Color4.white, fontSize);
-
-            String min, max;
-            if (currentDesc.isDiff()) {
-                min = Float.toString(settings.getCurrentVarDiffMin(currentDesc
-                        .getVarName()));
-                max = Float.toString(settings.getCurrentVarDiffMax(currentDesc
-                        .getVarName()));
-            } else {
-                min = Float.toString(settings.getCurrentVarMin(currentDesc
-                        .getVarName()));
-                max = Float.toString(settings.getCurrentVarMax(currentDesc
-                        .getVarName()));
-            }
-            dateTextRB.setString(gl,
-                    settings.getMonth(currentDesc.getFrameNumber()),
-                    Color4.white, fontSize);
-            datasetTextRB.setString(gl, currentDesc.verbalizeDataMode(),
-                    Color4.white, fontSize);
-            legendTextRBmin.setString(gl, min, Color4.white, fontSize);
-            legendTextRBmax.setString(gl, max, Color4.white, fontSize);
-
-            rbDescription = currentDesc;
-        }
-
-        surface = new ByteBufferTexture(GL3.GL_TEXTURE8, timer
-                .getTextureStorage().getSurfaceImage(3), timer.getImageWidth(),
-                timer.getImageHeight());
-        heightMap = surface;
-        legend = new ByteBufferTexture(GL3.GL_TEXTURE9, timer
-                .getTextureStorage().getLegendImage(3), 1, 500);
-        surface.init(gl);
-        legend.init(gl);
-
-        drawSingleWindow(atmosphereFBO, hudTextFBO, legendTextureFBO,
-                sphereTextureFBO, width, height, gl, mv, legend, surface,
-                heightMap, varNameTextRB, dateTextRB, datasetTextRB,
-                legendTextRBmin, legendTextRBmax, rbFBO);
-
-        surface.delete(gl);
-        legend.delete(gl);
 
         if (post_process) {
-            renderTexturesToScreen(gl, width, height, ltFBO, rtFBO, lbFBO,
-                    rbFBO);
+            renderTexturesToScreen(gl, width, height);
         }
     }
 
@@ -444,66 +319,6 @@ public class ImauWindow extends CommonWindow {
         flattenLayers(gl, width, height, hudTextFBO, hudLegendTextureFBO,
                 sphereTextureFBO, atmosphereFBO, target);
     }
-
-    // private HDRTexture2D getGlobeTexture(NetCDFFrame frame1,
-    // NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state)
-    // throws WrongFrameException {
-    // HDRTexture2D globeTex = null;
-    // if (state.getDataMode() == GlobeState.DataMode.DIFF) {
-    // if (frame1 != null && frame2 != null) {
-    // globeTex = frame1.getImage(gl, frame2, glTexUnit, state);
-    // }
-    // } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-    // if (frame1 != null) {
-    // globeTex = frame1.getImage(gl, glTexUnit, state);
-    // }
-    // } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-    // if (frame2 != null) {
-    // globeTex = frame2.getImage(gl, glTexUnit, state);
-    // }
-    // }
-    // return globeTex;
-    // }
-
-    // private HDRTexture2D getDepthTexture(NetCDFFrame frame1, NetCDFFrame
-    // frame2, final GL3 gl, int glTexUnit,
-    // GlobeState state) throws WrongFrameException {
-    // HDRTexture2D depthTex = null;
-    // if (state.getDataMode() == GlobeState.DataMode.DIFF) {
-    // if (frame1 != null && frame2 != null) {
-    // depthTex = frame1.getDepthImage(gl, frame2, glTexUnit, state);
-    // }
-    // } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-    // if (frame1 != null) {
-    // depthTex = frame1.getDepthImage(gl, glTexUnit, state);
-    // }
-    // } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-    // if (frame2 != null) {
-    // depthTex = frame2.getDepthImage(gl, glTexUnit, state);
-    // }
-    // }
-    // return depthTex;
-    // }
-
-    // private HDRTexture2D getLegendTexture(NetCDFFrame frame1,
-    // NetCDFFrame frame2, final GL3 gl, int glTexUnit, GlobeState state)
-    // throws WrongFrameException {
-    // HDRTexture2D legendTex = null;
-    // if (state.getDataMode() == GlobeState.DataMode.DIFF) {
-    // if (frame1 != null && frame2 != null) {
-    // legendTex = frame1.getLegendImage(gl, frame2, glTexUnit, state);
-    // }
-    // } else if (state.getDataMode() == GlobeState.DataMode.FIRST_DATASET) {
-    // if (frame1 != null) {
-    // legendTex = frame1.getLegendImage(gl, glTexUnit, state);
-    // }
-    // } else if (state.getDataMode() == GlobeState.DataMode.SECOND_DATASET) {
-    // if (frame2 != null) {
-    // legendTex = frame2.getLegendImage(gl, glTexUnit, state);
-    // }
-    // }
-    // return legendTex;
-    // }
 
     private void drawHUDText(GL3 gl, int width, int height,
             MultiColorText varNameText, MultiColorText dateText,
@@ -653,45 +468,6 @@ public class ImauWindow extends CommonWindow {
         }
     }
 
-    private void renderTexturesToScreen(GL3 gl, int width, int height,
-            FBO sphereFBOLT, FBO sphereFBORT, FBO sphereFBOLB, FBO sphereFBORB) {
-        try {
-            postprocessShader.setUniform("sphereTextureLT", sphereFBOLT
-                    .getTexture().getMultitexNumber());
-            postprocessShader.setUniform("sphereTextureRT", sphereFBORT
-                    .getTexture().getMultitexNumber());
-            postprocessShader.setUniform("sphereTextureLB", sphereFBOLB
-                    .getTexture().getMultitexNumber());
-            postprocessShader.setUniform("sphereTextureRB", sphereFBORB
-                    .getTexture().getMultitexNumber());
-
-            postprocessShader.setUniform("sphereBrightness", 1f);
-
-            postprocessShader.setUniformMatrix("MVMatrix", new MatF4());
-            postprocessShader.setUniformMatrix("PMatrix", new MatF4());
-
-            postprocessShader.setUniform("scrWidth", width);
-            postprocessShader.setUniform("scrHeight", height);
-
-            int selection = settings.getWindowSelection();
-
-            if (selection == 0) {
-                postprocessShader.setUniform("divs", 2);
-            } else {
-                postprocessShader.setUniform("divs", 1);
-            }
-
-            postprocessShader.setUniform("selection", selection);
-
-            postprocessShader.use(gl);
-
-            gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-            fsq.draw(gl, postprocessShader, new MatF4());
-        } catch (final UninitializedException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void blur(GL3 gl, FBO target, Quad fullScreenQuad, int passes,
             int blurType, float blurSize) {
         gaussianBlurShader.setUniform("Texture", target.getTexture()
@@ -729,8 +505,85 @@ public class ImauWindow extends CommonWindow {
     }
 
     @Override
-    public void renderTexturesToScreen(GL3 arg0, int arg1, int arg2) {
+    public void renderTexturesToScreen(GL3 gl, int width, int height) {
+        try {
+            for (int i = 0; i < cachedScreens; i++) {
+                postprocessShader.setUniform("sphereTexture_" + i,
+                        cachedFBOs[i].getTexture().getMultitexNumber());
+            }
 
+            postprocessShader.setUniform("sphereBrightness", 1f);
+
+            postprocessShader.setUniformMatrix("MVMatrix", new MatF4());
+            postprocessShader.setUniformMatrix("PMatrix", new MatF4());
+
+            postprocessShader.setUniform("scrWidth", width);
+            postprocessShader.setUniform("scrHeight", height);
+
+            int selection = settings.getWindowSelection();
+
+            postprocessShader.setUniform("selection", selection);
+
+            postprocessShader.use(gl);
+
+            gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+            fsq.draw(gl, postprocessShader, new MatF4());
+        } catch (final UninitializedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void initDatastores(GL3 gl) {
+        cachedScreens = settings.getNumScreensRows()
+                * settings.getNumScreensCols();
+
+        cachedTextureDescriptions = new SurfaceTextureDescription[cachedScreens];
+        cachedFBOs = new FBO[cachedScreens];
+        varNames = new MultiColorText[cachedScreens];
+        legendTextsMin = new MultiColorText[cachedScreens];
+        legendTextsMax = new MultiColorText[cachedScreens];
+        dates = new MultiColorText[cachedScreens];
+        dataSets = new MultiColorText[cachedScreens];
+
+        Material textMaterial = new Material(Color4.white, Color4.white,
+                Color4.white);
+
+        for (int i = 0; i < cachedScreens; i++) {
+            cachedTextureDescriptions[i] = settings.getSurfaceDescription(i);
+
+            if (cachedFBOs[i] != null) {
+                cachedFBOs[i].delete(gl);
+            }
+            cachedFBOs[i] = new FBO(canvasWidth, canvasHeight,
+                    (GL.GL_TEXTURE6 + i));
+            cachedFBOs[i].init(gl);
+
+            varNames[i] = new MultiColorText(textMaterial, font);
+            legendTextsMin[i] = new MultiColorText(textMaterial, font);
+            legendTextsMin[i] = new MultiColorText(textMaterial, font);
+            legendTextsMax[i] = new MultiColorText(textMaterial, font);
+            dates[i] = new MultiColorText(textMaterial, font);
+            dataSets[i] = new MultiColorText(textMaterial, font);
+        }
+
+        try {
+            if (postprocessShader != null) {
+                postprocessShader.delete(gl);
+                postprocessShader = loader.createProgram(
+                        gl,
+                        "postprocess",
+                        new File("shaders/vs_postprocess.vp"),
+                        PostprocShaderCreator.generateShaderText(
+                                settings.getNumScreensRows(),
+                                settings.getNumScreensCols()));
+            }
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (CompilationFailedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -738,37 +591,22 @@ public class ImauWindow extends CommonWindow {
         super.reshape(drawable, x, y, w, h);
         final GL3 gl = drawable.getGL().getGL3();
 
-        ltFBO.delete(gl);
-        rtFBO.delete(gl);
-        lbFBO.delete(gl);
-        rbFBO.delete(gl);
-
         atmosphereFBO.delete(gl);
 
         hudTextFBO.delete(gl);
         legendTextureFBO.delete(gl);
 
-        ltFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE0);
-        rtFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE1);
-        lbFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE2);
-        rbFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE3);
+        atmosphereFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE0);
 
-        atmosphereFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE4);
-
-        hudTextFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE5);
-        legendTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE6);
-        sphereTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE7);
+        hudTextFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE1);
+        legendTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE2);
+        sphereTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE3);
 
         // if (settings.isIMAGE_STREAM_OUTPUT()) {
         finalPBO.delete(gl);
         finalPBO = new IntPBO(canvasWidth, canvasHeight);
         finalPBO.init(gl);
         // }
-
-        ltFBO.init(gl);
-        rtFBO.init(gl);
-        lbFBO.init(gl);
-        rbFBO.init(gl);
 
         atmosphereFBO.init(gl);
 
@@ -777,6 +615,8 @@ public class ImauWindow extends CommonWindow {
         sphereTextureFBO.init(gl);
 
         fontSize = (int) Math.round(w / 37.5);
+
+        initDatastores(gl);
 
         reshaped = true;
     }
@@ -790,12 +630,9 @@ public class ImauWindow extends CommonWindow {
         sphereModel.delete(gl);
         atmModel.delete(gl);
 
-        ltFBO.delete(gl);
-        rtFBO.delete(gl);
-        lbFBO.delete(gl);
-        rbFBO.delete(gl);
-
-        atmosphereFBO.delete(gl);
+        for (int i = 0; i < cachedScreens; i++) {
+            cachedFBOs[i].delete(gl);
+        }
 
         ((ImauInputHandler) inputHandler).close();
     }
@@ -809,25 +646,15 @@ public class ImauWindow extends CommonWindow {
         drawable.getContext().makeCurrent();
         final GL3 gl = drawable.getGL().getGL3();
 
-        ltFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE0);
-        rtFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE1);
-        lbFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE2);
-        rbFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE3);
-
-        atmosphereFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE4);
-        hudTextFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE5);
-        legendTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE6);
-        sphereTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE7);
+        atmosphereFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE0);
+        hudTextFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE1);
+        legendTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE2);
+        sphereTextureFBO = new FBO(canvasWidth, canvasHeight, GL.GL_TEXTURE3);
 
         // if (settings.isIMAGE_STREAM_OUTPUT()) {
         finalPBO = new IntPBO(canvasWidth, canvasHeight);
         finalPBO.init(gl);
         // }
-
-        ltFBO.init(gl);
-        rtFBO.init(gl);
-        lbFBO.init(gl);
-        rbFBO.init(gl);
 
         atmosphereFBO.init(gl);
         hudTextFBO.init(gl);
@@ -858,55 +685,7 @@ public class ImauWindow extends CommonWindow {
         Material textMaterial = new Material(Color4.white, Color4.white,
                 Color4.white);
 
-        varNameTextLT = new MultiColorText(textMaterial, font);
-        varNameTextRT = new MultiColorText(textMaterial, font);
-        varNameTextLB = new MultiColorText(textMaterial, font);
-        varNameTextRB = new MultiColorText(textMaterial, font);
-
-        legendTextLTmin = new MultiColorText(textMaterial, font);
-        legendTextRTmin = new MultiColorText(textMaterial, font);
-        legendTextLBmin = new MultiColorText(textMaterial, font);
-        legendTextRBmin = new MultiColorText(textMaterial, font);
-
-        legendTextLTmax = new MultiColorText(textMaterial, font);
-        legendTextRTmax = new MultiColorText(textMaterial, font);
-        legendTextLBmax = new MultiColorText(textMaterial, font);
-        legendTextRBmax = new MultiColorText(textMaterial, font);
-
-        dateTextLT = new MultiColorText(textMaterial, font);
-        dateTextRT = new MultiColorText(textMaterial, font);
-        dateTextLB = new MultiColorText(textMaterial, font);
-        dateTextRB = new MultiColorText(textMaterial, font);
-
-        datasetTextLT = new MultiColorText(textMaterial, font);
-        datasetTextRT = new MultiColorText(textMaterial, font);
-        datasetTextLB = new MultiColorText(textMaterial, font);
-        datasetTextRB = new MultiColorText(textMaterial, font);
-
-        varNameTextLT.init(gl);
-        varNameTextRT.init(gl);
-        varNameTextLB.init(gl);
-        varNameTextRB.init(gl);
-
-        legendTextLTmin.init(gl);
-        legendTextRTmin.init(gl);
-        legendTextLBmin.init(gl);
-        legendTextRBmin.init(gl);
-
-        legendTextLTmax.init(gl);
-        legendTextRTmax.init(gl);
-        legendTextLBmax.init(gl);
-        legendTextRBmax.init(gl);
-
-        dateTextLT.init(gl);
-        dateTextRT.init(gl);
-        dateTextLB.init(gl);
-        dateTextRB.init(gl);
-
-        datasetTextLT.init(gl);
-        datasetTextRT.init(gl);
-        datasetTextLB.init(gl);
-        datasetTextRB.init(gl);
+        initDatastores(gl);
 
         // varNameTextLT.finalizeColorScheme(gl);
         // varNameTextRT.finalizeColorScheme(gl);
@@ -947,9 +726,13 @@ public class ImauWindow extends CommonWindow {
                     new File("shaders/vs_postprocess.vp"), new File(
                             "shaders/fs_gaussian_blur.fp"));
 
-            postprocessShader = loader.createProgram(gl, "postprocess",
-                    new File("shaders/vs_postprocess.vp"), new File(
-                            "shaders/fs_eSalsaPostprocess.fp"));
+            postprocessShader = loader.createProgram(
+                    gl,
+                    "postprocess",
+                    new File("shaders/vs_postprocess.vp"),
+                    PostprocShaderCreator.generateShaderText(
+                            settings.getNumScreensRows(),
+                            settings.getNumScreensCols()));
 
             flatten3Shader = loader.createProgram(gl, "flatten3", new File(
                     "shaders/vs_flatten3.vp"), new File(

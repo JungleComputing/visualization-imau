@@ -19,7 +19,6 @@ import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class ImauApp {
     private final static ImauSettings settings = ImauSettings.getInstance();
     private final static Logger       log      = LoggerFactory
@@ -64,8 +63,10 @@ public class ImauApp {
 
         frame = new JFrame("Imau Visualization");
         frame.setPreferredSize(new Dimension(ImauApp.settings
-                .getDefaultScreenWidth(), ImauApp.settings
-                .getDefaultScreenHeight()));
+                .getDefaultScreenWidth()
+                + ImauApp.settings.getDefaultScreenWidthExtension(),
+                ImauApp.settings.getDefaultScreenHeight()
+                        + ImauApp.settings.getDefaultScreenHeightExtension()));
 
         imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
         imauPanel = new ImauPanel(imauWindow, path, cmdlnfileName,

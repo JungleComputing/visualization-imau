@@ -315,19 +315,45 @@ public class GoggleSwing {
         if (bordered) {
             vrtBox.setBorder(new BevelBorder(BevelBorder.RAISED));
         }
-        vrtBox.setAlignmentY(Component.TOP_ALIGNMENT);
+        // vrtBox.setAlignmentY(Component.TOP_ALIGNMENT);
 
         vrtBox.add(GoggleSwing.verticalStrut(5));
 
         for (Component current : components) {
             vrtBox.add(current);
+            // vrtBox.add(Box.createVerticalGlue());
         }
         hrzBox.add(vrtBox);
 
-        hrzBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // hrzBox.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         hrzBox.add(GoggleSwing.horizontalStrut(2));
         return hrzBox;
+    }
+
+    public static Box hBoxedComponents(ArrayList<Component> components,
+            boolean bordered) {
+        final Box vrtBox = Box.createVerticalBox();
+        vrtBox.add(GoggleSwing.verticalStrut(2));
+
+        final Box hrzBox = Box.createHorizontalBox();
+        if (bordered) {
+            hrzBox.setBorder(new BevelBorder(BevelBorder.RAISED));
+        }
+        // hrzBox.setAlignmentY(Component.LEFT_ALIGNMENT);
+
+        hrzBox.add(GoggleSwing.horizontalStrut(5));
+
+        for (Component current : components) {
+            hrzBox.add(current);
+            // hrzBox.add(Box.createHorizontalGlue());
+        }
+        vrtBox.add(hrzBox);
+
+        // vrtBox.setAlignmentX(Component.TOP_ALIGNMENT);
+
+        vrtBox.add(GoggleSwing.verticalStrut(2));
+        return vrtBox;
     }
 
     public static Component verticalStrut(int size) {

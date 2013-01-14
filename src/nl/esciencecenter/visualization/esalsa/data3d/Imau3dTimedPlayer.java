@@ -1,4 +1,4 @@
-package nl.esciencecenter.visualization.esalsa.data;
+package nl.esciencecenter.visualization.esalsa.data3d;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
 import openglCommon.math.VecF3;
 import openglCommon.math.VectorFMath;
 
-public class ImauTimedPlayer implements Runnable {
+public class Imau3dTimedPlayer implements Runnable {
     public static enum states {
         UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
     }
@@ -35,22 +35,19 @@ public class ImauTimedPlayer implements Runnable {
 
     private final ImauInputHandler    inputHandler;
 
-    private ImauDatasetManager        dsManager;
-    private TextureStorage            texStorage;
+    private Imau3dDatasetManager      dsManager;
+    private Texture3dStorage          texStorage;
 
     private boolean                   needsScreenshot    = false;
     private String                    screenshotFilename = "";
 
-    private long                      waittime           = settings
+    private final long                waittime           = settings
                                                                  .getWaittimeMovie();
 
     private final ArrayList<VecF3>    bezierPoints, fixedPoints;
     private final ArrayList<Integer>  bezierSteps;
 
-    private File                      fileDS1;
-    private File                      fileDS2;
-
-    public ImauTimedPlayer(CustomJSlider timeBar2,
+    public Imau3dTimedPlayer(CustomJSlider timeBar2,
             JFormattedTextField frameCounter) {
         this.timeBar = timeBar2;
         this.frameCounter = frameCounter;
@@ -110,9 +107,7 @@ public class ImauTimedPlayer implements Runnable {
     }
 
     public void init(File fileDS1) {
-        this.fileDS1 = fileDS1;
-        this.fileDS2 = null;
-        this.dsManager = new ImauDatasetManager(fileDS1, null, 1, 4);
+        this.dsManager = new Imau3dDatasetManager(fileDS1, 1, 4);
         this.texStorage = dsManager.getTextureStorage();
 
         frameNumber = dsManager.getFrameNumberOfIndex(0);
@@ -124,32 +119,6 @@ public class ImauTimedPlayer implements Runnable {
         updateFrame(frameNumber, true);
 
         initialized = true;
-    }
-
-    public void init(File fileDS1, File fileDS2) {
-        this.fileDS1 = fileDS1;
-        this.fileDS2 = fileDS2;
-        this.dsManager = new ImauDatasetManager(fileDS1, fileDS2, 1, 4);
-        this.texStorage = dsManager.getTextureStorage();
-
-        frameNumber = dsManager.getFrameNumberOfIndex(0);
-        final int initialMaxBar = dsManager.getNumFiles() - 1;
-
-        timeBar.setMaximum(initialMaxBar);
-        timeBar.setMinimum(0);
-
-        this.waittime = waittime * 2;
-
-        updateFrame(frameNumber, true);
-
-        initialized = true;
-    }
-
-    public void reinitializeDatastores() {
-        this.dsManager = new ImauDatasetManager(fileDS1, fileDS2, 1, 4);
-        this.texStorage = dsManager.getTextureStorage();
-
-        updateFrame(frameNumber, true);
     }
 
     public boolean isInitialized() {
@@ -345,7 +314,7 @@ public class ImauTimedPlayer implements Runnable {
         }
     }
 
-    public TextureStorage getTextureStorage() {
+    public Texture3dStorage getTextureStorage() {
         return texStorage;
     }
 

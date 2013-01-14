@@ -1,6 +1,5 @@
 package nl.esciencecenter.visualization.esalsa.util;
 
-
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -19,7 +18,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicSliderUI;
 
 import nl.esciencecenter.visualization.esalsa.util.ColormapInterpreter.Dimensions;
-
 
 /**
  * UI delegate for the RangeSlider component. RangeSliderUI paints two thumbs,
@@ -211,7 +209,7 @@ public class RangeSliderUI extends BasicSliderUI {
 
             // Draw selected range.
             int TRACKHEIGHT = 7;
-            for (int x = trackBounds.x; x < lowerX - trackBounds.x; x++) {
+            for (int x = 0; x < lowerX - trackBounds.x; x++) {
                 g.setColor(ColormapInterpreter.getSwingColor(rangeColorMap,
                         new Dimensions(lowerX - trackBounds.x, upperX
                                 - trackBounds.x), lowerX - trackBounds.x));

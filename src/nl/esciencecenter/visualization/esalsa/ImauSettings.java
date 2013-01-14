@@ -9,7 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ImauSettings {
-    private final Logger logger = LoggerFactory.getLogger(ImauSettings.class);
+    private static final int SCREEN_HEIGHT_EXTENSION = 88;
+    private static final int SCREEN_WIDTH_EXTENSION  = 210;
+    private final Logger     logger                  = LoggerFactory
+                                                             .getLogger(ImauSettings.class);
 
     private static class SingletonHolder {
         public final static ImauSettings instance = new ImauSettings();
@@ -105,15 +108,13 @@ public class ImauSettings {
 
     private final boolean                TOUCH_CONNECTED                 = false;
 
-    private SurfaceTextureDescription    ltDescription;
-    private SurfaceTextureDescription    rtDescription;
-    private SurfaceTextureDescription    lbDescription;
-    private SurfaceTextureDescription    rbDescription;
+    private SurfaceTextureDescription[]  screenDescriptions;
 
     private final String                 grid_width_dimension_substring  = "lon";
     private final String                 grid_height_dimension_substring = "lat";
 
-    private final int                    MAX_NUMBER_OF_SCREENS           = 4;
+    private int                          number_of_screens_col           = 2;
+    private int                          number_of_screens_row           = 2;
 
     private ImauSettings() {
         super();
@@ -369,21 +370,41 @@ public class ImauSettings {
             logger.warn(e.getMessage());
         }
 
-        ltDescription = new SurfaceTextureDescription(7502, 0, "TEMP",
-                "realistic", false, false, false, currentMinValues.get("TEMP"),
-                currentMaxValues.get("TEMP"));
+        initializeScreenDescriptions();
+    }
 
-        rtDescription = new SurfaceTextureDescription(7502, 0, "KE", "hotres",
-                false, false, false, currentMinValues.get("KE"),
-                currentMaxValues.get("KE"));
+    private void initializeScreenDescriptions() {
+        screenDescriptions = new SurfaceTextureDescription[number_of_screens_col
+                * number_of_screens_row];
 
-        lbDescription = new SurfaceTextureDescription(7502, 0, "SALT",
-                "inv_diff", false, false, false, currentMinValues.get("SALT"),
-                currentMaxValues.get("SALT"));
-
-        rbDescription = new SurfaceTextureDescription(7502, 0, "SSH",
-                "default", false, false, false, currentMinValues.get("SSH"),
-                currentMaxValues.get("SSH"));
+        for (int i = 0; i < number_of_screens_col * number_of_screens_row; i++) {
+            if (i == 0) {
+                screenDescriptions[i] = new SurfaceTextureDescription(
+                        INITIAL_SIMULATION_FRAME, 0, "TEMP", "realistic",
+                        false, false, false, currentMinValues.get("TEMP"),
+                        currentMaxValues.get("TEMP"));
+            } else if (i == 1) {
+                screenDescriptions[i] = new SurfaceTextureDescription(
+                        INITIAL_SIMULATION_FRAME, 0, "KE", "hotres", false,
+                        false, false, currentMinValues.get("KE"),
+                        currentMaxValues.get("KE"));
+            } else if (i == 2) {
+                screenDescriptions[i] = new SurfaceTextureDescription(
+                        INITIAL_SIMULATION_FRAME, 0, "SALT", "inv_diff", false,
+                        false, false, currentMinValues.get("SALT"),
+                        currentMaxValues.get("SALT"));
+            } else if (i == 3) {
+                screenDescriptions[i] = new SurfaceTextureDescription(
+                        INITIAL_SIMULATION_FRAME, 0, "SSH", "default", false,
+                        false, false, currentMinValues.get("SSH"),
+                        currentMaxValues.get("SSH"));
+            } else {
+                screenDescriptions[i] = new SurfaceTextureDescription(
+                        INITIAL_SIMULATION_FRAME, 0, "TEMP", "realistic",
+                        false, false, false, currentMinValues.get("TEMP"),
+                        currentMaxValues.get("TEMP"));
+            }
+        }
     }
 
     public void setWaittimeBeforeRetry(long value) {
@@ -491,90 +512,26 @@ public class ImauSettings {
     }
 
     public void setFrameNumber(int value) {
-        SurfaceTextureDescription result = null, state;
-
-        state = ltDescription;
-        if (state.getFrameNumber() != value) {
-            result = new SurfaceTextureDescription(value, state.getDepth(),
-                    state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), state.getLowerBound(),
-                    state.getUpperBound());
-            ltDescription = result;
-        }
-
-        state = rtDescription;
-        if (state.getFrameNumber() != value) {
-            result = new SurfaceTextureDescription(value, state.getDepth(),
-                    state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), state.getLowerBound(),
-                    state.getUpperBound());
-            rtDescription = result;
-        }
-
-        state = lbDescription;
-        if (state.getFrameNumber() != value) {
-            result = new SurfaceTextureDescription(value, state.getDepth(),
-                    state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), state.getLowerBound(),
-                    state.getUpperBound());
-            lbDescription = result;
-        }
-
-        state = rbDescription;
-        if (state.getFrameNumber() != value) {
-            result = new SurfaceTextureDescription(value, state.getDepth(),
-                    state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), state.getLowerBound(),
-                    state.getUpperBound());
-            rbDescription = result;
+        for (int i = 0; i < number_of_screens_col * number_of_screens_row; i++) {
+            SurfaceTextureDescription currentState = screenDescriptions[i];
+            screenDescriptions[i] = new SurfaceTextureDescription(value,
+                    currentState.getDepth(), currentState.getVarName(),
+                    currentState.getColorMap(),
+                    currentState.isDynamicDimensions(), currentState.isDiff(),
+                    currentState.isSecondSet(), currentState.getLowerBound(),
+                    currentState.getUpperBound());
         }
     }
 
     public void setDepth(int value) {
-        SurfaceTextureDescription result = null, state;
-
-        state = ltDescription;
-        if (state.getDepth() != value) {
-            result = new SurfaceTextureDescription(state.getFrameNumber(),
-                    value, state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), state.getLowerBound(),
-                    state.getUpperBound());
-            ltDescription = result;
-        }
-
-        state = rtDescription;
-        if (state.getDepth() != value) {
-            result = new SurfaceTextureDescription(state.getFrameNumber(),
-                    value, state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), state.getLowerBound(),
-                    state.getUpperBound());
-            rtDescription = result;
-        }
-
-        state = lbDescription;
-        if (state.getDepth() != value) {
-            result = new SurfaceTextureDescription(state.getFrameNumber(),
-                    value, state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), state.getLowerBound(),
-                    state.getUpperBound());
-            lbDescription = result;
-        }
-
-        state = rbDescription;
-        if (state.getDepth() != value) {
-            result = new SurfaceTextureDescription(state.getFrameNumber(),
-                    value, state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), state.getLowerBound(),
-                    state.getUpperBound());
-            rbDescription = result;
+        for (int i = 0; i < number_of_screens_col * number_of_screens_row; i++) {
+            SurfaceTextureDescription currentState = screenDescriptions[i];
+            screenDescriptions[i] = new SurfaceTextureDescription(
+                    currentState.getFrameNumber(), value,
+                    currentState.getVarName(), currentState.getColorMap(),
+                    currentState.isDynamicDimensions(), currentState.isDiff(),
+                    currentState.isSecondSet(), currentState.getLowerBound(),
+                    currentState.getUpperBound());
         }
 
         DEPTH_DEF = value;
@@ -610,140 +567,40 @@ public class ImauSettings {
         return "All";
     }
 
-    public synchronized void setLTDataMode(boolean dynamic, boolean diff,
-            boolean secondSet) {
-        SurfaceTextureDescription state = ltDescription;
+    public synchronized void setDataMode(int screenNumber, boolean dynamic,
+            boolean diff, boolean secondSet) {
+        SurfaceTextureDescription state = screenDescriptions[screenNumber];
         SurfaceTextureDescription result = new SurfaceTextureDescription(
                 state.getFrameNumber(), state.getDepth(), state.getVarName(),
                 state.getColorMap(), dynamic, diff, secondSet,
                 state.getLowerBound(), state.getUpperBound());
-        ltDescription = result;
+        screenDescriptions[screenNumber] = result;
     }
 
-    public synchronized void setRTDataMode(boolean dynamic, boolean diff,
-            boolean secondSet) {
-        SurfaceTextureDescription state = rtDescription;
-        SurfaceTextureDescription result = new SurfaceTextureDescription(
-                state.getFrameNumber(), state.getDepth(), state.getVarName(),
-                state.getColorMap(), dynamic, diff, secondSet,
-                state.getLowerBound(), state.getUpperBound());
-        rtDescription = result;
-    }
-
-    public synchronized void setLBDataMode(boolean dynamic, boolean diff,
-            boolean secondSet) {
-        SurfaceTextureDescription state = lbDescription;
-        SurfaceTextureDescription result = new SurfaceTextureDescription(
-                state.getFrameNumber(), state.getDepth(), state.getVarName(),
-                state.getColorMap(), dynamic, diff, secondSet,
-                state.getLowerBound(), state.getUpperBound());
-        lbDescription = result;
-    }
-
-    public synchronized void setRBDataMode(boolean dynamic, boolean diff,
-            boolean secondSet) {
-        SurfaceTextureDescription state = rbDescription;
-        SurfaceTextureDescription result = new SurfaceTextureDescription(
-                state.getFrameNumber(), state.getDepth(), state.getVarName(),
-                state.getColorMap(), dynamic, diff, secondSet,
-                state.getLowerBound(), state.getUpperBound());
-        rbDescription = result;
-    }
-
-    public synchronized void setLTVariable(String variable) {
-        SurfaceTextureDescription state = ltDescription;
+    public synchronized void setVariable(int screenNumber, String variable) {
+        SurfaceTextureDescription state = screenDescriptions[screenNumber];
         SurfaceTextureDescription result = new SurfaceTextureDescription(
                 state.getFrameNumber(), state.getDepth(), variable,
                 state.getColorMap(), state.isDynamicDimensions(),
                 state.isDiff(), state.isSecondSet(), state.getLowerBound(),
                 state.getUpperBound());
-        ltDescription = result;
+        screenDescriptions[screenNumber] = result;
     }
 
-    public synchronized void setRTVariable(String variable) {
-        SurfaceTextureDescription state = rtDescription;
-        SurfaceTextureDescription result = new SurfaceTextureDescription(
-                state.getFrameNumber(), state.getDepth(), variable,
-                state.getColorMap(), state.isDynamicDimensions(),
-                state.isDiff(), state.isSecondSet(), state.getLowerBound(),
-                state.getUpperBound());
-        rtDescription = result;
+    public synchronized SurfaceTextureDescription getSurfaceDescription(
+            int screenNumber) {
+        return screenDescriptions[screenNumber];
     }
 
-    public synchronized void setLBVariable(String variable) {
-        SurfaceTextureDescription state = lbDescription;
-        SurfaceTextureDescription result = new SurfaceTextureDescription(
-                state.getFrameNumber(), state.getDepth(), variable,
-                state.getColorMap(), state.isDynamicDimensions(),
-                state.isDiff(), state.isSecondSet(), state.getLowerBound(),
-                state.getUpperBound());
-        lbDescription = result;
-    }
-
-    public synchronized void setRBVariable(String variable) {
-        SurfaceTextureDescription state = rbDescription;
-        SurfaceTextureDescription result = new SurfaceTextureDescription(
-                state.getFrameNumber(), state.getDepth(), variable,
-                state.getColorMap(), state.isDynamicDimensions(),
-                state.isDiff(), state.isSecondSet(), state.getLowerBound(),
-                state.getUpperBound());
-        rbDescription = result;
-    }
-
-    public synchronized SurfaceTextureDescription getLTSurfaceDescription() {
-        return ltDescription;
-    }
-
-    public synchronized SurfaceTextureDescription getRTSurfaceDescription() {
-        return rtDescription;
-    }
-
-    public synchronized SurfaceTextureDescription getLBSurfaceDescription() {
-        return lbDescription;
-    }
-
-    public synchronized SurfaceTextureDescription getRBSurfaceDescription() {
-        return rbDescription;
-    }
-
-    public synchronized void setLTColorMap(String selectedColorMap) {
-        SurfaceTextureDescription state = ltDescription;
+    public synchronized void setColorMap(int screenNumber,
+            String selectedColorMap) {
+        SurfaceTextureDescription state = screenDescriptions[screenNumber];
         SurfaceTextureDescription result = new SurfaceTextureDescription(
                 state.getFrameNumber(), state.getDepth(), state.getVarName(),
                 selectedColorMap, state.isDynamicDimensions(), state.isDiff(),
                 state.isSecondSet(), state.getLowerBound(),
                 state.getUpperBound());
-        ltDescription = result;
-    }
-
-    public synchronized void setRTColorMap(String selectedColorMap) {
-        SurfaceTextureDescription state = rtDescription;
-        SurfaceTextureDescription result = new SurfaceTextureDescription(
-                state.getFrameNumber(), state.getDepth(), state.getVarName(),
-                selectedColorMap, state.isDynamicDimensions(), state.isDiff(),
-                state.isSecondSet(), state.getLowerBound(),
-                state.getUpperBound());
-        rtDescription = result;
-    }
-
-    public synchronized void setLBColorMap(String selectedColorMap) {
-        SurfaceTextureDescription state = lbDescription;
-        SurfaceTextureDescription result = new SurfaceTextureDescription(
-                state.getFrameNumber(), state.getDepth(), state.getVarName(),
-                selectedColorMap, state.isDynamicDimensions(), state.isDiff(),
-                state.isSecondSet(), state.getLowerBound(),
-                state.getUpperBound());
-        lbDescription = result;
-    }
-
-    public synchronized void setRBColorMap(String selectedColorMap) {
-        SurfaceTextureDescription state = rbDescription;
-        SurfaceTextureDescription result = new SurfaceTextureDescription(
-                state.getFrameNumber(), state.getDepth(), state.getVarName(),
-                selectedColorMap, state.isDynamicDimensions(), state.isDiff(),
-                state.isSecondSet(), state.getLowerBound(),
-                state.getUpperBound());
-        rbDescription = result;
+        screenDescriptions[screenNumber] = result;
     }
 
     public boolean isIMAGE_STREAM_OUTPUT() {
@@ -965,7 +822,7 @@ public class ImauSettings {
         SCREENSHOT_PATH = newPath;
     }
 
-    public void setVariableRange(int whichglobe, String varName,
+    public void setVariableRange(int screenNumber, String varName,
             int sliderLowerValue, int sliderUpperValue) {
 
         float diff = (maxValues.get(varName) - minValues.get(varName));
@@ -977,39 +834,13 @@ public class ImauSettings {
         float minFloatValue = currentMinValues.get(varName);
         float maxFloatValue = currentMaxValues.get(varName);
 
-        if (whichglobe == 0) {
-            SurfaceTextureDescription state = ltDescription;
-            SurfaceTextureDescription result = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(),
-                    state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), minFloatValue, maxFloatValue);
-            ltDescription = result;
-        } else if (whichglobe == 1) {
-            SurfaceTextureDescription state = rtDescription;
-            SurfaceTextureDescription result = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(),
-                    state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), minFloatValue, maxFloatValue);
-            rtDescription = result;
-        } else if (whichglobe == 2) {
-            SurfaceTextureDescription state = lbDescription;
-            SurfaceTextureDescription result = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(),
-                    state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), minFloatValue, maxFloatValue);
-            lbDescription = result;
-        } else if (whichglobe == 3) {
-            SurfaceTextureDescription state = rbDescription;
-            SurfaceTextureDescription result = new SurfaceTextureDescription(
-                    state.getFrameNumber(), state.getDepth(),
-                    state.getVarName(), state.getColorMap(),
-                    state.isDynamicDimensions(), state.isDiff(),
-                    state.isSecondSet(), minFloatValue, maxFloatValue);
-            rbDescription = result;
-        }
+        SurfaceTextureDescription state = screenDescriptions[screenNumber];
+        SurfaceTextureDescription result = new SurfaceTextureDescription(
+                state.getFrameNumber(), state.getDepth(), state.getVarName(),
+                state.getColorMap(), state.isDynamicDimensions(),
+                state.isDiff(), state.isSecondSet(), minFloatValue,
+                maxFloatValue);
+        screenDescriptions[screenNumber] = result;
     }
 
     // public int getImageWidth() {
@@ -1020,18 +851,8 @@ public class ImauSettings {
     // return IMAGE_HEIGHT;
     // }
 
-    public int getRangeSliderLowerValue(int whichglobe) {
-        SurfaceTextureDescription state = null;
-
-        if (whichglobe == 0) {
-            state = ltDescription;
-        } else if (whichglobe == 1) {
-            state = rtDescription;
-        } else if (whichglobe == 2) {
-            state = lbDescription;
-        } else if (whichglobe == 3) {
-            state = rbDescription;
-        }
+    public int getRangeSliderLowerValue(int screenNumber) {
+        SurfaceTextureDescription state = screenDescriptions[screenNumber];
 
         float min = getVarMin(state.getVarName());
         float max = getVarMax(state.getVarName());
@@ -1043,18 +864,8 @@ public class ImauSettings {
         return (int) (result * 100) - 1;
     }
 
-    public int getRangeSliderUpperValue(int whichglobe) {
-        SurfaceTextureDescription state = null;
-
-        if (whichglobe == 0) {
-            state = ltDescription;
-        } else if (whichglobe == 1) {
-            state = rtDescription;
-        } else if (whichglobe == 2) {
-            state = lbDescription;
-        } else if (whichglobe == 3) {
-            state = rbDescription;
-        }
+    public int getRangeSliderUpperValue(int screenNumber) {
+        SurfaceTextureDescription state = screenDescriptions[screenNumber];
 
         float min = getVarMin(state.getVarName());
         float max = getVarMax(state.getVarName());
@@ -1074,8 +885,27 @@ public class ImauSettings {
         return grid_height_dimension_substring;
     }
 
-    public int getNumScreens() {
-        return MAX_NUMBER_OF_SCREENS;
+    public int getNumScreensRows() {
+        return number_of_screens_row;
+    }
+
+    public int getNumScreensCols() {
+        return number_of_screens_col;
+    }
+
+    public int getDefaultScreenWidthExtension() {
+        return SCREEN_WIDTH_EXTENSION;
+    }
+
+    public int getDefaultScreenHeightExtension() {
+        return SCREEN_HEIGHT_EXTENSION;
+    }
+
+    public void setNumberOfScreens(int rows, int columns) {
+        number_of_screens_row = rows;
+        number_of_screens_col = columns;
+
+        initializeScreenDescriptions();
     }
 
     // public String verbalizeDataMode(int index) {

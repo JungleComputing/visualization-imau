@@ -1,6 +1,5 @@
 package nl.esciencecenter.visualization.esalsa;
 
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -18,6 +17,7 @@ import java.util.ArrayList;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -30,6 +30,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -48,7 +49,6 @@ import openglCommon.CommonPanel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 public class ImauPanel extends CommonPanel {
     public static enum TweakState {
@@ -148,6 +148,48 @@ public class ImauPanel extends CommonPanel {
             }
         });
         options.add(showVisualTweakPanel);
+
+        // a group of radio button menu items, to control output options
+        options.addSeparator();
+
+        JRadioButtonMenuItem rbMenuItem;
+        ButtonGroup screenCountGroup = new ButtonGroup();
+
+        rbMenuItem = new JRadioButtonMenuItem("2x2");
+        rbMenuItem.setSelected(true);
+        screenCountGroup.add(rbMenuItem);
+        rbMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JRadioButtonMenuItem item = (JRadioButtonMenuItem) e
+                        .getSource();
+                item.setSelected(true);
+
+                settings.setNumberOfScreens(2, 2);
+                dataConfig.setVisible(false);
+                createDataTweakPanel();
+                dataConfig.setVisible(true);
+            }
+        });
+        options.add(rbMenuItem);
+
+        rbMenuItem = new JRadioButtonMenuItem("3x3");
+        screenCountGroup.add(rbMenuItem);
+        rbMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JRadioButtonMenuItem item = (JRadioButtonMenuItem) e
+                        .getSource();
+                item.setSelected(true);
+
+                settings.setNumberOfScreens(3, 3);
+                dataConfig.setVisible(false);
+                createDataTweakPanel();
+                dataConfig.setVisible(true);
+            }
+        });
+        options.add(rbMenuItem);
+
         menuBar.add(options);
 
         ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
@@ -493,8 +535,15 @@ public class ImauPanel extends CommonPanel {
         vcomponents.add(windowlabel);
         vcomponents.add(Box.createHorizontalGlue());
 
-        final JComboBox comboBox = new JComboBox(new String[] { "All",
-                "Left Top", "Right Top", "Left Bottom", "Right Bottom" });
+        String[] screenSelection = new String[1 + settings.getNumScreensRows()
+                * settings.getNumScreensCols()];
+        screenSelection[0] = "All Screens";
+        for (int i = 0; i < settings.getNumScreensRows()
+                * settings.getNumScreensCols(); i++) {
+            screenSelection[i + 1] = "Screen Number " + i;
+        }
+
+        final JComboBox comboBox = new JComboBox(screenSelection);
         comboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -512,375 +561,118 @@ public class ImauPanel extends CommonPanel {
 
         final String[] colorMaps = ColormapInterpreter.getColormapNames();
 
-        final JComboBox dataModeComboBoxLT = new JComboBox(dataModes);
-        final JComboBox dataModeComboBoxRT = new JComboBox(dataModes);
-        final JComboBox dataModeComboBoxLB = new JComboBox(dataModes);
-        final JComboBox dataModeComboBoxRB = new JComboBox(dataModes);
+        for (int i = 0; i < settings.getNumScreensRows()
+                * settings.getNumScreensCols(); i++) {
+            final int currentScreen = i;
 
-        dataModeComboBoxLT.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                int selection = dataModeComboBoxLT.getSelectedIndex();
-                if (selection == 1) {
-                    settings.setLTDataMode(false, false, true);
-                } else if (selection == 2) {
-                    settings.setLTDataMode(false, true, false);
-                } else {
-                    settings.setLTDataMode(false, false, false);
+            final ArrayList<Component> screenVcomponents = new ArrayList<Component>();
+
+            JLabel screenLabel = new JLabel("Screen " + currentScreen);
+            screenVcomponents.add(screenLabel);
+
+            SurfaceTextureDescription selectionDescription = settings
+                    .getSurfaceDescription(currentScreen);
+
+            final ArrayList<Component> screenHcomponents = new ArrayList<Component>();
+
+            JComboBox dataModeComboBox = new JComboBox(dataModes);
+            ActionListener al = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    JComboBox cb = (JComboBox) e.getSource();
+                    int selection = cb.getSelectedIndex();
+
+                    if (selection == 1) {
+                        settings.setDataMode(currentScreen, false, false, true);
+                    } else if (selection == 2) {
+                        settings.setDataMode(currentScreen, false, true, false);
+                    } else {
+                        settings.setDataMode(currentScreen, false, false, false);
+                    }
                 }
-            }
-        });
-        dataModeComboBoxRT.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                int selection = dataModeComboBoxRT.getSelectedIndex();
-                if (selection == 1) {
-                    settings.setRTDataMode(false, false, true);
-                } else if (selection == 2) {
-                    settings.setRTDataMode(false, true, false);
-                } else {
-                    settings.setRTDataMode(false, false, false);
+            };
+            dataModeComboBox.addActionListener(al);
+            dataModeComboBox.setSelectedIndex(selectionDescription
+                    .getDataModeIndex());
+            dataModeComboBox.setMinimumSize(new Dimension(50, 25));
+            dataModeComboBox.setMaximumSize(new Dimension(100, 25));
+            screenHcomponents.add(dataModeComboBox);
+
+            final JComboBox variablesComboBox = new JComboBox(
+                    variables.toArray(new String[0]));
+            variablesComboBox
+                    .setSelectedItem(selectionDescription.getVarName());
+            variablesComboBox.setMinimumSize(new Dimension(50, 25));
+            variablesComboBox.setMaximumSize(new Dimension(100, 25));
+            screenHcomponents.add(variablesComboBox);
+
+            screenVcomponents.add(GoggleSwing.hBoxedComponents(
+                    screenHcomponents, true));
+
+            final JComboBox colorMapsComboBox = ColormapInterpreter
+                    .getLegendJComboBox(new Dimension(200, 25));
+            colorMapsComboBox.setSelectedItem(ColormapInterpreter
+                    .getIndexOfColormap(selectionDescription.getColorMap()));
+            colorMapsComboBox.setMinimumSize(new Dimension(100, 25));
+            colorMapsComboBox.setMaximumSize(new Dimension(200, 25));
+            screenVcomponents.add(colorMapsComboBox);
+
+            final RangeSlider selectionLegendSlider = new RangeSlider();
+            ((RangeSliderUI) selectionLegendSlider.getUI())
+                    .setRangeColorMap(selectionDescription.getColorMap());
+            selectionLegendSlider.setMinimum(0);
+            selectionLegendSlider.setMaximum(100);
+            selectionLegendSlider.setValue(settings
+                    .getRangeSliderLowerValue(currentScreen));
+            selectionLegendSlider.setUpperValue(settings
+                    .getRangeSliderUpperValue(currentScreen));
+
+            final RangeSliderUI frsLT = ((RangeSliderUI) selectionLegendSlider
+                    .getUI());
+            colorMapsComboBox.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    settings.setColorMap(currentScreen,
+                            colorMaps[colorMapsComboBox.getSelectedIndex()]);
+
+                    frsLT.setRangeColorMap(colorMaps[colorMapsComboBox
+                            .getSelectedIndex()]);
                 }
-            }
-        });
-        dataModeComboBoxLB.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                int selection = dataModeComboBoxLB.getSelectedIndex();
-                if (selection == 1) {
-                    settings.setLBDataMode(false, false, true);
-                } else if (selection == 2) {
-                    settings.setLBDataMode(false, true, false);
-                } else {
-                    settings.setLBDataMode(false, false, false);
+            });
+
+            selectionLegendSlider.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    RangeSlider slider = (RangeSlider) e.getSource();
+                    SurfaceTextureDescription texDesc = settings
+                            .getSurfaceDescription(currentScreen);
+
+                    String var = texDesc.getVarName();
+                    settings.setVariableRange(currentScreen, var,
+                            slider.getValue(), slider.getUpperValue());
                 }
-            }
-        });
-        dataModeComboBoxRB.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                int selection = dataModeComboBoxRB.getSelectedIndex();
-                if (selection == 1) {
-                    settings.setRBDataMode(false, false, true);
-                } else if (selection == 2) {
-                    settings.setRBDataMode(false, true, false);
-                } else {
-                    settings.setRBDataMode(false, false, false);
+            });
+
+            variablesComboBox.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    String var = (String) ((JComboBox) e.getSource())
+                            .getSelectedItem();
+
+                    settings.setVariable(currentScreen, var);
+                    selectionLegendSlider.setValue(settings
+                            .getRangeSliderLowerValue(currentScreen));
+                    selectionLegendSlider.setUpperValue(settings
+                            .getRangeSliderUpperValue(currentScreen));
                 }
-            }
-        });
+            });
 
-        final JComboBox comboBoxLT = new JComboBox(
-                variables.toArray(new String[0]));
-        final JComboBox comboBoxRT = new JComboBox(
-                variables.toArray(new String[0]));
-        final JComboBox comboBoxLB = new JComboBox(
-                variables.toArray(new String[0]));
-        final JComboBox comboBoxRB = new JComboBox(
-                variables.toArray(new String[0]));
+            screenVcomponents.add(selectionLegendSlider);
 
-        final JComboBox comboBoxLTColorMaps = ColormapInterpreter
-                .getLegendJComboBox(new Dimension(200, 25));
-        final JComboBox comboBoxRTColorMaps = ColormapInterpreter
-                .getLegendJComboBox(new Dimension(200, 25));
-        final JComboBox comboBoxLBColorMaps = ColormapInterpreter
-                .getLegendJComboBox(new Dimension(200, 25));
-        final JComboBox comboBoxRBColorMaps = ColormapInterpreter
-                .getLegendJComboBox(new Dimension(200, 25));
-
-        final ArrayList<Component> vcomponentsLT = new ArrayList<Component>();
-        final ArrayList<Component> vcomponentsRT = new ArrayList<Component>();
-        final ArrayList<Component> vcomponentsLB = new ArrayList<Component>();
-        final ArrayList<Component> vcomponentsRB = new ArrayList<Component>();
-
-        JLabel ltLabel = new JLabel("Left Top Selection");
-        JLabel rtLabel = new JLabel("Right Top Selection");
-        JLabel lbLabel = new JLabel("Left Bottom Selection");
-        JLabel rbLabel = new JLabel("Right Bottom Selection");
-
-        ltLabel.setMaximumSize(new Dimension(200, 25));
-        rtLabel.setMaximumSize(new Dimension(200, 25));
-        lbLabel.setMaximumSize(new Dimension(200, 25));
-        rbLabel.setMaximumSize(new Dimension(200, 25));
-
-        ltLabel.setAlignmentX(CENTER_ALIGNMENT);
-        rtLabel.setAlignmentX(CENTER_ALIGNMENT);
-        lbLabel.setAlignmentX(CENTER_ALIGNMENT);
-        rbLabel.setAlignmentX(CENTER_ALIGNMENT);
-
-        vcomponentsLT.add(ltLabel);
-        vcomponentsRT.add(rtLabel);
-        vcomponentsLB.add(lbLabel);
-        vcomponentsRB.add(rbLabel);
-
-        SurfaceTextureDescription ltDescription = settings
-                .getLTSurfaceDescription();
-        SurfaceTextureDescription rtDescription = settings
-                .getRTSurfaceDescription();
-        SurfaceTextureDescription lbDescription = settings
-                .getLBSurfaceDescription();
-        SurfaceTextureDescription rbDescription = settings
-                .getRBSurfaceDescription();
-
-        dataModeComboBoxLT.setSelectedIndex(ltDescription.getDataModeIndex());
-        dataModeComboBoxRT.setSelectedIndex(rtDescription.getDataModeIndex());
-        dataModeComboBoxLB.setSelectedIndex(lbDescription.getDataModeIndex());
-        dataModeComboBoxRB.setSelectedIndex(rbDescription.getDataModeIndex());
-
-        comboBoxLT.setSelectedItem(ltDescription.getVarName());
-        comboBoxRT.setSelectedItem(rtDescription.getVarName());
-        comboBoxLB.setSelectedItem(lbDescription.getVarName());
-        comboBoxRB.setSelectedItem(rbDescription.getVarName());
-
-        comboBoxLTColorMaps.setSelectedItem(ColormapInterpreter
-                .getIndexOfColormap(ltDescription.getColorMap()));
-        comboBoxRTColorMaps.setSelectedItem(ColormapInterpreter
-                .getIndexOfColormap(rtDescription.getColorMap()));
-        comboBoxLBColorMaps.setSelectedItem(ColormapInterpreter
-                .getIndexOfColormap(lbDescription.getColorMap()));
-        comboBoxRBColorMaps.setSelectedItem(ColormapInterpreter
-                .getIndexOfColormap(rbDescription.getColorMap()));
-
-        dataModeComboBoxLT.setMinimumSize(new Dimension(100, 25));
-        dataModeComboBoxRT.setMinimumSize(new Dimension(100, 25));
-        dataModeComboBoxLB.setMinimumSize(new Dimension(100, 25));
-        dataModeComboBoxRB.setMinimumSize(new Dimension(100, 25));
-
-        dataModeComboBoxLT.setMaximumSize(new Dimension(200, 25));
-        dataModeComboBoxRT.setMaximumSize(new Dimension(200, 25));
-        dataModeComboBoxLB.setMaximumSize(new Dimension(200, 25));
-        dataModeComboBoxRB.setMaximumSize(new Dimension(200, 25));
-
-        comboBoxLT.setMinimumSize(new Dimension(100, 25));
-        comboBoxRT.setMinimumSize(new Dimension(100, 25));
-        comboBoxLB.setMinimumSize(new Dimension(100, 25));
-        comboBoxRB.setMinimumSize(new Dimension(100, 25));
-
-        comboBoxLT.setMaximumSize(new Dimension(200, 25));
-        comboBoxRT.setMaximumSize(new Dimension(200, 25));
-        comboBoxLB.setMaximumSize(new Dimension(200, 25));
-        comboBoxRB.setMaximumSize(new Dimension(200, 25));
-
-        comboBoxLTColorMaps.setMinimumSize(new Dimension(100, 25));
-        comboBoxRTColorMaps.setMinimumSize(new Dimension(100, 25));
-        comboBoxLBColorMaps.setMinimumSize(new Dimension(100, 25));
-        comboBoxRBColorMaps.setMinimumSize(new Dimension(100, 25));
-
-        comboBoxLTColorMaps.setMaximumSize(new Dimension(200, 25));
-        comboBoxRTColorMaps.setMaximumSize(new Dimension(200, 25));
-        comboBoxLBColorMaps.setMaximumSize(new Dimension(200, 25));
-        comboBoxRBColorMaps.setMaximumSize(new Dimension(200, 25));
-
-        vcomponentsLT.add(dataModeComboBoxLT);
-        vcomponentsRT.add(dataModeComboBoxRT);
-        vcomponentsLB.add(dataModeComboBoxLB);
-        vcomponentsRB.add(dataModeComboBoxRB);
-
-        vcomponentsLT.add(comboBoxLT);
-        vcomponentsRT.add(comboBoxRT);
-        vcomponentsLB.add(comboBoxLB);
-        vcomponentsRB.add(comboBoxRB);
-
-        vcomponentsLT.add(comboBoxLTColorMaps);
-        vcomponentsRT.add(comboBoxRTColorMaps);
-        vcomponentsLB.add(comboBoxLBColorMaps);
-        vcomponentsRB.add(comboBoxRBColorMaps);
-
-        final RangeSlider legendSliderLT = new RangeSlider();
-        final RangeSlider legendSliderRT = new RangeSlider();
-        final RangeSlider legendSliderLB = new RangeSlider();
-        final RangeSlider legendSliderRB = new RangeSlider();
-
-        ((RangeSliderUI) legendSliderLT.getUI()).setRangeColorMap(ltDescription
-                .getColorMap());
-        ((RangeSliderUI) legendSliderRT.getUI()).setRangeColorMap(rtDescription
-                .getColorMap());
-        ((RangeSliderUI) legendSliderLB.getUI()).setRangeColorMap(lbDescription
-                .getColorMap());
-        ((RangeSliderUI) legendSliderRB.getUI()).setRangeColorMap(rbDescription
-                .getColorMap());
-
-        legendSliderLT.setMinimum(0);
-        legendSliderRT.setMinimum(0);
-        legendSliderLB.setMinimum(0);
-        legendSliderRB.setMinimum(0);
-
-        legendSliderLT.setMaximum(100);
-        legendSliderRT.setMaximum(100);
-        legendSliderLB.setMaximum(100);
-        legendSliderRB.setMaximum(100);
-
-        legendSliderLT.setValue(settings.getRangeSliderLowerValue(0));
-        legendSliderRT.setValue(settings.getRangeSliderLowerValue(1));
-        legendSliderLB.setValue(settings.getRangeSliderLowerValue(2));
-        legendSliderRB.setValue(settings.getRangeSliderLowerValue(3));
-
-        legendSliderLT.setUpperValue(settings.getRangeSliderUpperValue(0));
-        legendSliderRT.setUpperValue(settings.getRangeSliderUpperValue(1));
-        legendSliderLB.setUpperValue(settings.getRangeSliderUpperValue(2));
-        legendSliderRB.setUpperValue(settings.getRangeSliderUpperValue(3));
-
-        final RangeSliderUI frsLT = ((RangeSliderUI) legendSliderLT.getUI());
-        comboBoxLTColorMaps.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setLTColorMap(colorMaps[comboBoxLTColorMaps
-                        .getSelectedIndex()]);
-
-                frsLT.setRangeColorMap(colorMaps[comboBoxLTColorMaps
-                        .getSelectedIndex()]);
-            }
-        });
-
-        final RangeSliderUI frsRT = ((RangeSliderUI) legendSliderRT.getUI());
-        comboBoxRTColorMaps.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setRTColorMap(colorMaps[comboBoxRTColorMaps
-                        .getSelectedIndex()]);
-
-                frsRT.setRangeColorMap(colorMaps[comboBoxRTColorMaps
-                        .getSelectedIndex()]);
-            }
-        });
-
-        final RangeSliderUI frsLB = ((RangeSliderUI) legendSliderLB.getUI());
-        comboBoxLBColorMaps.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setLBColorMap(colorMaps[comboBoxLBColorMaps
-                        .getSelectedIndex()]);
-
-                frsLB.setRangeColorMap(colorMaps[comboBoxLBColorMaps
-                        .getSelectedIndex()]);
-
-            }
-        });
-
-        final RangeSliderUI frsRB = ((RangeSliderUI) legendSliderRB.getUI());
-        comboBoxRBColorMaps.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                settings.setRBColorMap(colorMaps[comboBoxRBColorMaps
-                        .getSelectedIndex()]);
-
-                frsRB.setRangeColorMap(colorMaps[comboBoxRBColorMaps
-                        .getSelectedIndex()]);
-            }
-        });
-
-        legendSliderLT.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                RangeSlider slider = (RangeSlider) e.getSource();
-                SurfaceTextureDescription texDesc = settings
-                        .getLTSurfaceDescription();
-
-                String var = texDesc.getVarName();
-                settings.setVariableRange(0, var, slider.getValue(),
-                        slider.getUpperValue());
-            }
-        });
-        legendSliderRT.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                RangeSlider slider = (RangeSlider) e.getSource();
-                SurfaceTextureDescription texDesc = settings
-                        .getRTSurfaceDescription();
-
-                String var = texDesc.getVarName();
-                settings.setVariableRange(1, var, slider.getValue(),
-                        slider.getUpperValue());
-            }
-        });
-        legendSliderLB.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                RangeSlider slider = (RangeSlider) e.getSource();
-                SurfaceTextureDescription texDesc = settings
-                        .getLBSurfaceDescription();
-
-                String var = texDesc.getVarName();
-                settings.setVariableRange(2, var, slider.getValue(),
-                        slider.getUpperValue());
-            }
-        });
-        legendSliderRB.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                RangeSlider slider = (RangeSlider) e.getSource();
-                SurfaceTextureDescription texDesc = settings
-                        .getRBSurfaceDescription();
-
-                String var = texDesc.getVarName();
-                settings.setVariableRange(3, var, slider.getValue(),
-                        slider.getUpperValue());
-            }
-        });
-
-        comboBoxLT.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                String var = (String) ((JComboBox) e.getSource())
-                        .getSelectedItem();
-
-                settings.setLTVariable(var);
-                legendSliderLT.setValue(settings.getRangeSliderLowerValue(0));
-                legendSliderLT.setUpperValue(settings
-                        .getRangeSliderUpperValue(0));
-            }
-        });
-        comboBoxRT.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                String var = (String) ((JComboBox) e.getSource())
-                        .getSelectedItem();
-
-                settings.setRTVariable(var);
-                legendSliderRT.setValue(settings.getRangeSliderLowerValue(1));
-                legendSliderRT.setUpperValue(settings
-                        .getRangeSliderUpperValue(1));
-            }
-        });
-        comboBoxLB.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                String var = (String) ((JComboBox) e.getSource())
-                        .getSelectedItem();
-
-                settings.setLBVariable(var);
-                legendSliderLB.setValue(settings.getRangeSliderLowerValue(2));
-                legendSliderLB.setUpperValue(settings
-                        .getRangeSliderUpperValue(2));
-            }
-        });
-        comboBoxRB.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                String var = (String) ((JComboBox) e.getSource())
-                        .getSelectedItem();
-
-                settings.setRBVariable(var);
-                legendSliderRB.setValue(settings.getRangeSliderLowerValue(3));
-                legendSliderRB.setUpperValue(settings
-                        .getRangeSliderUpperValue(3));
-            }
-        });
-
-        vcomponentsLT.add(legendSliderLT);
-        vcomponentsRT.add(legendSliderRT);
-        vcomponentsLB.add(legendSliderLB);
-        vcomponentsRB.add(legendSliderRB);
-
-        vcomponentsLT.add(GoggleSwing.verticalStrut(5));
-        vcomponentsRT.add(GoggleSwing.verticalStrut(5));
-        vcomponentsLB.add(GoggleSwing.verticalStrut(5));
-        vcomponentsRB.add(GoggleSwing.verticalStrut(5));
-
-        dataConfig.add(GoggleSwing.vBoxedComponents(vcomponentsLT, true));
-        dataConfig.add(GoggleSwing.vBoxedComponents(vcomponentsRT, true));
-        dataConfig.add(GoggleSwing.vBoxedComponents(vcomponentsLB, true));
-        dataConfig.add(GoggleSwing.vBoxedComponents(vcomponentsRB, true));
+            dataConfig.add(GoggleSwing
+                    .vBoxedComponents(screenVcomponents, true));
+        }
+        dataConfig.add(Box.createVerticalGlue());
     }
 
     private void createVisualTweakPanel() {
