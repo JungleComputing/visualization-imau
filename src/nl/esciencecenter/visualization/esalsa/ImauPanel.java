@@ -45,7 +45,7 @@ import nl.esciencecenter.visualization.esalsa.util.GoggleSwing;
 import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
 import nl.esciencecenter.visualization.esalsa.util.RangeSlider;
 import nl.esciencecenter.visualization.esalsa.util.RangeSliderUI;
-import openglCommon.CommonPanel;
+import nl.esciencecenter.visualization.openglCommon.CommonPanel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,12 +1,10 @@
 package nl.esciencecenter.visualization.esalsa.data;
 
-
 import java.io.IOException;
 import java.util.List;
 
 import nl.esciencecenter.visualization.esalsa.netcdf.NetCDFUtil;
-
-import openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 import ucar.ma2.Array;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Dimension;

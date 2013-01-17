@@ -1,12 +1,11 @@
 package nl.esciencecenter.visualization.esalsa.glExt;
 
-
 import java.nio.IntBuffer;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL3;
 
-import openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 
 public class FBO {
     private final IntBuffer  fboPointer;

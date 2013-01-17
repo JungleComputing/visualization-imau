@@ -1,6 +1,5 @@
 package nl.esciencecenter.visualization.esalsa.util;
 
-
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
 import java.io.IOException;
@@ -8,9 +7,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import nl.esciencecenter.visualization.esalsa.ImauSettings;
-
-import openglCommon.math.VecF3;
-import openglCommon.util.InputHandler;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.util.InputHandler;
 
 public class ImauInputHandler extends InputHandler implements TouchEventHandler {
     private final ImauSettings settings = ImauSettings.getInstance();

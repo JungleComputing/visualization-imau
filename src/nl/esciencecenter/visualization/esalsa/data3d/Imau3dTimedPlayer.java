@@ -11,8 +11,8 @@ import javax.swing.JSlider;
 import nl.esciencecenter.visualization.esalsa.ImauSettings;
 import nl.esciencecenter.visualization.esalsa.util.CustomJSlider;
 import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
-import openglCommon.math.VecF3;
-import openglCommon.math.VectorFMath;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.math.VectorFMath;
 
 public class Imau3dTimedPlayer implements Runnable {
     public static enum states {

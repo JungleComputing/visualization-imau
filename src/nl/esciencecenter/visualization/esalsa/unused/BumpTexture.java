@@ -11,19 +11,20 @@ import java.nio.IntBuffer;
 import javax.imageio.ImageIO;
 import javax.media.opengl.GL3;
 
-import openglCommon.exceptions.UninitializedException;
-import openglCommon.textures.Texture;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.textures.Texture;
 
 import com.jogamp.common.nio.Buffers;
 
 public class BumpTexture extends Texture {
     protected ByteBuffer pixelBuffer;
-    protected int width, height;
-    protected IntBuffer pointer;
+    protected int        width, height;
+    protected IntBuffer  pointer;
 
-    private boolean initialized = false;
+    private boolean      initialized = false;
 
-    public BumpTexture(String filename, int w_offSet, int h_offSet, int glMultiTexUnit) {
+    public BumpTexture(String filename, int w_offSet, int h_offSet,
+            int glMultiTexUnit) {
         super(glMultiTexUnit);
 
         BufferedImage bi = null;
@@ -69,7 +70,7 @@ public class BumpTexture extends Texture {
                         j = col - width;
                     }
 
-                    tempBuffer.put((byte) (imageInByte[i * width + j]));
+                    tempBuffer.put((imageInByte[i * width + j]));
                 }
             }
 
@@ -102,10 +103,14 @@ public class BumpTexture extends Texture {
             gl.glBindTexture(GL3.GL_TEXTURE_2D, pointer.get(0));
 
             // Wrap.
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, GL3.GL_CLAMP_TO_EDGE);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, GL3.GL_CLAMP_TO_EDGE);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, GL3.GL_LINEAR);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, GL3.GL_LINEAR);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S,
+                    GL3.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T,
+                    GL3.GL_CLAMP_TO_EDGE);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER,
+                    GL3.GL_LINEAR);
+            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER,
+                    GL3.GL_LINEAR);
 
             // Specifies the alignment requirements for the start of each pixel
             // row in memory.

@@ -3,12 +3,12 @@ package nl.esciencecenter.visualization.esalsa.unused;
 import java.util.ArrayList;
 import java.util.List;
 
-import openglCommon.datastructures.Material;
-import openglCommon.math.VecF3;
-import openglCommon.math.VecF4;
-import openglCommon.math.VectorFMath;
-import openglCommon.models.Model;
-import openglCommon.util.Settings;
+import nl.esciencecenter.visualization.openglCommon.datastructures.Material;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.math.VecF4;
+import nl.esciencecenter.visualization.openglCommon.math.VectorFMath;
+import nl.esciencecenter.visualization.openglCommon.models.Model;
+import nl.esciencecenter.visualization.openglCommon.util.Settings;
 
 public class GeoSphereCutEdge extends Model {
     Settings          settings = Settings.getInstance();

@@ -3,7 +3,7 @@ package nl.esciencecenter.visualization.esalsa;
 import java.util.HashMap;
 
 import nl.esciencecenter.visualization.esalsa.data.SurfaceTextureDescription;
-import openglCommon.util.TypedProperties;
+import nl.esciencecenter.visualization.openglCommon.util.TypedProperties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -647,35 +647,42 @@ public class ImauSettings {
         return TOUCH_CONNECTED;
     }
 
-    public String getMonth(int frameNumber) {
+    public String getFancyDate(int frameNumber) {
         String result = "";
-        if (frameNumber % 12 == 0) {
+
+        int year = (int) Math.floor(frameNumber / 100);
+
+        int month = frameNumber - year * 100;
+
+        if (month == 1) {
             result = "Jan";
-        } else if (frameNumber % 12 == 1) {
+        } else if (month == 2) {
             result = "Feb";
-        } else if (frameNumber % 12 == 2) {
+        } else if (month == 3) {
             result = "Mar";
-        } else if (frameNumber % 12 == 3) {
+        } else if (month == 4) {
             result = "Apr";
-        } else if (frameNumber % 12 == 4) {
+        } else if (month == 5) {
             result = "May";
-        } else if (frameNumber % 12 == 5) {
+        } else if (month == 6) {
             result = "Jun";
-        } else if (frameNumber % 12 == 6) {
+        } else if (month == 7) {
             result = "Jul";
-        } else if (frameNumber % 12 == 7) {
+        } else if (month == 8) {
             result = "Aug";
-        } else if (frameNumber % 12 == 8) {
+        } else if (month == 9) {
             result = "Sep";
-        } else if (frameNumber % 12 == 9) {
+        } else if (month == 10) {
             result = "Oct";
-        } else if (frameNumber % 12 == 10) {
+        } else if (month == 11) {
             result = "Nov";
-        } else if (frameNumber % 12 == 11) {
+        } else if (month == 12) {
             result = "Dec";
+        } else {
+            result = "error: " + month;
         }
 
-        result += ", year " + (75 + (int) Math.floor(frameNumber / 12));
+        result += ", year " + year;
 
         return result;
     }

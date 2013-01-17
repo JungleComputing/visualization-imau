@@ -6,7 +6,7 @@ import nl.esciencecenter.visualization.esalsa.ImauSettings;
 import nl.esciencecenter.visualization.esalsa.util.ColormapInterpreter;
 import nl.esciencecenter.visualization.esalsa.util.ColormapInterpreter.Color;
 import nl.esciencecenter.visualization.esalsa.util.ColormapInterpreter.Dimensions;
-import openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

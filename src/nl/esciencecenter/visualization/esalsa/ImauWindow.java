@@ -25,23 +25,23 @@ import nl.esciencecenter.visualization.esalsa.glExt.PostprocShaderCreator;
 import nl.esciencecenter.visualization.esalsa.glExt.Texture2D;
 import nl.esciencecenter.visualization.esalsa.jni.SageInterface;
 import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
-import openglCommon.CommonWindow;
-import openglCommon.datastructures.Material;
-import openglCommon.exceptions.CompilationFailedException;
-import openglCommon.exceptions.UninitializedException;
-import openglCommon.math.Color4;
-import openglCommon.math.MatF4;
-import openglCommon.math.MatrixFMath;
-import openglCommon.math.Point4;
-import openglCommon.math.VecF3;
-import openglCommon.math.VecF4;
-import openglCommon.models.GeoSphere;
-import openglCommon.models.Model;
-import openglCommon.models.MultiColorText;
-import openglCommon.models.Text;
-import openglCommon.models.base.Quad;
-import openglCommon.models.base.Sphere;
-import openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.CommonWindow;
+import nl.esciencecenter.visualization.openglCommon.datastructures.Material;
+import nl.esciencecenter.visualization.openglCommon.exceptions.CompilationFailedException;
+import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.math.Color4;
+import nl.esciencecenter.visualization.openglCommon.math.MatF4;
+import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
+import nl.esciencecenter.visualization.openglCommon.math.Point4;
+import nl.esciencecenter.visualization.openglCommon.math.VecF3;
+import nl.esciencecenter.visualization.openglCommon.math.VecF4;
+import nl.esciencecenter.visualization.openglCommon.models.GeoSphere;
+import nl.esciencecenter.visualization.openglCommon.models.Model;
+import nl.esciencecenter.visualization.openglCommon.models.MultiColorText;
+import nl.esciencecenter.visualization.openglCommon.models.Text;
+import nl.esciencecenter.visualization.openglCommon.models.base.Quad;
+import nl.esciencecenter.visualization.openglCommon.models.base.Sphere;
+import nl.esciencecenter.visualization.openglCommon.shaders.Program;
 
 public class ImauWindow extends CommonWindow {
 
@@ -269,7 +269,7 @@ public class ImauWindow extends CommonWindow {
                             .getVarName()));
                 }
                 dates[i].setString(gl,
-                        settings.getMonth(currentDesc.getFrameNumber()),
+                        settings.getFancyDate(currentDesc.getFrameNumber()),
                         Color4.white, fontSize);
                 dataSets[i].setString(gl, currentDesc.verbalizeDataMode(),
                         Color4.white, fontSize);
