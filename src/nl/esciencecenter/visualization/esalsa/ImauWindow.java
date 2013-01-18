@@ -666,7 +666,7 @@ public class ImauWindow extends CommonWindow {
 
         // sphereModel = new GeoSphereCut(Material.random(), 120, 120, 50f,
         // false);
-        sphereModel = new GeoSphere(Material.random(), 120, 120, 50f, false);
+        sphereModel = new GeoSphere(Material.random(), 60, 60, 50f, false);
         sphereModel.init(gl);
 
         // cutModel = new GeoSphereCutEdge(Material.random(), 120, 50f);
