@@ -15,6 +15,9 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 
+import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLProfile;
+import javax.media.opengl.awt.GLCanvas;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -42,15 +45,16 @@ import nl.esciencecenter.visualization.esalsa.netcdf.NetCDFUtil;
 import nl.esciencecenter.visualization.esalsa.util.ColormapInterpreter;
 import nl.esciencecenter.visualization.esalsa.util.CustomJSlider;
 import nl.esciencecenter.visualization.esalsa.util.GoggleSwing;
-import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
 import nl.esciencecenter.visualization.esalsa.util.RangeSlider;
 import nl.esciencecenter.visualization.esalsa.util.RangeSliderUI;
-import nl.esciencecenter.visualization.openglCommon.CommonPanel;
+import nl.esciencecenter.visualization.openglCommon.util.GLProfileSelector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImauPanel extends CommonPanel {
+import com.jogamp.opengl.util.Animator;
+
+public class ImauPanel extends JPanel {
     public static enum TweakState {
         NONE, DATA, VISUAL, MOVIE
     }
@@ -77,9 +81,12 @@ public class ImauPanel extends CommonPanel {
     private File                   file1;
     private ArrayList<String>      variables;
 
+    protected GLCanvas             glCanvas;
+
     public ImauPanel(ImauWindow imauWindow, String path, String cmdlnfileName,
             String cmdlnfileName2) {
-        super(imauWindow, ImauInputHandler.getInstance());
+        setLayout(new BorderLayout(0, 0));
+
         this.imauWindow = imauWindow;
 
         variables = new ArrayList<String>();
@@ -269,10 +276,53 @@ public class ImauPanel extends CommonPanel {
         }
 
         setTweakState(TweakState.DATA);
+
+        // JPopupMenu.setDefaultLightWeightPopupEnabled(false);
+
+        GLProfileSelector.printAvailable();
+        GLProfile glp = GLProfile.get(GLProfile.GL4);
+
+        // Standard GL3 capabilities
+        GLCapabilities glCapabilities = new GLCapabilities(glp);
+
+        glCapabilities.setHardwareAccelerated(true);
+        glCapabilities.setDoubleBuffered(true);
+
+        // Anti-Aliasing
+        glCapabilities.setSampleBuffers(true);
+        glCapabilities.setAlphaBits(4);
+        glCapabilities.setNumSamples(4);
+
+        // Create the canvas
+        glCanvas = new GLCanvas(glCapabilities);
+        add(glCanvas, BorderLayout.CENTER);
+        glCanvas.setVisible(true);
+        // glCanvas.setRealized(true);
+        // glCanvas.setContext(glCanvas.createContext(null));
+        // imauWindow.init(glCanvas);
+
+        // Add Mouse event listener
+        glCanvas.addMouseListener(imauWindow.getInputHandler());
+        glCanvas.addMouseMotionListener(imauWindow.getInputHandler());
+        glCanvas.addMouseWheelListener(imauWindow.getInputHandler());
+
+        // Add key event listener
+        glCanvas.addKeyListener(imauWindow.getInputHandler());
+
+        // Add the glCanvas to the JPanel
+        glCanvas.setFocusable(true);
+        glCanvas.requestFocusInWindow();
+
+        // Set up animator
+        final Animator animator = new Animator(glCanvas);
+        animator.start();
+
+        setVisible(true);
     }
 
     void close() {
         imauWindow.dispose(glCanvas);
+        glCanvas.destroy();
     }
 
     public Point getCanvasLocation() {

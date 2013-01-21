@@ -1,4 +1,4 @@
-#version 140
+#version 420
 
 uniform sampler2D Texture;
 
@@ -14,7 +14,6 @@ uniform float NumPixelsPerSide;
 uniform float Alpha;
 
 const float pi = 3.14159265;
-
 const vec2 vertical = vec2(0.0, 1.0);
 const vec2 horizontal = vec2(1.0, 0.0);
 

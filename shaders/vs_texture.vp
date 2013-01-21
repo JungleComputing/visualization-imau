@@ -1,6 +1,7 @@
-#version 150
+#version 420
 
 in vec4 MCvertex;
+in vec3 MCnormal;
 in vec3 MCtexCoord;
 
 out vec2 tCoord;
@@ -10,6 +11,6 @@ uniform mat4 MVMatrix;
 
 void main() 
 {
-	tCoord = vec2(MCtexCoord.x, MCtexCoord.y);
-	gl_Position = PMatrix * MVMatrix * MCvertex;
+	tCoord = MCtexCoord.xy;
+    gl_Position = PMatrix * MVMatrix * MCvertex;
 } 

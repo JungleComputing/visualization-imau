@@ -9,7 +9,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -151,23 +150,5 @@ public class ImauApp {
                             new MouseEvent(comp, MouseEvent.MOUSE_CLICKED, 0,
                                     0, p.x, p.y, 1, false));
         }
-    }
-
-    // public static void writeImageToDisk(String filename) {
-    // try {
-    // ImageIO.write(imauWindow.getScreenshot(), "png",
-    // new File(settings.getScreenshotPath() + "screenshots/"
-    // + filename + ".png"));
-    //
-    // // System.out.println("screenshot!");
-    // } catch (IOException e) {
-    // // TODO Auto-generated catch block
-    // e.printStackTrace();
-    // }
-    // }
-
-    private static void log(String l, IOException ioe) {
-        log.warn(l);
-        log.debug(ioe.getMessage());
     }
 }

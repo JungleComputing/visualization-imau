@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.media.opengl.GL3;
 import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 
@@ -103,10 +102,6 @@ public class ImauTimedPlayer implements Runnable {
         timeBar.setValue(0);
         frameCounter.setValue(0);
         timeBar.setMaximum(0);
-    }
-
-    public void delete(GL3 gl) {
-        // TODO
     }
 
     public void init(File fileDS1) {
