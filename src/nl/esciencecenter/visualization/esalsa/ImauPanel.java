@@ -15,8 +15,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLProfile;
 import javax.media.opengl.awt.GLCanvas;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -47,12 +45,11 @@ import nl.esciencecenter.visualization.esalsa.util.CustomJSlider;
 import nl.esciencecenter.visualization.esalsa.util.GoggleSwing;
 import nl.esciencecenter.visualization.esalsa.util.RangeSlider;
 import nl.esciencecenter.visualization.esalsa.util.RangeSliderUI;
-import nl.esciencecenter.visualization.openglCommon.util.GLProfileSelector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jogamp.opengl.util.Animator;
+import com.jogamp.newt.awt.NewtCanvasAWT;
 
 public class ImauPanel extends JPanel {
     public static enum TweakState {
@@ -75,7 +72,6 @@ public class ImauPanel extends JPanel {
 
     private final JPanel           dataConfig, visualConfig, movieConfig;
 
-    private final ImauWindow       imauWindow;
     private static ImauTimedPlayer timer;
 
     private File                   file1;
@@ -83,11 +79,11 @@ public class ImauPanel extends JPanel {
 
     protected GLCanvas             glCanvas;
 
-    public ImauPanel(ImauWindow imauWindow, String path, String cmdlnfileName,
-            String cmdlnfileName2) {
+    public ImauPanel(String path, NewtCanvasAWT newtCanvasAWT,
+            String cmdlnfileName, String cmdlnfileName2) {
         setLayout(new BorderLayout(0, 0));
 
-        this.imauWindow = imauWindow;
+        // this.imauWindow = imauWindow;
 
         variables = new ArrayList<String>();
 
@@ -277,52 +273,60 @@ public class ImauPanel extends JPanel {
 
         setTweakState(TweakState.DATA);
 
+        // add(newtCanvasAWT, BorderLayout.CENTER);
+
         // JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
-        GLProfileSelector.printAvailable();
-        GLProfile glp = GLProfile.get(GLProfile.GL4);
+        // GLProfileSelector.printAvailable();
+        // GLProfile glp = GLProfile.get(GLProfile.GL4);
+        //
+        // // Standard GL3 capabilities
+        // GLCapabilities glCapabilities = new GLCapabilities(glp);
+        //
+        // glCapabilities.setHardwareAccelerated(true);
+        // glCapabilities.setDoubleBuffered(true);
+        //
+        // // Anti-Aliasing
+        // glCapabilities.setSampleBuffers(true);
+        // glCapabilities.setAlphaBits(4);
+        // glCapabilities.setNumSamples(4);
 
-        // Standard GL3 capabilities
-        GLCapabilities glCapabilities = new GLCapabilities(glp);
-
-        glCapabilities.setHardwareAccelerated(true);
-        glCapabilities.setDoubleBuffered(true);
-
-        // Anti-Aliasing
-        glCapabilities.setSampleBuffers(true);
-        glCapabilities.setAlphaBits(4);
-        glCapabilities.setNumSamples(4);
-
-        // Create the canvas
-        glCanvas = new GLCanvas(glCapabilities);
-        add(glCanvas, BorderLayout.CENTER);
-        glCanvas.setVisible(true);
-        // glCanvas.setRealized(true);
-        // glCanvas.setContext(glCanvas.createContext(null));
-        // imauWindow.init(glCanvas);
-
-        // Add Mouse event listener
-        glCanvas.addMouseListener(imauWindow.getInputHandler());
-        glCanvas.addMouseMotionListener(imauWindow.getInputHandler());
-        glCanvas.addMouseWheelListener(imauWindow.getInputHandler());
-
-        // Add key event listener
-        glCanvas.addKeyListener(imauWindow.getInputHandler());
-
-        // Add the glCanvas to the JPanel
-        glCanvas.setFocusable(true);
-        glCanvas.requestFocusInWindow();
-
-        // Set up animator
-        final Animator animator = new Animator(glCanvas);
-        animator.start();
+        // // Create the canvas
+        // glCanvas = new GLCanvas(glCapabilities);
+        // add(glCanvas, BorderLayout.CENTER);
+        // // glCanvas.setRealized(true);
+        // // glCanvas.setContext(glCanvas.createContext(null));
+        // // imauWindow.init(glCanvas);
+        //
+        // // Add Mouse event listener
+        // glCanvas.addMouseListener(imauWindow.getInputHandler());
+        // glCanvas.addMouseMotionListener(imauWindow.getInputHandler());
+        // glCanvas.addMouseWheelListener(imauWindow.getInputHandler());
+        //
+        // // Add key event listener
+        // glCanvas.addKeyListener(imauWindow.getInputHandler());
+        //
+        // // Add the glCanvas to the JPanel
+        // glCanvas.setFocusable(true);
+        // glCanvas.requestFocusInWindow();
+        //
+        // // Set up animator
+        // Animator animator = new Animator();
+        // // animator.setModeBits(false,
+        // // Animator.MODE_EXPECT_AWT_RENDERING_THREAD);
+        // // animator.setExclusiveContext(false);
+        // // final Animator animator = new Animator(glCanvas);
+        // animator.add(glCanvas);
+        // animator.start();
+        //
+        // glCanvas.setVisible(true);
+        // // setVisible(true);
 
         setVisible(true);
     }
 
     void close() {
-        imauWindow.dispose(glCanvas);
-        glCanvas.destroy();
+        // glCanvas.destroy();
     }
 
     public Point getCanvasLocation() {
@@ -410,7 +414,7 @@ public class ImauPanel extends JPanel {
                 // + inputHandler.getRotation().get(0) + ","
                 // + inputHandler.getRotation().get(1) + " - "
                 // + Float.toString(inputHandler.getViewDist()) + "} ";
-                imauWindow.makeSnapshot();
+                timer.setScreenshotNeeded(true);
             }
         });
         bottomPanel.add(screenshotButton);

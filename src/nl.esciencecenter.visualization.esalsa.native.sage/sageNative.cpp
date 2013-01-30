@@ -4,7 +4,7 @@
 #include <math.h>
 #include "../../sage-code/sage/include/libsage.h"
 
-#include "imau_visualization_jni_SageInterface.h"
+#include "nl_esciencecenter_visualization_esalsa_SageInterface.h"
 
 sail *sageInf1;//, *sageInf2; // sail object
 void *buffer1;//, *buffer2;
@@ -23,7 +23,7 @@ int started = 0;
 	//	return false;
 	//}
 
-JNIEXPORT jint JNICALL Java_imau_visualization_jni_SageInterface_setup(JNIEnv *env, jobject obj, jint width, jint height, jint fps) {
+JNIEXPORT jint JNICALL Java_nl_esciencecenter_visualization_esalsa_jni_SageInterface_setup(JNIEnv *env, jobject obj, jint width, jint height, jint fps) {
 	resX = (int)width;
 	resY = (int)height;
 	frames = (double)fps;
@@ -37,7 +37,7 @@ JNIEXPORT jint JNICALL Java_imau_visualization_jni_SageInterface_setup(JNIEnv *e
 	return 0;
 }
 
-JNIEXPORT jint JNICALL Java_imau_visualization_jni_SageInterface_start(JNIEnv *env, jobject obj, jobject byteBuffer) {
+JNIEXPORT jint JNICALL Java_nl_esciencecenter_visualization_esalsa_jni_SageInterface_start(JNIEnv *env, jobject obj, jobject byteBuffer) {
 	//long *int1;
 	//int1 = (long *)malloc(sizeof(long)*size);
 	//env->GetIntArrayRegion(arr,0,size,int1);

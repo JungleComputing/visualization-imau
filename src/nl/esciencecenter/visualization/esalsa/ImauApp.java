@@ -5,11 +5,11 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+import javax.media.opengl.GLCapabilities;
+import javax.media.opengl.GLProfile;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -17,15 +17,87 @@ import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
+
+import com.jogamp.newt.Display;
+import com.jogamp.newt.NewtFactory;
+import com.jogamp.newt.Screen;
+import com.jogamp.newt.awt.NewtCanvasAWT;
+import com.jogamp.newt.opengl.GLWindow;
+import com.jogamp.opengl.util.Animator;
 
 public class ImauApp {
-    private final static ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger       log      = LoggerFactory
-                                                       .getLogger(ImauApp.class);
+    private final static ImauSettings settings  = ImauSettings.getInstance();
+    private final static Logger       log       = LoggerFactory
+                                                        .getLogger(ImauApp.class);
 
     private static JFrame             frame;
     private static ImauPanel          imauPanel;
     private static ImauWindow         imauWindow;
+
+    static int                        screenIdx = 0;
+
+    private static NewtCanvasAWT createScreen(boolean forceGL3) {
+        final GLProfile glp;
+        if (forceGL3) {
+            glp = GLProfile.get(GLProfile.GL4);
+        } else {
+            glp = GLProfile.get(GLProfile.GLES2);
+        }
+
+        final GLCapabilities caps = new GLCapabilities(glp);
+        caps.setBackgroundOpaque(true);
+        caps.setHardwareAccelerated(true);
+        caps.setDoubleBuffered(true);
+
+        // Anti-Aliasing
+        caps.setSampleBuffers(true);
+        caps.setAlphaBits(4);
+        caps.setNumSamples(4);
+
+        Display dpy = NewtFactory.createDisplay(null);
+        Screen screen = NewtFactory.createScreen(dpy, screenIdx);
+
+        final GLWindow glWindow = GLWindow.create(screen, caps);
+
+        NewtCanvasAWT canvas = new NewtCanvasAWT(glWindow);
+
+        Assert.notNull(glWindow);
+        glWindow.setTitle("eSalsa Visualization");
+        glWindow.setSize(
+                ImauApp.settings.getDefaultScreenWidth()
+                        + ImauApp.settings.getDefaultScreenWidthExtension(),
+                ImauApp.settings.getDefaultScreenHeight()
+                        + ImauApp.settings.getDefaultScreenHeightExtension());
+
+        // glWindow.setPosition(0, 0);
+
+        glWindow.setUndecorated(false);
+        glWindow.setAlwaysOnTop(false);
+        glWindow.setFullscreen(false);
+        glWindow.setPointerVisible(true);
+        glWindow.confinePointer(false);
+
+        imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
+
+        // Add Mouse event listener
+        glWindow.addMouseListener(imauWindow.getInputHandler());
+        // glWindow.addMouseMotionListener(imauWindow.getInputHandler());
+        // glWindow.addMouseWheelListener(imauWindow.getInputHandler());
+
+        // Add key event listener
+        glWindow.addKeyListener(imauWindow.getInputHandler());
+
+        Animator animator = new Animator();
+        animator.add(glWindow);
+        animator.start();
+
+        glWindow.addGLEventListener(imauWindow);
+
+        glWindow.setVisible(true);
+
+        return canvas;
+    }
 
     public static void main(String[] arguments) {
         String cmdlnfileName = null;
@@ -67,8 +139,8 @@ public class ImauApp {
                 ImauApp.settings.getDefaultScreenHeight()
                         + ImauApp.settings.getDefaultScreenHeightExtension()));
 
-        imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
-        imauPanel = new ImauPanel(imauWindow, path, cmdlnfileName,
+        // imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
+        imauPanel = new ImauPanel(path, createScreen(true), cmdlnfileName,
                 cmdlnfileName2);
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -77,13 +149,13 @@ public class ImauApp {
                 try {
                     frame.getContentPane().add(imauPanel);
 
-                    frame.addWindowListener(new WindowAdapter() {
-                        @Override
-                        public void windowClosing(WindowEvent we) {
-                            imauPanel.close();
-                            System.exit(0);
-                        }
-                    });
+                    // frame.addWindowListener(new WindowAdapter() {
+                    //
+                    // public void windowClosing(WindowEvent we) {
+                    // imauPanel.close();
+                    // System.exit(0);
+                    // }
+                    // });
                 } catch (final Exception e) {
                     e.printStackTrace(System.err);
                     System.exit(1);
@@ -91,13 +163,13 @@ public class ImauApp {
             }
         });
 
-        // Display the window.
-        frame.pack();
-
         // center on screen
         frame.setLocationRelativeTo(null);
 
+        // Display the window.
+        frame.pack();
         frame.setVisible(true);
+
     }
 
     public static BufferedImage getFrameImage() {
