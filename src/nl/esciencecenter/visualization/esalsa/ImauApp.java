@@ -17,12 +17,14 @@ import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 import com.jogamp.newt.Display;
 import com.jogamp.newt.NewtFactory;
 import com.jogamp.newt.Screen;
 import com.jogamp.newt.awt.NewtCanvasAWT;
+import com.jogamp.newt.event.WindowAdapter;
+import com.jogamp.newt.event.WindowEvent;
+import com.jogamp.newt.event.WindowListener;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.util.Animator;
 
@@ -37,7 +39,8 @@ public class ImauApp {
 
     static int                        screenIdx = 0;
 
-    private static NewtCanvasAWT createScreen(boolean forceGL3) {
+    private static void createScreen(boolean forceGL3, String path,
+            String cmdlnfileName, String cmdlnfileName2) {
         final GLProfile glp;
         if (forceGL3) {
             glp = GLProfile.get(GLProfile.GL3);
@@ -59,19 +62,11 @@ public class ImauApp {
         Screen screen = NewtFactory.createScreen(dpy, screenIdx);
 
         final GLWindow glWindow = GLWindow.create(screen, caps);
+        final NewtCanvasAWT canvas = new NewtCanvasAWT(glWindow);
 
-        NewtCanvasAWT canvas = new NewtCanvasAWT(glWindow);
+        imauPanel = new ImauPanel(canvas, path, cmdlnfileName, cmdlnfileName2);
 
-        Assert.notNull(glWindow);
-        glWindow.setTitle("eSalsa Visualization");
-        glWindow.setSize(
-                ImauApp.settings.getDefaultScreenWidth()
-                        + ImauApp.settings.getDefaultScreenWidthExtension(),
-                ImauApp.settings.getDefaultScreenHeight()
-                        + ImauApp.settings.getDefaultScreenHeightExtension());
-
-        // glWindow.setPosition(0, 0);
-
+        glWindow.setPosition(0, 0);
         glWindow.setUndecorated(false);
         glWindow.setAlwaysOnTop(false);
         glWindow.setFullscreen(false);
@@ -82,21 +77,52 @@ public class ImauApp {
 
         // Add Mouse event listener
         glWindow.addMouseListener(imauWindow.getInputHandler());
-        // glWindow.addMouseMotionListener(imauWindow.getInputHandler());
-        // glWindow.addMouseWheelListener(imauWindow.getInputHandler());
 
         // Add key event listener
         glWindow.addKeyListener(imauWindow.getInputHandler());
 
-        Animator animator = new Animator();
+        final Animator animator = new Animator();
         animator.add(glWindow);
         animator.start();
 
         glWindow.addGLEventListener(imauWindow);
 
-        glWindow.setVisible(true);
+        for (WindowListener l : glWindow.getWindowListeners()) {
+            glWindow.removeWindowListener(l);
+        }
 
-        return canvas;
+        glWindow.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowDestroyNotify(WindowEvent arg0) {
+                animator.stop();
+
+                imauWindow.dispose(glWindow);
+                imauPanel.close();
+                System.exit(0);
+            }
+        });
+
+        final JFrame frame = new JFrame("Swing Parent JFrame");
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        // frame.setContentPane(imauPanel);
+        frame.setSize(
+                ImauApp.settings.getDefaultScreenWidth()
+                        + ImauApp.settings.getDefaultScreenWidthExtension(),
+                ImauApp.settings.getDefaultScreenHeight()
+                        + ImauApp.settings.getDefaultScreenHeightExtension());
+        frame.setVisible(true);
+
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    frame.getContentPane().add(imauPanel);
+                } catch (final Exception e) {
+                    e.printStackTrace(System.err);
+                    System.exit(1);
+                }
+            }
+        });
     }
 
     public static void main(String[] arguments) {
@@ -132,43 +158,42 @@ public class ImauApp {
             }
         }
 
-        frame = new JFrame("Imau Visualization");
-        frame.setPreferredSize(new Dimension(ImauApp.settings
-                .getDefaultScreenWidth()
-                + ImauApp.settings.getDefaultScreenWidthExtension(),
-                ImauApp.settings.getDefaultScreenHeight()
-                        + ImauApp.settings.getDefaultScreenHeightExtension()));
+        // frame = new JFrame("Imau Visualization");
+        // frame.setPreferredSize(new Dimension(ImauApp.settings
+        // .getDefaultScreenWidth()
+        // + ImauApp.settings.getDefaultScreenWidthExtension(),
+        // ImauApp.settings.getDefaultScreenHeight()
+        // + ImauApp.settings.getDefaultScreenHeightExtension()));
 
         // imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
-        imauPanel = new ImauPanel(path, createScreen(true), cmdlnfileName,
-                cmdlnfileName2);
+        createScreen(true, path, cmdlnfileName, cmdlnfileName2);
 
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    frame.getContentPane().add(imauPanel);
-
-                    // frame.addWindowListener(new WindowAdapter() {
-                    //
-                    // public void windowClosing(WindowEvent we) {
-                    // imauPanel.close();
-                    // System.exit(0);
-                    // }
-                    // });
-                } catch (final Exception e) {
-                    e.printStackTrace(System.err);
-                    System.exit(1);
-                }
-            }
-        });
-
-        // center on screen
-        frame.setLocationRelativeTo(null);
-
-        // Display the window.
-        frame.pack();
-        frame.setVisible(true);
+        // javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        // @Override
+        // public void run() {
+        // try {
+        // frame.getContentPane().add(imauPanel);
+        //
+        // // frame.addWindowListener(new WindowAdapter() {
+        // //
+        // // public void windowClosing(WindowEvent we) {
+        // // imauPanel.close();
+        // // System.exit(0);
+        // // }
+        // // });
+        // } catch (final Exception e) {
+        // e.printStackTrace(System.err);
+        // System.exit(1);
+        // }
+        // }
+        // });
+        //
+        // // center on screen
+        // frame.setLocationRelativeTo(null);
+        //
+        // // Display the window.
+        // frame.pack();
+        // frame.setVisible(true);
 
     }
 

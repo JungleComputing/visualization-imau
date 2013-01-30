@@ -659,22 +659,12 @@ public class ImauWindow implements GLEventListener {
 
     @Override
     public void dispose(GLAutoDrawable drawable) {
-        try {
-            final int status = drawable.getContext().makeCurrent();
-            if ((status != GLContext.CONTEXT_CURRENT)
-                    && (status != GLContext.CONTEXT_CURRENT_NEW)) {
-                System.err.println("Error swapping context to onscreen.");
-            }
-        } catch (final GLException e) {
-            System.err.println("Exception while swapping context to onscreen.");
-            e.printStackTrace();
-        }
 
         final GL3 gl = drawable.getGL().getGL3();
 
+        timer.stop();
         loader.cleanup(gl);
         timer.close();
-        timer.stop();
 
         sphereModel.delete(gl);
         atmModel.delete(gl);

@@ -79,8 +79,8 @@ public class ImauPanel extends JPanel {
 
     protected GLCanvas             glCanvas;
 
-    public ImauPanel(String path, NewtCanvasAWT newtCanvasAWT,
-            String cmdlnfileName, String cmdlnfileName2) {
+    public ImauPanel(NewtCanvasAWT canvas, String path, String cmdlnfileName,
+            String cmdlnfileName2) {
         setLayout(new BorderLayout(0, 0));
 
         // this.imauWindow = imauWindow;
@@ -273,7 +273,7 @@ public class ImauPanel extends JPanel {
 
         setTweakState(TweakState.DATA);
 
-        // add(newtCanvasAWT, BorderLayout.CENTER);
+        add(canvas, BorderLayout.CENTER);
 
         // JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
