@@ -1,4 +1,4 @@
-#version 420
+#version 150
 
 in vec2 tCoord;
 

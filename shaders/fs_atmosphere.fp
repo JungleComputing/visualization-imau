@@ -1,4 +1,4 @@
-#version 420
+#version 150
 
 in vec3 vertex_pos;
 in vec3 vertex_normal;

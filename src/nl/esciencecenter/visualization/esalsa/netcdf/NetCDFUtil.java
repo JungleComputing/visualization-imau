@@ -51,7 +51,7 @@ public class NetCDFUtil {
             String s = split[i];
             try {
                 Integer.parseInt(s);
-                if (s.length() > 4) {
+                if (s.length() >= 4) {
                     sequenceNumberString = s;
                     if (!foundOne) {
                         foundOne = true;

@@ -40,7 +40,7 @@ public class ImauApp {
     private static NewtCanvasAWT createScreen(boolean forceGL3) {
         final GLProfile glp;
         if (forceGL3) {
-            glp = GLProfile.get(GLProfile.GL4);
+            glp = GLProfile.get(GLProfile.GL3);
         } else {
             glp = GLProfile.get(GLProfile.GLES2);
         }
