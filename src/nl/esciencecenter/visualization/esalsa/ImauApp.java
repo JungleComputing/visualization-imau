@@ -10,6 +10,7 @@ import java.io.File;
 
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLProfile;
+import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -57,7 +58,7 @@ public class ImauApp {
         caps.setSampleBuffers(true);
         caps.setAlphaBits(4);
         caps.setNumSamples(4);
-
+                
         // Create the Newt Window and AWT canvas
         Display dpy = NewtFactory.createDisplay(null);
         Screen screen = NewtFactory.createScreen(dpy, screenIdx);
@@ -113,11 +114,11 @@ public class ImauApp {
         	System.out.println("Crappy OS detected, switching to lame 2-frame mode");
 	        glWindow.setSize(	ImauApp.settings.getDefaultScreenWidth(),
 	                			ImauApp.settings.getDefaultScreenHeight());
-	        
+	       
 	        glWindow.setVisible(true);
         }
 
-        frame.setVisible(true);
+        frame.setVisible(true);  
     }
 
     public static void main(String[] arguments) {
