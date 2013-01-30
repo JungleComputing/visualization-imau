@@ -65,14 +65,6 @@ public class ImauApp {
         final NewtCanvasAWT canvas = new NewtCanvasAWT(glWindow);
 
         imauPanel = new ImauPanel(canvas, path, cmdlnfileName, cmdlnfileName2);
-
-        glWindow.setPosition(0, 0);
-        glWindow.setUndecorated(false);
-        glWindow.setAlwaysOnTop(false);
-        glWindow.setFullscreen(false);
-        glWindow.setPointerVisible(true);
-        glWindow.confinePointer(false);
-
         imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
 
         // Add Mouse event listener
@@ -94,23 +86,18 @@ public class ImauApp {
         glWindow.addWindowListener(new WindowAdapter() {
             @Override
             public void windowDestroyNotify(WindowEvent arg0) {
-                animator.stop();
-
-                imauWindow.dispose(glWindow);
-                imauPanel.close();
                 System.exit(0);
             }
         });
 
-        final JFrame frame = new JFrame("Swing Parent JFrame");
+        final JFrame frame = new JFrame("eSalsa Visualization");
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        // frame.setContentPane(imauPanel);
+
         frame.setSize(
                 ImauApp.settings.getDefaultScreenWidth()
                         + ImauApp.settings.getDefaultScreenWidthExtension(),
                 ImauApp.settings.getDefaultScreenHeight()
                         + ImauApp.settings.getDefaultScreenHeightExtension());
-        frame.setVisible(true);
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -123,6 +110,8 @@ public class ImauApp {
                 }
             }
         });
+
+        frame.setVisible(true);
     }
 
     public static void main(String[] arguments) {
