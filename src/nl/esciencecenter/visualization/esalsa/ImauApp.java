@@ -108,6 +108,14 @@ public class ImauApp {
                 }
             }
         });
+        
+        if (System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0) {
+        	System.out.println("Crappy OS detected, switching to lame 2-frame mode");
+	        glWindow.setSize(	ImauApp.settings.getDefaultScreenWidth(),
+	                			ImauApp.settings.getDefaultScreenHeight());
+	        
+	        glWindow.setVisible(true);
+        }
 
         frame.setVisible(true);
     }

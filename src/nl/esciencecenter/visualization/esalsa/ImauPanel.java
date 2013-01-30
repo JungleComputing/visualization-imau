@@ -273,7 +273,9 @@ public class ImauPanel extends JPanel {
 
         setTweakState(TweakState.DATA);
 
-        add(canvas, BorderLayout.CENTER);
+        //if (System.getProperty("os.name").toLowerCase().indexOf("mac") < 0) {
+        //	add(canvas, BorderLayout.CENTER);
+        //}
 
         // JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
