@@ -24,7 +24,6 @@ import com.jogamp.newt.Screen;
 import com.jogamp.newt.awt.NewtCanvasAWT;
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
-import com.jogamp.newt.event.WindowListener;
 import com.jogamp.newt.opengl.GLWindow;
 import com.jogamp.opengl.util.Animator;
 
@@ -48,48 +47,46 @@ public class ImauApp {
             glp = GLProfile.get(GLProfile.GLES2);
         }
 
+        // Set up the GL context
         final GLCapabilities caps = new GLCapabilities(glp);
         caps.setBackgroundOpaque(true);
         caps.setHardwareAccelerated(true);
         caps.setDoubleBuffered(true);
 
-        // Anti-Aliasing
+        // Add Anti-Aliasing
         caps.setSampleBuffers(true);
         caps.setAlphaBits(4);
         caps.setNumSamples(4);
 
+        // Create the Newt Window and AWT canvas
         Display dpy = NewtFactory.createDisplay(null);
         Screen screen = NewtFactory.createScreen(dpy, screenIdx);
 
         final GLWindow glWindow = GLWindow.create(screen, caps);
         final NewtCanvasAWT canvas = new NewtCanvasAWT(glWindow);
 
+        // Create the Swing interface elements
         imauPanel = new ImauPanel(canvas, path, cmdlnfileName, cmdlnfileName2);
+
+        // Create the GLEventListener
         imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
 
-        // Add Mouse event listener
+        // Add listeners
         glWindow.addMouseListener(imauWindow.getInputHandler());
-
-        // Add key event listener
         glWindow.addKeyListener(imauWindow.getInputHandler());
-
-        final Animator animator = new Animator();
-        animator.add(glWindow);
-        animator.start();
-
-        glWindow.addGLEventListener(imauWindow);
-
-        for (WindowListener l : glWindow.getWindowListeners()) {
-            glWindow.removeWindowListener(l);
-        }
-
         glWindow.addWindowListener(new WindowAdapter() {
             @Override
             public void windowDestroyNotify(WindowEvent arg0) {
                 System.exit(0);
             }
         });
+        glWindow.addGLEventListener(imauWindow);
 
+        // Create the Animator
+        final Animator animator = new Animator();
+        animator.add(glWindow);
+
+        // Create the frame
         final JFrame frame = new JFrame("eSalsa Visualization");
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
@@ -104,6 +101,7 @@ public class ImauApp {
             public void run() {
                 try {
                     frame.getContentPane().add(imauPanel);
+                    animator.start();
                 } catch (final Exception e) {
                     e.printStackTrace(System.err);
                     System.exit(1);
