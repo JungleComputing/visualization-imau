@@ -10,7 +10,6 @@ import java.io.File;
 
 import javax.media.opengl.GLCapabilities;
 import javax.media.opengl.GLProfile;
-import javax.media.opengl.awt.GLCanvas;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
@@ -22,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import com.jogamp.newt.Display;
 import com.jogamp.newt.NewtFactory;
 import com.jogamp.newt.Screen;
-import com.jogamp.newt.awt.NewtCanvasAWT;
 import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.opengl.GLWindow;
@@ -58,16 +56,16 @@ public class ImauApp {
         caps.setSampleBuffers(true);
         caps.setAlphaBits(4);
         caps.setNumSamples(4);
-                
+
         // Create the Newt Window and AWT canvas
         Display dpy = NewtFactory.createDisplay(null);
         Screen screen = NewtFactory.createScreen(dpy, screenIdx);
 
         final GLWindow glWindow = GLWindow.create(screen, caps);
-        final NewtCanvasAWT canvas = new NewtCanvasAWT(glWindow);
+        // final NewtCanvasAWT canvas = new NewtCanvasAWT(glWindow);
 
         // Create the Swing interface elements
-        imauPanel = new ImauPanel(canvas, path, cmdlnfileName, cmdlnfileName2);
+        imauPanel = new ImauPanel(path, cmdlnfileName, cmdlnfileName2);
 
         // Create the GLEventListener
         imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
@@ -109,16 +107,17 @@ public class ImauApp {
                 }
             }
         });
-        
-        if (System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0) {
-        	System.out.println("Crappy OS detected, switching to lame 2-frame mode");
-	        glWindow.setSize(	ImauApp.settings.getDefaultScreenWidth(),
-	                			ImauApp.settings.getDefaultScreenHeight());
-	       
-	        glWindow.setVisible(true);
-        }
 
-        frame.setVisible(true);  
+        // if (System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0)
+        // {
+        // System.out.println("Crappy OS detected, switching to lame 2-frame mode");
+        glWindow.setSize(ImauApp.settings.getDefaultScreenWidth(),
+                ImauApp.settings.getDefaultScreenHeight());
+
+        glWindow.setVisible(true);
+        // }
+
+        frame.setVisible(true);
     }
 
     public static void main(String[] arguments) {

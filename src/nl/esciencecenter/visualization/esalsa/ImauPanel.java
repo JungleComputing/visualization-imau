@@ -49,8 +49,6 @@ import nl.esciencecenter.visualization.esalsa.util.RangeSliderUI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jogamp.newt.awt.NewtCanvasAWT;
-
 public class ImauPanel extends JPanel {
     public static enum TweakState {
         NONE, DATA, VISUAL, MOVIE
@@ -79,8 +77,7 @@ public class ImauPanel extends JPanel {
 
     protected GLCanvas             glCanvas;
 
-    public ImauPanel(NewtCanvasAWT canvas, String path, String cmdlnfileName,
-            String cmdlnfileName2) {
+    public ImauPanel(String path, String cmdlnfileName, String cmdlnfileName2) {
         setLayout(new BorderLayout(0, 0));
 
         // this.imauWindow = imauWindow;
@@ -273,9 +270,9 @@ public class ImauPanel extends JPanel {
 
         setTweakState(TweakState.DATA);
 
-        if (System.getProperty("os.name").toLowerCase().indexOf("mac") < 0) {
-        	add(canvas, BorderLayout.CENTER);
-        }
+        // if (System.getProperty("os.name").toLowerCase().indexOf("mac") < 0) {
+        // add(canvas, BorderLayout.CENTER);
+        // }
 
         // JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 
@@ -521,7 +518,7 @@ public class ImauPanel extends JPanel {
 
         setTweakState(TweakState.DATA);
 
-        //add(canvas, BorderLayout.CENTER);        
+        // add(canvas, BorderLayout.CENTER);
 
         // JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 

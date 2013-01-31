@@ -243,7 +243,7 @@ public class ImauWindow implements GLEventListener {
         mv = mv.mul(MatrixFMath.rotationY(inputHandler.getRotation().get(1)));
 
         drawAtmosphere(gl, mv, atmosphereFBO);
-        blur(gl, atmosphereFBO, fsq, 1, 2, 4);
+        // blur(gl, atmosphereFBO, fsq, 1, 2, 4);
 
         SurfaceTextureDescription currentDesc;
         Texture2D surface, legend;
