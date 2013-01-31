@@ -108,15 +108,15 @@ public class ImauPanel extends JPanel {
             }
         });
         file.add(open);
-        final JMenuItem open2 = new JMenuItem("Open Second");
-        open2.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                final File file = openFile();
-                handleFile(file1, file);
-            }
-        });
-        file.add(open2);
+        // final JMenuItem open2 = new JMenuItem("Open Second");
+        // open2.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // final File file = openFile();
+        // handleFile(file1, file);
+        // }
+        // });
+        // file.add(open2);
         menuBar.add(file);
         final JMenu options = new JMenu("Options");
 
