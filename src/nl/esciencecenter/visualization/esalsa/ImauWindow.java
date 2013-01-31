@@ -104,7 +104,7 @@ public class ImauWindow implements GLEventListener {
         this.loader = new ProgramLoader();
         this.inputHandler = inputHandler;
         this.font = (TypecastFont) FontFactory.get(fontSet).getDefault();
-        this.post_process = true;
+        this.post_process = post_process;
 
         cachedScreens = settings.getNumScreensRows()
                 * settings.getNumScreensCols();
@@ -400,7 +400,7 @@ public class ImauWindow implements GLEventListener {
 
             final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
             shaderProgram_Sphere.setUniformMatrix("MVMatrix", mv.clone());
-            shaderProgram_Sphere.setUniformMatrix("PMatrix", p.clone());
+            shaderProgram_Sphere.setUniformMatrix("PMatrix", p);
             // shaderProgram_Sphere.setUniform("height_distortion_intensity",
             // settings.getHeightDistortion());
             shaderProgram_Sphere.setUniform("texture_map",
@@ -428,7 +428,7 @@ public class ImauWindow implements GLEventListener {
 
             final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
             shaderProgram_Atmosphere.setUniformMatrix("MVMatrix", mv.clone());
-            shaderProgram_Atmosphere.setUniformMatrix("PMatrix", p.clone());
+            shaderProgram_Atmosphere.setUniformMatrix("PMatrix", p);
             shaderProgram_Atmosphere.setUniformMatrix("NormalMatrix",
                     MatrixFMath.getNormalMatrix(mv));
 

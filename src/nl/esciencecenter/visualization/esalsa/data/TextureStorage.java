@@ -3,6 +3,7 @@ package nl.esciencecenter.visualization.esalsa.data;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,11 +128,12 @@ public class TextureStorage {
         surfaceStorage = newSurfaceStore;
 
         HashMap<SurfaceTextureDescription, ByteBuffer> newLegendStore = new HashMap<SurfaceTextureDescription, ByteBuffer>();
-        for (SurfaceTextureDescription storedLegendSurfaceDesc : legendStorage
-                .keySet()) {
-            if (usedDescs.contains(storedLegendSurfaceDesc)) {
-                newLegendStore.put(storedLegendSurfaceDesc,
-                        legendStorage.get(storedLegendSurfaceDesc));
+        for (Map.Entry<SurfaceTextureDescription, ByteBuffer> entry : legendStorage
+                .entrySet()) {
+            SurfaceTextureDescription key = entry.getKey();
+            ByteBuffer value = entry.getValue();
+            if (usedDescs.contains(key)) {
+                newLegendStore.put(key, value);
             }
         }
         legendStorage = newLegendStore;
@@ -158,7 +160,8 @@ public class TextureStorage {
         }
     }
 
-    public void setLegendImage(SurfaceTextureDescription desc, ByteBuffer data) {
+    public synchronized void setLegendImage(SurfaceTextureDescription desc,
+            ByteBuffer data) {
         boolean failure = true;
         // Only add this legend texture if it is still needed.
         for (int i = 0; i < newScreenA.length; i++) {

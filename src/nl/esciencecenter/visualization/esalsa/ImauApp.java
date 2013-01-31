@@ -57,12 +57,12 @@ public class ImauApp {
         caps.setAlphaBits(4);
         caps.setNumSamples(4);
 
-        // Create the Newt Window and AWT canvas
+        // Create the Newt Window
         Display dpy = NewtFactory.createDisplay(null);
         Screen screen = NewtFactory.createScreen(dpy, screenIdx);
-
         final GLWindow glWindow = GLWindow.create(screen, caps);
-        // final NewtCanvasAWT canvas = new NewtCanvasAWT(glWindow);
+
+        glWindow.setTitle("eSalsa Visualization");
 
         // Create the Swing interface elements
         imauPanel = new ImauPanel(path, cmdlnfileName, cmdlnfileName2);
@@ -78,6 +78,21 @@ public class ImauApp {
             public void windowDestroyNotify(WindowEvent arg0) {
                 System.exit(0);
             }
+
+            @Override
+            public void windowDestroyed(WindowEvent arg0) {
+                System.exit(0);
+            }
+
+            @Override
+            public void windowResized(WindowEvent arg0) {
+                // int x = glWindow.getX();
+                // int y = glWindow.getY();
+                // int w = glWindow.getWidth();
+                // int h = glWindow.getHeight();
+                // imauWindow.reshape(glWindow, x, y, w, h);
+                // glWindow.windowRepaint(x, y, w, h);
+            }
         });
         glWindow.addGLEventListener(imauWindow);
 
@@ -87,13 +102,17 @@ public class ImauApp {
 
         // Create the frame
         final JFrame frame = new JFrame("eSalsa Visualization");
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent arg0) {
+                System.exit(0);
+            }
+        });
 
-        frame.setSize(
-                ImauApp.settings.getDefaultScreenWidth()
-                        + ImauApp.settings.getDefaultScreenWidthExtension(),
-                ImauApp.settings.getDefaultScreenHeight()
-                        + ImauApp.settings.getDefaultScreenHeightExtension());
+        frame.setSize(ImauApp.settings.getInterfaceWidth(),
+                ImauApp.settings.getInterfaceHeight());
+
+        frame.setResizable(false);
 
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -108,15 +127,10 @@ public class ImauApp {
             }
         });
 
-        // if (System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0)
-        // {
-        // System.out.println("Crappy OS detected, switching to lame 2-frame mode");
         glWindow.setSize(ImauApp.settings.getDefaultScreenWidth(),
                 ImauApp.settings.getDefaultScreenHeight());
 
         glWindow.setVisible(true);
-        // }
-
         frame.setVisible(true);
     }
 

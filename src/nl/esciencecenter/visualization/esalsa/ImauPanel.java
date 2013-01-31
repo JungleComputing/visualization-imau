@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import javax.media.opengl.awt.GLCanvas;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -31,7 +30,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -97,6 +95,8 @@ public class ImauPanel extends JPanel {
 
         // Make the menu bar
         final JMenuBar menuBar = new JMenuBar();
+        menuBar.setLayout(new BoxLayout(menuBar, BoxLayout.X_AXIS));
+
         final JMenu file = new JMenu("File");
         final JMenuItem open = new JMenuItem("Open");
         open.addActionListener(new ActionListener() {
@@ -120,262 +120,14 @@ public class ImauPanel extends JPanel {
         menuBar.add(file);
         final JMenu options = new JMenu("Options");
 
-        final JMenuItem makeMovie = new JMenuItem("Make movie.");
-        makeMovie.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.MOVIE);
-            }
-        });
-        options.add(makeMovie);
-
-        final JMenuItem showDataTweakPanel = new JMenuItem(
-                "Show data configuration panel.");
-        showDataTweakPanel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.DATA);
-            }
-        });
-        options.add(showDataTweakPanel);
-
-        final JMenuItem showVisualTweakPanel = new JMenuItem(
-                "Show visual configuration panel.");
-        showVisualTweakPanel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.VISUAL);
-            }
-        });
-        options.add(showVisualTweakPanel);
-
-        // a group of radio button menu items, to control output options
-        options.addSeparator();
-
-        JRadioButtonMenuItem rbMenuItem;
-        ButtonGroup screenCountGroup = new ButtonGroup();
-
-        rbMenuItem = new JRadioButtonMenuItem("2x2");
-        rbMenuItem.setSelected(true);
-        screenCountGroup.add(rbMenuItem);
-        rbMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JRadioButtonMenuItem item = (JRadioButtonMenuItem) e
-                        .getSource();
-                item.setSelected(true);
-
-                settings.setNumberOfScreens(2, 2);
-                dataConfig.setVisible(false);
-                createDataTweakPanel();
-                dataConfig.setVisible(true);
-            }
-        });
-        options.add(rbMenuItem);
-
-        rbMenuItem = new JRadioButtonMenuItem("3x3");
-        screenCountGroup.add(rbMenuItem);
-        rbMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JRadioButtonMenuItem item = (JRadioButtonMenuItem) e
-                        .getSource();
-                item.setSelected(true);
-
-                settings.setNumberOfScreens(3, 3);
-                dataConfig.setVisible(false);
-                createDataTweakPanel();
-                dataConfig.setVisible(true);
-            }
-        });
-        options.add(rbMenuItem);
-
-        menuBar.add(options);
-
-        ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
-                "images/ESCIENCE_logo.jpg", "eScienceCenter Logo", 311, 28);
-        JLabel nlesclogo = new JLabel(nlescIcon);
-        nlesclogo.setMinimumSize(new Dimension(300, 20));
-        nlesclogo.setMaximumSize(new Dimension(311, 28));
-
-        ImageIcon saraIcon = GoggleSwing.createResizedImageIcon(
-                "images/logo_sara.png", "SARA Logo", 41, 28);
-        JLabel saralogo = new JLabel(saraIcon);
-        saralogo.setMinimumSize(new Dimension(40, 20));
-        saralogo.setMaximumSize(new Dimension(41, 28));
-        menuBar.add(Box.createHorizontalStrut(3));
-
-        ImageIcon imauIcon = GoggleSwing.createResizedImageIcon(
-                "images/logo_imau.png", "IMAU Logo", 52, 28);
-        JLabel imaulogo = new JLabel(imauIcon);
-        imaulogo.setMinimumSize(new Dimension(50, 20));
-        imaulogo.setMaximumSize(new Dimension(52, 28));
-
-        // ImageIcon qrIcon = GoggleSwing.createResizedImageIcon(
-        // "images/qrcode_nlesc.png", "QR", 28, 28);
-        // JLabel qr = new JLabel(qrIcon);
-        // qr.setMinimumSize(new Dimension(20, 20));
-        // qr.setMaximumSize(new Dimension(28, 28));
-
-        menuBar.add(Box.createHorizontalGlue());
-        menuBar.add(imaulogo);
-        menuBar.add(Box.createHorizontalStrut(30));
-        menuBar.add(saralogo);
-        menuBar.add(Box.createHorizontalStrut(30));
-        menuBar.add(nlesclogo);
-        menuBar.add(Box.createHorizontalStrut(10));
-        // menuBar.add(qr);
-        // menuBar.add(Box.createHorizontalStrut(10));
-
-        add(menuBar, BorderLayout.NORTH);
-
-        // Make the "media player" panel
-        final JPanel bottomPanel = createBottomPanel();
-
-        // Add the tweaks panels
-        configPanel = new JPanel();
-        add(configPanel, BorderLayout.WEST);
-        configPanel.setLayout(new BoxLayout(configPanel, BoxLayout.Y_AXIS));
-        configPanel.setPreferredSize(new Dimension(200, 0));
-        configPanel.setVisible(false);
-
-        dataConfig = new JPanel();
-        dataConfig.setLayout(new BoxLayout(dataConfig, BoxLayout.Y_AXIS));
-        dataConfig.setMinimumSize(configPanel.getPreferredSize());
-        createDataTweakPanel();
-
-        visualConfig = new JPanel();
-        visualConfig.setLayout(new BoxLayout(visualConfig, BoxLayout.Y_AXIS));
-        visualConfig.setMinimumSize(visualConfig.getPreferredSize());
-        createVisualTweakPanel();
-
-        movieConfig = new JPanel();
-        movieConfig.setLayout(new BoxLayout(movieConfig, BoxLayout.Y_AXIS));
-        movieConfig.setMinimumSize(configPanel.getPreferredSize());
-        createMovieTweakPanel();
-
-        add(bottomPanel, BorderLayout.SOUTH);
-
-        // Read command line file information
-        if (cmdlnfileName != null) {
-            if (cmdlnfileName2 != null) {
-                final File cmdlnfile1 = new File(cmdlnfileName);
-                final File cmdlnfile2 = new File(cmdlnfileName2);
-                handleFile(cmdlnfile1, cmdlnfile2);
-            } else {
-                final File cmdlnfile = new File(cmdlnfileName);
-                handleFile(cmdlnfile);
-            }
-        }
-
-        setTweakState(TweakState.DATA);
-
-        // if (System.getProperty("os.name").toLowerCase().indexOf("mac") < 0) {
-        // add(canvas, BorderLayout.CENTER);
+        // final JMenuItem makeMovie = new JMenuItem("Make movie.");
+        // makeMovie.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // setTweakState(TweakState.MOVIE);
         // }
-
-        // JPopupMenu.setDefaultLightWeightPopupEnabled(false);
-
-        // GLProfileSelector.printAvailable();
-        // GLProfile glp = GLProfile.get(GLProfile.GL4);
-        //
-        // // Standard GL3 capabilities
-        // GLCapabilities glCapabilities = new GLCapabilities(glp);
-        //
-        // glCapabilities.setHardwareAccelerated(true);
-        // glCapabilities.setDoubleBuffered(true);
-        //
-        // // Anti-Aliasing
-        // glCapabilities.setSampleBuffers(true);
-        // glCapabilities.setAlphaBits(4);
-        // glCapabilities.setNumSamples(4);
-
-        // // Create the canvas
-        // glCanvas = new GLCanvas(glCapabilities);
-        // add(glCanvas, BorderLayout.CENTER);
-        // // glCanvas.setRealized(true);
-        // // glCanvas.setContext(glCanvas.createContext(null));
-        // // imauWindow.init(glCanvas);
-        //
-        // // Add Mouse event listener
-        // glCanvas.addMouseListener(imauWindow.getInputHandler());
-        // glCanvas.addMouseMotionListener(imauWindow.getInputHandler());
-        // glCanvas.addMouseWheelListener(imauWindow.getInputHandler());
-        //
-        // // Add key event listener
-        // glCanvas.addKeyListener(imauWindow.getInputHandler());
-        //
-        // // Add the glCanvas to the JPanel
-        // glCanvas.setFocusable(true);
-        // glCanvas.requestFocusInWindow();
-        //
-        // // Set up animator
-        // Animator animator = new Animator();
-        // // animator.setModeBits(false,
-        // // Animator.MODE_EXPECT_AWT_RENDERING_THREAD);
-        // // animator.setExclusiveContext(false);
-        // // final Animator animator = new Animator(glCanvas);
-        // animator.add(glCanvas);
-        // animator.start();
-        //
-        // glCanvas.setVisible(true);
-        // // setVisible(true);
-
-        setVisible(true);
-    }
-
-    public ImauPanel(GLCanvas canvas, String path, String cmdlnfileName,
-            String cmdlnfileName2) {
-        setLayout(new BorderLayout(0, 0));
-
-        // this.imauWindow = imauWindow;
-
-        variables = new ArrayList<String>();
-
-        timeBar = new CustomJSlider(new BasicSliderUI(timeBar));
-        timeBar.setValue(0);
-        timeBar.setMajorTickSpacing(5);
-        timeBar.setMinorTickSpacing(1);
-        timeBar.setMaximum(0);
-        timeBar.setMinimum(0);
-        timeBar.setPaintTicks(true);
-        timeBar.setSnapToTicks(true);
-
-        timer = new ImauTimedPlayer(timeBar, frameCounter);
-
-        // Make the menu bar
-        final JMenuBar menuBar = new JMenuBar();
-        final JMenu file = new JMenu("File");
-        final JMenuItem open = new JMenuItem("Open");
-        open.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                final File file = openFile();
-                file1 = file;
-                handleFile(file);
-            }
-        });
-        file.add(open);
-        final JMenuItem open2 = new JMenuItem("Open Second");
-        open2.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                final File file = openFile();
-                handleFile(file1, file);
-            }
-        });
-        file.add(open2);
-        menuBar.add(file);
-        final JMenu options = new JMenu("Options");
-
-        final JMenuItem makeMovie = new JMenuItem("Make movie.");
-        makeMovie.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.MOVIE);
-            }
-        });
-        options.add(makeMovie);
+        // });
+        // options.add(makeMovie);
 
         final JMenuItem showDataTweakPanel = new JMenuItem(
                 "Show data configuration panel.");
@@ -387,74 +139,78 @@ public class ImauPanel extends JPanel {
         });
         options.add(showDataTweakPanel);
 
-        final JMenuItem showVisualTweakPanel = new JMenuItem(
-                "Show visual configuration panel.");
-        showVisualTweakPanel.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent arg0) {
-                setTweakState(TweakState.VISUAL);
-            }
-        });
-        options.add(showVisualTweakPanel);
-
-        // a group of radio button menu items, to control output options
-        options.addSeparator();
-
-        JRadioButtonMenuItem rbMenuItem;
-        ButtonGroup screenCountGroup = new ButtonGroup();
-
-        rbMenuItem = new JRadioButtonMenuItem("2x2");
-        rbMenuItem.setSelected(true);
-        screenCountGroup.add(rbMenuItem);
-        rbMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JRadioButtonMenuItem item = (JRadioButtonMenuItem) e
-                        .getSource();
-                item.setSelected(true);
-
-                settings.setNumberOfScreens(2, 2);
-                dataConfig.setVisible(false);
-                createDataTweakPanel();
-                dataConfig.setVisible(true);
-            }
-        });
-        options.add(rbMenuItem);
-
-        rbMenuItem = new JRadioButtonMenuItem("3x3");
-        screenCountGroup.add(rbMenuItem);
-        rbMenuItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JRadioButtonMenuItem item = (JRadioButtonMenuItem) e
-                        .getSource();
-                item.setSelected(true);
-
-                settings.setNumberOfScreens(3, 3);
-                dataConfig.setVisible(false);
-                createDataTweakPanel();
-                dataConfig.setVisible(true);
-            }
-        });
-        options.add(rbMenuItem);
+        // final JMenuItem showVisualTweakPanel = new JMenuItem(
+        // "Show visual configuration panel.");
+        // showVisualTweakPanel.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent arg0) {
+        // setTweakState(TweakState.VISUAL);
+        // }
+        // });
+        // options.add(showVisualTweakPanel);
+        //
+        // // a group of radio button menu items, to control output options
+        // options.addSeparator();
+        //
+        // JRadioButtonMenuItem rbMenuItem;
+        // ButtonGroup screenCountGroup = new ButtonGroup();
+        //
+        // rbMenuItem = new JRadioButtonMenuItem("2x2");
+        // rbMenuItem.setSelected(true);
+        // screenCountGroup.add(rbMenuItem);
+        // rbMenuItem.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent e) {
+        // JRadioButtonMenuItem item = (JRadioButtonMenuItem) e
+        // .getSource();
+        // item.setSelected(true);
+        //
+        // settings.setNumberOfScreens(2, 2);
+        // dataConfig.setVisible(false);
+        // createDataTweakPanel();
+        // dataConfig.setVisible(true);
+        // }
+        // });
+        // options.add(rbMenuItem);
+        //
+        // rbMenuItem = new JRadioButtonMenuItem("3x3");
+        // screenCountGroup.add(rbMenuItem);
+        // rbMenuItem.addActionListener(new ActionListener() {
+        // @Override
+        // public void actionPerformed(ActionEvent e) {
+        // JRadioButtonMenuItem item = (JRadioButtonMenuItem) e
+        // .getSource();
+        // item.setSelected(true);
+        //
+        // settings.setNumberOfScreens(3, 3);
+        // dataConfig.setVisible(false);
+        // createDataTweakPanel();
+        // dataConfig.setVisible(true);
+        // }
+        // });
+        // options.add(rbMenuItem);
 
         menuBar.add(options);
 
+        menuBar.add(Box.createHorizontalGlue());
+
+        final JMenuBar menuBar2 = new JMenuBar();
+
         ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
-                "images/ESCIENCE_logo.jpg", "eScienceCenter Logo", 311, 28);
+                "images/ESCIENCE_logo.png", "eScienceCenter Logo", 50, 28);
         JLabel nlesclogo = new JLabel(nlescIcon);
         nlesclogo.setMinimumSize(new Dimension(300, 20));
         nlesclogo.setMaximumSize(new Dimension(311, 28));
 
         ImageIcon saraIcon = GoggleSwing.createResizedImageIcon(
-                "images/logo_sara.png", "SARA Logo", 41, 28);
+                "images/logo_sara.png", "SARA Logo", 50, 28);
         JLabel saralogo = new JLabel(saraIcon);
         saralogo.setMinimumSize(new Dimension(40, 20));
         saralogo.setMaximumSize(new Dimension(41, 28));
-        menuBar.add(Box.createHorizontalStrut(3));
+        menuBar2.add(Box.createHorizontalStrut(3));
 
         ImageIcon imauIcon = GoggleSwing.createResizedImageIcon(
-                "images/logo_imau.png", "IMAU Logo", 52, 28);
+                "images/logo_imau.png", "IMAU Logo", 50, 28);
         JLabel imaulogo = new JLabel(imauIcon);
         imaulogo.setMinimumSize(new Dimension(50, 20));
         imaulogo.setMaximumSize(new Dimension(52, 28));
@@ -465,17 +221,21 @@ public class ImauPanel extends JPanel {
         // qr.setMinimumSize(new Dimension(20, 20));
         // qr.setMaximumSize(new Dimension(28, 28));
 
-        menuBar.add(Box.createHorizontalGlue());
-        menuBar.add(imaulogo);
-        menuBar.add(Box.createHorizontalStrut(30));
-        menuBar.add(saralogo);
-        menuBar.add(Box.createHorizontalStrut(30));
-        menuBar.add(nlesclogo);
-        menuBar.add(Box.createHorizontalStrut(10));
-        // menuBar.add(qr);
-        // menuBar.add(Box.createHorizontalStrut(10));
+        menuBar2.add(Box.createHorizontalGlue());
+        menuBar2.add(imaulogo);
+        menuBar2.add(Box.createHorizontalStrut(20));
+        menuBar2.add(saralogo);
+        menuBar2.add(Box.createHorizontalStrut(20));
+        menuBar2.add(nlesclogo);
+        menuBar2.add(Box.createHorizontalGlue());
 
-        add(menuBar, BorderLayout.NORTH);
+        Container menuContainer = new Container();
+        menuContainer.setLayout(new BoxLayout(menuContainer, BoxLayout.Y_AXIS));
+
+        menuContainer.add(menuBar);
+        menuContainer.add(menuBar2);
+
+        add(menuContainer, BorderLayout.NORTH);
 
         // Make the "media player" panel
         final JPanel bottomPanel = createBottomPanel();
@@ -493,14 +253,15 @@ public class ImauPanel extends JPanel {
         createDataTweakPanel();
 
         visualConfig = new JPanel();
-        visualConfig.setLayout(new BoxLayout(visualConfig, BoxLayout.Y_AXIS));
-        visualConfig.setMinimumSize(visualConfig.getPreferredSize());
-        createVisualTweakPanel();
+        // visualConfig.setLayout(new BoxLayout(visualConfig,
+        // BoxLayout.Y_AXIS));
+        // visualConfig.setMinimumSize(visualConfig.getPreferredSize());
+        // createVisualTweakPanel();
 
         movieConfig = new JPanel();
-        movieConfig.setLayout(new BoxLayout(movieConfig, BoxLayout.Y_AXIS));
-        movieConfig.setMinimumSize(configPanel.getPreferredSize());
-        createMovieTweakPanel();
+        // movieConfig.setLayout(new BoxLayout(movieConfig, BoxLayout.Y_AXIS));
+        // movieConfig.setMinimumSize(configPanel.getPreferredSize());
+        // createMovieTweakPanel();
 
         add(bottomPanel, BorderLayout.SOUTH);
 
@@ -517,55 +278,6 @@ public class ImauPanel extends JPanel {
         }
 
         setTweakState(TweakState.DATA);
-
-        // add(canvas, BorderLayout.CENTER);
-
-        // JPopupMenu.setDefaultLightWeightPopupEnabled(false);
-
-        // GLProfileSelector.printAvailable();
-        // GLProfile glp = GLProfile.get(GLProfile.GL4);
-        //
-        // // Standard GL3 capabilities
-        // GLCapabilities glCapabilities = new GLCapabilities(glp);
-        //
-        // glCapabilities.setHardwareAccelerated(true);
-        // glCapabilities.setDoubleBuffered(true);
-        //
-        // // Anti-Aliasing
-        // glCapabilities.setSampleBuffers(true);
-        // glCapabilities.setAlphaBits(4);
-        // glCapabilities.setNumSamples(4);
-
-        // // Create the canvas
-        // glCanvas = new GLCanvas(glCapabilities);
-        // add(glCanvas, BorderLayout.CENTER);
-        // // glCanvas.setRealized(true);
-        // // glCanvas.setContext(glCanvas.createContext(null));
-        // // imauWindow.init(glCanvas);
-        //
-        // // Add Mouse event listener
-        // glCanvas.addMouseListener(imauWindow.getInputHandler());
-        // glCanvas.addMouseMotionListener(imauWindow.getInputHandler());
-        // glCanvas.addMouseWheelListener(imauWindow.getInputHandler());
-        //
-        // // Add key event listener
-        // glCanvas.addKeyListener(imauWindow.getInputHandler());
-        //
-        // // Add the glCanvas to the JPanel
-        // glCanvas.setFocusable(true);
-        // glCanvas.requestFocusInWindow();
-        //
-        // // Set up animator
-        // Animator animator = new Animator();
-        // // animator.setModeBits(false,
-        // // Animator.MODE_EXPECT_AWT_RENDERING_THREAD);
-        // // animator.setExclusiveContext(false);
-        // // final Animator animator = new Animator(glCanvas);
-        // animator.add(glCanvas);
-        // animator.start();
-        //
-        // glCanvas.setVisible(true);
-        // // setVisible(true);
 
         setVisible(true);
     }
@@ -628,7 +340,11 @@ public class ImauPanel extends JPanel {
         final ImageIcon stopIcon = GoggleSwing.createImageIcon(
                 "images/media-playback-stop.png", "Start");
 
-        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
+        final JPanel bottomPanel1 = new JPanel();
+        final JPanel bottomPanel2 = new JPanel();
+        bottomPanel1.setLayout(new BoxLayout(bottomPanel1, BoxLayout.X_AXIS));
+        bottomPanel2.setLayout(new BoxLayout(bottomPanel2, BoxLayout.X_AXIS));
 
         stepSizeField = new JFormattedTextField();
         stepSizeField.setColumns(4);
@@ -647,7 +363,7 @@ public class ImauPanel extends JPanel {
                 }
             }
         });
-        bottomPanel.add(stepSizeField);
+        bottomPanel1.add(stepSizeField);
 
         screenshotButton.addActionListener(new ActionListener() {
             @Override
@@ -662,7 +378,7 @@ public class ImauPanel extends JPanel {
                 timer.setScreenshotNeeded(true);
             }
         });
-        bottomPanel.add(screenshotButton);
+        bottomPanel1.add(screenshotButton);
 
         rewindButton.addActionListener(new ActionListener() {
             @Override
@@ -671,7 +387,7 @@ public class ImauPanel extends JPanel {
                 playButton.setIcon(playIcon);
             }
         });
-        bottomPanel.add(rewindButton);
+        bottomPanel1.add(rewindButton);
 
         oneBackButton.addActionListener(new ActionListener() {
             @Override
@@ -680,7 +396,7 @@ public class ImauPanel extends JPanel {
                 playButton.setIcon(playIcon);
             }
         });
-        bottomPanel.add(oneBackButton);
+        bottomPanel1.add(oneBackButton);
 
         playButton.addActionListener(new ActionListener() {
             @Override
@@ -694,7 +410,7 @@ public class ImauPanel extends JPanel {
                 }
             }
         });
-        bottomPanel.add(playButton);
+        bottomPanel1.add(playButton);
 
         oneForwardButton.addActionListener(new ActionListener() {
             @Override
@@ -703,20 +419,7 @@ public class ImauPanel extends JPanel {
                 playButton.setIcon(playIcon);
             }
         });
-        bottomPanel.add(oneForwardButton);
-
-        timeBar.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                final JSlider source = (JSlider) e.getSource();
-                if (source.hasFocus()) {
-                    timer.setFrame(timeBar.getValue() - timeBar.getMinimum(),
-                            false);
-                    playButton.setIcon(playIcon);
-                }
-            }
-        });
-        bottomPanel.add(timeBar);
+        bottomPanel1.add(oneForwardButton);
 
         frameCounter = new JFormattedTextField();
         frameCounter.setValue(new Integer(1));
@@ -742,7 +445,23 @@ public class ImauPanel extends JPanel {
             }
         });
 
-        bottomPanel.add(frameCounter);
+        bottomPanel1.add(frameCounter);
+
+        timeBar.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                final JSlider source = (JSlider) e.getSource();
+                if (source.hasFocus()) {
+                    timer.setFrame(timeBar.getValue() - timeBar.getMinimum(),
+                            false);
+                    playButton.setIcon(playIcon);
+                }
+            }
+        });
+        bottomPanel2.add(timeBar);
+
+        bottomPanel.add(bottomPanel1);
+        bottomPanel.add(bottomPanel2);
 
         return bottomPanel;
     }
@@ -1099,8 +818,8 @@ public class ImauPanel extends JPanel {
     public void setTweakState(TweakState newState) {
         configPanel.setVisible(false);
         configPanel.remove(dataConfig);
-        configPanel.remove(visualConfig);
-        configPanel.remove(movieConfig);
+        // configPanel.remove(visualConfig);
+        // configPanel.remove(movieConfig);
 
         currentConfigState = newState;
 
@@ -1108,12 +827,12 @@ public class ImauPanel extends JPanel {
         } else if (currentConfigState == TweakState.DATA) {
             configPanel.setVisible(true);
             configPanel.add(dataConfig, BorderLayout.WEST);
-        } else if (currentConfigState == TweakState.VISUAL) {
-            configPanel.setVisible(true);
-            configPanel.add(visualConfig, BorderLayout.WEST);
-        } else if (currentConfigState == TweakState.MOVIE) {
-            configPanel.setVisible(true);
-            configPanel.add(movieConfig, BorderLayout.WEST);
+            // } else if (currentConfigState == TweakState.VISUAL) {
+            // configPanel.setVisible(true);
+            // configPanel.add(visualConfig, BorderLayout.WEST);
+            // } else if (currentConfigState == TweakState.MOVIE) {
+            // configPanel.setVisible(true);
+            // configPanel.add(movieConfig, BorderLayout.WEST);
         }
     }
 

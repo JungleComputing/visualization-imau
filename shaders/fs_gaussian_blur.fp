@@ -102,5 +102,6 @@ void main() {
 		fragColor = vec4(gaussianBlur(Texture, tCoord, direction, scrHeight, blurSize, numPixelsPerSide, sigma).rgb, Alpha);
 	}
 	
-  	
+	//vec3 blurResult = gaussianBlur(Texture, tCoord, direction, scrWidth, blurSize, numPixelsPerSide, sigma).rgb
+  	fragColor = vec4(texture(Texture, tCoord).xyz, 1.0);
 }

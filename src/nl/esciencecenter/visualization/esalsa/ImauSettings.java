@@ -9,10 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ImauSettings {
-    private static final int SCREEN_HEIGHT_EXTENSION = 88;
-    private static final int SCREEN_WIDTH_EXTENSION  = 210;
-    private final Logger     logger                  = LoggerFactory
-                                                             .getLogger(ImauSettings.class);
+    private final Logger logger = LoggerFactory.getLogger(ImauSettings.class);
 
     private static class SingletonHolder {
         public final static ImauSettings instance = new ImauSettings();
@@ -40,6 +37,9 @@ public class ImauSettings {
     // Size settings for default startup and screenshots
     private int                          DEFAULT_SCREEN_WIDTH            = 1024;
     private int                          DEFAULT_SCREEN_HEIGHT           = 768;
+
+    private int                          INTERFACE_HEIGHT                = 88;
+    private int                          INTERFACE_WIDTH                 = 210;
 
     private int                          SCREENSHOT_SCREEN_WIDTH         = 1280;
     private int                          SCREENSHOT_SCREEN_HEIGHT        = 720;
@@ -145,6 +145,8 @@ public class ImauSettings {
             DEFAULT_SCREEN_WIDTH = props.getIntProperty("DEFAULT_SCREEN_WIDTH");
             DEFAULT_SCREEN_HEIGHT = props
                     .getIntProperty("DEFAULT_SCREEN_HEIGHT");
+            INTERFACE_WIDTH = props.getIntProperty("INTERFACE_WIDTH");
+            INTERFACE_HEIGHT = props.getIntProperty("INTERFACE_HEIGHT");
 
             SCREENSHOT_SCREEN_WIDTH = props
                     .getIntProperty("SCREENSHOT_SCREEN_WIDTH");
@@ -850,14 +852,6 @@ public class ImauSettings {
         screenDescriptions[screenNumber] = result;
     }
 
-    // public int getImageWidth() {
-    // return IMAGE_WIDTH;
-    // }
-    //
-    // public int getImageHeight() {
-    // return IMAGE_HEIGHT;
-    // }
-
     public int getRangeSliderLowerValue(int screenNumber) {
         SurfaceTextureDescription state = screenDescriptions[screenNumber];
 
@@ -900,14 +894,6 @@ public class ImauSettings {
         return number_of_screens_col;
     }
 
-    public int getDefaultScreenWidthExtension() {
-        return SCREEN_WIDTH_EXTENSION;
-    }
-
-    public int getDefaultScreenHeightExtension() {
-        return SCREEN_HEIGHT_EXTENSION;
-    }
-
     public void setNumberOfScreens(int rows, int columns) {
         number_of_screens_row = rows;
         number_of_screens_col = columns;
@@ -915,17 +901,11 @@ public class ImauSettings {
         initializeScreenDescriptions();
     }
 
-    // public String verbalizeDataMode(int index) {
-    // String result = "";
-    //
-    // if (index == 0) {
-    // result = "Control";
-    // } else if (index == 1) {
-    // result = "0.5 Sv";
-    // } else if (index == 2) {
-    // result = "Difference";
-    // }
-    //
-    // return result;
-    // }
+    public int getInterfaceWidth() {
+        return INTERFACE_WIDTH;
+    }
+
+    public int getInterfaceHeight() {
+        return INTERFACE_HEIGHT;
+    }
 }

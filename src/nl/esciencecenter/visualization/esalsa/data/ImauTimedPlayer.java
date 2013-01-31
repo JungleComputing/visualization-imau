@@ -195,7 +195,8 @@ public class ImauTimedPlayer implements Runnable {
 
     public synchronized void rewind() {
         stop();
-        updateFrame(0, false);
+        int newFrameNumber = dsManager.getFrameNumberOfIndex(0);
+        updateFrame(newFrameNumber, false);
     }
 
     public synchronized void setScreenshotNeeded(boolean value) {

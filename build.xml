@@ -37,7 +37,7 @@
         <javah classpath="build"
                destdir="build/headers"
                force="yes"
-               class="nl.esciencecenter.visualization.esalsa.SageInterface"
+               class="nl.esciencecenter.visualization.esalsa.jni.SageInterface"
         />
     </target>
 

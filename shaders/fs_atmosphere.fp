@@ -1,16 +1,14 @@
 #version 150
 
-in vec3 vertex_pos;
 in vec3 vertex_normal;
 
 out vec4 fragColor;
 
 void main() {
 	vec3 matColor = vec3(0.3, 0.6, 1.0);	
-	vec3 eye_direction = normalize(-vertex_pos);
+	vec3 eye_direction = vec3(0.0, 0.0, 1.0);
 	
 	float dotP = dot(vertex_normal, eye_direction);	
-	float diffuse_factor = max(.5-dotP, 0.0);	
 
-	fragColor = vec4(matColor,diffuse_factor);
+	fragColor = vec4(matColor,0.5-(dotP/2.0));
 } 
