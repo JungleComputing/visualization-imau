@@ -5,6 +5,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 
 import nl.esciencecenter.visualization.esalsa.ImauSettings;
+import nl.esciencecenter.visualization.openglCommon.math.VecF2;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 
 import com.jogamp.newt.event.KeyEvent;
@@ -40,6 +41,10 @@ public class ImauInputHandler implements TouchEventHandler, MouseListener,
     protected float           initialResizeDist;
 
     int                       currentTouchID      = 0;
+
+    boolean                   selection           = false;
+    int                       selectionLocationX  = -1;
+    int                       selectionLocationY  = -1;
 
     private static class SingletonHolder {
         public static final ImauInputHandler instance = new ImauInputHandler();
@@ -84,6 +89,23 @@ public class ImauInputHandler implements TouchEventHandler, MouseListener,
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        if (e.isButtonDown(MouseEvent.BUTTON1)) {
+            // System.out.println("X click: " + e.getX());
+            // System.out.println("Y click: " + e.getY());
+
+            selectionLocationX = e.getX();
+            selectionLocationY = e.getY();
+
+            selection = true;
+        }
+    }
+
+    public VecF2 getSelection() throws NoSelectionException {
+        if (selection) {
+            selection = false;
+            return new VecF2(selectionLocationX, selectionLocationY);
+        } else
+            throw new NoSelectionException();
     }
 
     @Override

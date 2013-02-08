@@ -26,14 +26,18 @@ import nl.esciencecenter.visualization.esalsa.glExt.ProgramLoader;
 import nl.esciencecenter.visualization.esalsa.glExt.Quad;
 import nl.esciencecenter.visualization.esalsa.glExt.Texture2D;
 import nl.esciencecenter.visualization.esalsa.jni.SageInterface;
+import nl.esciencecenter.visualization.esalsa.util.ClickCoordinateCalculator;
 import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
+import nl.esciencecenter.visualization.esalsa.util.NoSelectionException;
 import nl.esciencecenter.visualization.openglCommon.datastructures.Material;
 import nl.esciencecenter.visualization.openglCommon.exceptions.CompilationFailedException;
+import nl.esciencecenter.visualization.openglCommon.exceptions.InverseNotAvailableException;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
 import nl.esciencecenter.visualization.openglCommon.math.Color4;
 import nl.esciencecenter.visualization.openglCommon.math.MatF4;
 import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
 import nl.esciencecenter.visualization.openglCommon.math.Point4;
+import nl.esciencecenter.visualization.openglCommon.math.VecF2;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 import nl.esciencecenter.visualization.openglCommon.text.FontFactory;
@@ -138,6 +142,30 @@ public class ImauWindow implements GLEventListener {
         if (timer.isInitialized()) {
             this.timer = timer;
 
+            VecF2 clickCoords = null;
+
+            try {
+                VecF2 selection = this.inputHandler.getSelection();
+                float x, y;
+                if (settings.getWindowSelection() == 0) {
+                    x = selection.get(0);
+                    y = selection.get(1);
+                } else {
+                    x = selection.get(0) / settings.getNumScreensCols();
+                    y = selection.get(1) / settings.getNumScreensRows();
+                }
+
+                clickCoords = ClickCoordinateCalculator.calc(
+                        settings.getNumScreensCols(),
+                        settings.getNumScreensRows(), canvasWidth,
+                        canvasHeight, x, y);
+
+                System.out.println("X/Y: " + clickCoords);
+
+            } catch (NoSelectionException e) {
+                // No problem
+            }
+
             int currentScreens = settings.getNumScreensRows()
                     * settings.getNumScreensCols();
             if (currentScreens != cachedScreens) {
@@ -145,7 +173,7 @@ public class ImauWindow implements GLEventListener {
                 timer.reinitializeDatastores();
             }
 
-            displayContext(timer);
+            displayContext(timer, clickCoords);
         }
 
         // try {
@@ -220,7 +248,7 @@ public class ImauWindow implements GLEventListener {
         reshaped = false;
     }
 
-    private void displayContext(ImauTimedPlayer timer) {
+    private void displayContext(ImauTimedPlayer timer, VecF2 clickCoords) {
         final int width = GLContext.getCurrent().getGLDrawable().getWidth();
         final int height = GLContext.getCurrent().getGLDrawable().getHeight();
         aspect = (float) width / (float) height;
@@ -294,7 +322,7 @@ public class ImauWindow implements GLEventListener {
 
             drawSingleWindow(width, height, gl, mv, legend, surface,
                     varNames[i], dates[i], dataSets[i], legendTextsMin[i],
-                    legendTextsMax[i], cachedFBOs[i]);
+                    legendTextsMax[i], cachedFBOs[i], clickCoords);
 
             surface.delete(gl);
             legend.delete(gl);
@@ -310,7 +338,7 @@ public class ImauWindow implements GLEventListener {
             final GL3 gl, MatF4 mv, Texture2D legend, Texture2D globe,
             MultiColorText varNameText, MultiColorText dateText,
             MultiColorText datasetText, MultiColorText legendTextMin,
-            MultiColorText legendTextMax, FBO target) {
+            MultiColorText legendTextMax, FBO target, VecF2 clickCoords) {
         logger.debug("Drawing Text");
         drawHUDText(gl, width, height, varNameText, dateText, datasetText,
                 legendTextMin, legendTextMax, hudTextFBO);
@@ -319,7 +347,7 @@ public class ImauWindow implements GLEventListener {
         drawHUDLegend(gl, width, height, legend, legendTextureFBO);
 
         logger.debug("Drawing Sphere");
-        drawSphere(gl, mv, globe, sphereTextureFBO);
+        drawSphere(gl, mv, globe, sphereTextureFBO, clickCoords);
 
         logger.debug("Flattening Layers");
         flattenLayers(gl, width, height, hudTextFBO, legendTextureFBO,
@@ -391,7 +419,7 @@ public class ImauWindow implements GLEventListener {
     }
 
     private void drawSphere(GL3 gl, MatF4 mv, Texture2D surfaceTexture,
-            FBO target) {
+            FBO target, VecF2 clickCoords) {
         try {
             if (post_process) {
                 target.bind(gl);
@@ -399,8 +427,36 @@ public class ImauWindow implements GLEventListener {
             }
 
             final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
+
+            try {
+                MatF4 inv_p = MatrixFMath.inverse(p);
+                MatF4 inv_mv = MatrixFMath.inverse(mv);
+
+                // // Receive buffer
+                // gl.glBindBufferBase(GL3.GL_TRANSFORM_FEEDBACK_BUFFER, 0,
+                // ReceiverID);
+                // gl.glBeginTransformFeedback(GL3.GL_POINTS);
+                // // disable rasterization
+                // gl.glEnable(GL3.GL_RASTERIZER_DISCARD);
+                // // begin query for geometry shader outed primitive
+                // gl.glBeginQuery(GL3.GL_PRIMITIVES_GENERATED, QueryID);
+                // ...
+                // Rendering
+                // ...
+                // // read back query results
+                // gl.glEndQuery( GL3.GL_PRIMITIVES_GENERATED);
+                // gl.glGetQueryObjectuiv(QueryID, GL3.GL_QUERY_RESULT,
+                // @PointOutNumber);
+                // // enable rasterization
+                // gl.glDisable(GL3.GL_RASTERIZER_DISCARD);
+
+            } catch (InverseNotAvailableException e) {
+                logger.debug("Inverse Matrix could not be calculated.");
+            }
+
             shaderProgram_Sphere.setUniformMatrix("MVMatrix", mv.clone());
             shaderProgram_Sphere.setUniformMatrix("PMatrix", p);
+
             // shaderProgram_Sphere.setUniform("height_distortion_intensity",
             // settings.getHeightDistortion());
             shaderProgram_Sphere.setUniform("texture_map",

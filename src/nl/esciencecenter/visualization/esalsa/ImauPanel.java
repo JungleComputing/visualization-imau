@@ -108,6 +108,8 @@ public class ImauPanel extends JPanel {
             }
         });
         file.add(open);
+        menuBar.add(file);
+
         // final JMenuItem open2 = new JMenuItem("Open Second");
         // open2.addActionListener(new ActionListener() {
         // @Override
@@ -117,8 +119,6 @@ public class ImauPanel extends JPanel {
         // }
         // });
         // file.add(open2);
-        menuBar.add(file);
-        final JMenu options = new JMenu("Options");
 
         // final JMenuItem makeMovie = new JMenuItem("Make movie.");
         // makeMovie.addActionListener(new ActionListener() {
@@ -129,6 +129,7 @@ public class ImauPanel extends JPanel {
         // });
         // options.add(makeMovie);
 
+        final JMenu options = new JMenu("Options");
         final JMenuItem showDataTweakPanel = new JMenuItem(
                 "Show data configuration panel.");
         showDataTweakPanel.addActionListener(new ActionListener() {
