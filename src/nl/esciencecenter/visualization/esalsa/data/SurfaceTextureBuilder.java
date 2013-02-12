@@ -3,10 +3,10 @@ package nl.esciencecenter.visualization.esalsa.data;
 import java.nio.ByteBuffer;
 
 import nl.esciencecenter.visualization.esalsa.ImauSettings;
-import nl.esciencecenter.visualization.esalsa.util.ColormapInterpreter;
-import nl.esciencecenter.visualization.esalsa.util.ColormapInterpreter.Color;
-import nl.esciencecenter.visualization.esalsa.util.ColormapInterpreter.Dimensions;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Color;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter.Dimensions;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

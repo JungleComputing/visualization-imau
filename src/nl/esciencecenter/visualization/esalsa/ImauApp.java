@@ -8,131 +8,23 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLProfile;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
+import nl.esciencecenter.visualization.openglCommon.NewtWindow;
+import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.jogamp.newt.Display;
-import com.jogamp.newt.NewtFactory;
-import com.jogamp.newt.Screen;
-import com.jogamp.newt.event.WindowAdapter;
-import com.jogamp.newt.event.WindowEvent;
-import com.jogamp.newt.opengl.GLWindow;
-import com.jogamp.opengl.util.Animator;
-
 public class ImauApp {
-    private final static ImauSettings settings  = ImauSettings.getInstance();
-    private final static Logger       log       = LoggerFactory
-                                                        .getLogger(ImauApp.class);
+    private final static ImauSettings settings = ImauSettings.getInstance();
+    private final static Logger       log      = LoggerFactory
+                                                       .getLogger(ImauApp.class);
 
     private static JFrame             frame;
     private static ImauPanel          imauPanel;
     private static ImauWindow         imauWindow;
-
-    static int                        screenIdx = 0;
-
-    private static void createScreen(boolean forceGL3, String path,
-            String cmdlnfileName, String cmdlnfileName2) {
-        final GLProfile glp;
-        if (forceGL3) {
-            glp = GLProfile.get(GLProfile.GL3);
-        } else {
-            glp = GLProfile.get(GLProfile.GLES2);
-        }
-
-        // Set up the GL context
-        final GLCapabilities caps = new GLCapabilities(glp);
-        caps.setBackgroundOpaque(true);
-        caps.setHardwareAccelerated(true);
-        caps.setDoubleBuffered(true);
-
-        // Add Anti-Aliasing
-        caps.setSampleBuffers(true);
-        caps.setAlphaBits(4);
-        caps.setNumSamples(4);
-
-        // Create the Newt Window
-        Display dpy = NewtFactory.createDisplay(null);
-        Screen screen = NewtFactory.createScreen(dpy, screenIdx);
-        final GLWindow glWindow = GLWindow.create(screen, caps);
-
-        glWindow.setTitle("eSalsa Visualization");
-
-        // Create the Swing interface elements
-        imauPanel = new ImauPanel(path, cmdlnfileName, cmdlnfileName2);
-
-        // Create the GLEventListener
-        imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
-
-        // Add listeners
-        glWindow.addMouseListener(imauWindow.getInputHandler());
-        glWindow.addKeyListener(imauWindow.getInputHandler());
-        glWindow.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowDestroyNotify(WindowEvent arg0) {
-                System.exit(0);
-            }
-
-            @Override
-            public void windowDestroyed(WindowEvent arg0) {
-                System.exit(0);
-            }
-
-            @Override
-            public void windowResized(WindowEvent arg0) {
-                // int x = glWindow.getX();
-                // int y = glWindow.getY();
-                // int w = glWindow.getWidth();
-                // int h = glWindow.getHeight();
-                // imauWindow.reshape(glWindow, x, y, w, h);
-                // glWindow.windowRepaint(x, y, w, h);
-            }
-        });
-        glWindow.addGLEventListener(imauWindow);
-
-        // Create the Animator
-        final Animator animator = new Animator();
-        animator.add(glWindow);
-
-        // Create the frame
-        final JFrame frame = new JFrame("eSalsa Visualization");
-        frame.addWindowListener(new java.awt.event.WindowAdapter() {
-            @Override
-            public void windowClosing(java.awt.event.WindowEvent arg0) {
-                System.exit(0);
-            }
-        });
-
-        frame.setSize(ImauApp.settings.getInterfaceWidth(),
-                ImauApp.settings.getInterfaceHeight());
-
-        frame.setResizable(false);
-
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    frame.getContentPane().add(imauPanel);
-                    animator.start();
-                } catch (final Exception e) {
-                    e.printStackTrace(System.err);
-                    System.exit(1);
-                }
-            }
-        });
-
-        glWindow.setSize(ImauApp.settings.getDefaultScreenWidth(),
-                ImauApp.settings.getDefaultScreenHeight());
-
-        glWindow.setVisible(true);
-        frame.setVisible(true);
-    }
 
     public static void main(String[] arguments) {
         String cmdlnfileName = null;
@@ -166,44 +58,43 @@ public class ImauApp {
                 path = System.getProperty("user.dir");
             }
         }
+        // Create the Swing interface elements
+        imauPanel = new ImauPanel(path, cmdlnfileName, cmdlnfileName2);
 
-        // frame = new JFrame("Imau Visualization");
-        // frame.setPreferredSize(new Dimension(ImauApp.settings
-        // .getDefaultScreenWidth()
-        // + ImauApp.settings.getDefaultScreenWidthExtension(),
-        // ImauApp.settings.getDefaultScreenHeight()
-        // + ImauApp.settings.getDefaultScreenHeightExtension()));
+        // Create the GLEventListener
+        imauWindow = new ImauWindow(InputHandler.getInstance());
 
-        // imauWindow = new ImauWindow(ImauInputHandler.getInstance(), true);
-        createScreen(true, path, cmdlnfileName, cmdlnfileName2);
+        NewtWindow window = new NewtWindow(true, imauWindow.getInputHandler(),
+                imauWindow, settings.getDefaultScreenWidth(),
+                settings.getDefaultScreenHeight(), "eSalsa Visualization");
 
-        // javax.swing.SwingUtilities.invokeLater(new Runnable() {
-        // @Override
-        // public void run() {
-        // try {
-        // frame.getContentPane().add(imauPanel);
-        //
-        // // frame.addWindowListener(new WindowAdapter() {
-        // //
-        // // public void windowClosing(WindowEvent we) {
-        // // imauPanel.close();
-        // // System.exit(0);
-        // // }
-        // // });
-        // } catch (final Exception e) {
-        // e.printStackTrace(System.err);
-        // System.exit(1);
-        // }
-        // }
-        // });
-        //
-        // // center on screen
-        // frame.setLocationRelativeTo(null);
-        //
-        // // Display the window.
-        // frame.pack();
-        // frame.setVisible(true);
+        // Create the frame
+        final JFrame frame = new JFrame("eSalsa Visualization");
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent arg0) {
+                System.exit(0);
+            }
+        });
 
+        frame.setSize(ImauApp.settings.getInterfaceWidth(),
+                ImauApp.settings.getInterfaceHeight());
+
+        frame.setResizable(false);
+
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    frame.getContentPane().add(imauPanel);
+                } catch (final Exception e) {
+                    e.printStackTrace(System.err);
+                    System.exit(1);
+                }
+            }
+        });
+
+        frame.setVisible(true);
     }
 
     public static BufferedImage getFrameImage() {

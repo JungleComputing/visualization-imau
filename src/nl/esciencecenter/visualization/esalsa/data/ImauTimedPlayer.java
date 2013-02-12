@@ -8,10 +8,10 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JSlider;
 
 import nl.esciencecenter.visualization.esalsa.ImauSettings;
-import nl.esciencecenter.visualization.esalsa.util.CustomJSlider;
-import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
+import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VectorFMath;
+import nl.esciencecenter.visualization.openglCommon.swing.CustomJSlider;
 
 public class ImauTimedPlayer implements Runnable {
     public static enum states {
@@ -32,7 +32,7 @@ public class ImauTimedPlayer implements Runnable {
     private final JSlider             timeBar;
     private final JFormattedTextField frameCounter;
 
-    private final ImauInputHandler    inputHandler;
+    private final InputHandler        inputHandler;
 
     private ImauDatasetManager        dsManager;
     private TextureStorage            texStorage;
@@ -53,7 +53,7 @@ public class ImauTimedPlayer implements Runnable {
             JFormattedTextField frameCounter) {
         this.timeBar = timeBar2;
         this.frameCounter = frameCounter;
-        this.inputHandler = ImauInputHandler.getInstance();
+        this.inputHandler = InputHandler.getInstance();
 
         bezierPoints = new ArrayList<VecF3>();
 

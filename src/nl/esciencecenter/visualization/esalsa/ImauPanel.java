@@ -37,17 +37,18 @@ import javax.swing.plaf.basic.BasicSliderUI;
 
 import nl.esciencecenter.visualization.esalsa.data.ImauTimedPlayer;
 import nl.esciencecenter.visualization.esalsa.data.SurfaceTextureDescription;
-import nl.esciencecenter.visualization.esalsa.netcdf.NetCDFUtil;
-import nl.esciencecenter.visualization.esalsa.util.ColormapInterpreter;
-import nl.esciencecenter.visualization.esalsa.util.CustomJSlider;
-import nl.esciencecenter.visualization.esalsa.util.GoggleSwing;
-import nl.esciencecenter.visualization.esalsa.util.RangeSlider;
-import nl.esciencecenter.visualization.esalsa.util.RangeSliderUI;
+import nl.esciencecenter.visualization.openglCommon.CommonInterfacePanel;
+import nl.esciencecenter.visualization.openglCommon.io.netcdf.NetCDFUtil;
+import nl.esciencecenter.visualization.openglCommon.swing.ColormapInterpreter;
+import nl.esciencecenter.visualization.openglCommon.swing.CustomJSlider;
+import nl.esciencecenter.visualization.openglCommon.swing.GoggleSwing;
+import nl.esciencecenter.visualization.openglCommon.swing.RangeSlider;
+import nl.esciencecenter.visualization.openglCommon.swing.RangeSliderUI;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImauPanel extends JPanel {
+public class ImauPanel extends CommonInterfacePanel {
     public static enum TweakState {
         NONE, DATA, VISUAL, MOVIE
     }

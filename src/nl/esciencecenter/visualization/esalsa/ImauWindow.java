@@ -15,24 +15,15 @@ import javax.media.opengl.GLException;
 
 import nl.esciencecenter.visualization.esalsa.data.ImauTimedPlayer;
 import nl.esciencecenter.visualization.esalsa.data.SurfaceTextureDescription;
-import nl.esciencecenter.visualization.esalsa.glExt.ByteBufferTexture;
-import nl.esciencecenter.visualization.esalsa.glExt.FBO;
-import nl.esciencecenter.visualization.esalsa.glExt.GeoSphere;
-import nl.esciencecenter.visualization.esalsa.glExt.IntPBO;
-import nl.esciencecenter.visualization.esalsa.glExt.Model;
-import nl.esciencecenter.visualization.esalsa.glExt.MultiColorText;
-import nl.esciencecenter.visualization.esalsa.glExt.Program;
-import nl.esciencecenter.visualization.esalsa.glExt.ProgramLoader;
-import nl.esciencecenter.visualization.esalsa.glExt.Quad;
-import nl.esciencecenter.visualization.esalsa.glExt.Texture2D;
 import nl.esciencecenter.visualization.esalsa.jni.SageInterface;
-import nl.esciencecenter.visualization.esalsa.util.ClickCoordinateCalculator;
-import nl.esciencecenter.visualization.esalsa.util.ImauInputHandler;
-import nl.esciencecenter.visualization.esalsa.util.NoSelectionException;
+import nl.esciencecenter.visualization.openglCommon.datastructures.FBO;
+import nl.esciencecenter.visualization.openglCommon.datastructures.IntPBO;
 import nl.esciencecenter.visualization.openglCommon.datastructures.Material;
 import nl.esciencecenter.visualization.openglCommon.exceptions.CompilationFailedException;
-import nl.esciencecenter.visualization.openglCommon.exceptions.InverseNotAvailableException;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
+import nl.esciencecenter.visualization.openglCommon.input.ClickCoordinateCalculator;
+import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
+import nl.esciencecenter.visualization.openglCommon.input.NoSelectionException;
 import nl.esciencecenter.visualization.openglCommon.math.Color4;
 import nl.esciencecenter.visualization.openglCommon.math.MatF4;
 import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
@@ -40,8 +31,16 @@ import nl.esciencecenter.visualization.openglCommon.math.Point4;
 import nl.esciencecenter.visualization.openglCommon.math.VecF2;
 import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VecF4;
+import nl.esciencecenter.visualization.openglCommon.models.GeoSphere;
+import nl.esciencecenter.visualization.openglCommon.models.Model;
+import nl.esciencecenter.visualization.openglCommon.models.Quad;
+import nl.esciencecenter.visualization.openglCommon.shaders.Program;
+import nl.esciencecenter.visualization.openglCommon.shaders.ProgramLoader;
 import nl.esciencecenter.visualization.openglCommon.text.FontFactory;
+import nl.esciencecenter.visualization.openglCommon.text.MultiColorText;
 import nl.esciencecenter.visualization.openglCommon.text.TypecastFont;
+import nl.esciencecenter.visualization.openglCommon.textures.ByteBufferTexture;
+import nl.esciencecenter.visualization.openglCommon.textures.Texture2D;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +54,7 @@ public class ImauWindow implements GLEventListener {
     private Quad                        fsq;
 
     protected final ProgramLoader       loader;
-    protected final ImauInputHandler    inputHandler;
+    protected final InputHandler        inputHandler;
 
     private Program                     shaderProgram_Sphere,
             shaderProgram_Legend, shaderProgram_Atmosphere,
@@ -102,13 +101,10 @@ public class ImauWindow implements GLEventListener {
     protected final float               zNear         = 0.1f;
     protected final float               zFar          = 3000.0f;
 
-    protected boolean                   post_process;
-
-    public ImauWindow(ImauInputHandler inputHandler, boolean post_process) {
+    public ImauWindow(InputHandler inputHandler) {
         this.loader = new ProgramLoader();
         this.inputHandler = inputHandler;
         this.font = (TypecastFont) FontFactory.get(fontSet).getDefault();
-        this.post_process = post_process;
 
         cachedScreens = settings.getNumScreensRows()
                 * settings.getNumScreensCols();
@@ -328,10 +324,8 @@ public class ImauWindow implements GLEventListener {
             legend.delete(gl);
         }
 
-        if (post_process) {
-            logger.debug("Tiling windows");
-            renderTexturesToScreen(gl, width, height);
-        }
+        logger.debug("Tiling windows");
+        renderTexturesToScreen(gl, width, height);
     }
 
     private void drawSingleWindow(final int width, final int height,
@@ -359,10 +353,8 @@ public class ImauWindow implements GLEventListener {
             MultiColorText datasetText, MultiColorText legendTextMin,
             MultiColorText legendTextMax, FBO target) {
         try {
-            if (post_process) {
-                target.bind(gl);
-                gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
-            }
+            target.bind(gl);
+            gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
             // Draw text
             int textLength = varNameText.toString().length() * fontSize;
@@ -385,9 +377,7 @@ public class ImauWindow implements GLEventListener {
             legendTextMax.draw(gl, shaderProgram_Text, width, height, 2 * width
                     - textLength - 100, 1.75f * height);
 
-            if (post_process) {
-                target.unBind(gl);
-            }
+            target.unBind(gl);
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
@@ -396,10 +386,8 @@ public class ImauWindow implements GLEventListener {
     private void drawHUDLegend(GL3 gl, int width, int height,
             Texture2D legendTexture, FBO target) {
         try {
-            if (post_process) {
-                target.bind(gl);
-                gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
-            }
+            target.bind(gl);
+            gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
             // Draw legend texture
             shaderProgram_Legend.setUniform("texture_map",
@@ -410,9 +398,7 @@ public class ImauWindow implements GLEventListener {
             shaderProgram_Legend.use(gl);
             legendModel.draw(gl, shaderProgram_Legend);
 
-            if (post_process) {
-                target.unBind(gl);
-            }
+            target.unBind(gl);
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
@@ -421,38 +407,36 @@ public class ImauWindow implements GLEventListener {
     private void drawSphere(GL3 gl, MatF4 mv, Texture2D surfaceTexture,
             FBO target, VecF2 clickCoords) {
         try {
-            if (post_process) {
-                target.bind(gl);
-                gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
-            }
+            target.bind(gl);
+            gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
             final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
 
-            try {
-                MatF4 inv_p = MatrixFMath.inverse(p);
-                MatF4 inv_mv = MatrixFMath.inverse(mv);
-
-                // // Receive buffer
-                // gl.glBindBufferBase(GL3.GL_TRANSFORM_FEEDBACK_BUFFER, 0,
-                // ReceiverID);
-                // gl.glBeginTransformFeedback(GL3.GL_POINTS);
-                // // disable rasterization
-                // gl.glEnable(GL3.GL_RASTERIZER_DISCARD);
-                // // begin query for geometry shader outed primitive
-                // gl.glBeginQuery(GL3.GL_PRIMITIVES_GENERATED, QueryID);
-                // ...
-                // Rendering
-                // ...
-                // // read back query results
-                // gl.glEndQuery( GL3.GL_PRIMITIVES_GENERATED);
-                // gl.glGetQueryObjectuiv(QueryID, GL3.GL_QUERY_RESULT,
-                // @PointOutNumber);
-                // // enable rasterization
-                // gl.glDisable(GL3.GL_RASTERIZER_DISCARD);
-
-            } catch (InverseNotAvailableException e) {
-                logger.debug("Inverse Matrix could not be calculated.");
-            }
+            // try {
+            // MatF4 inv_p = MatrixFMath.inverse(p);
+            // MatF4 inv_mv = MatrixFMath.inverse(mv);
+            //
+            // // // Receive buffer
+            // // gl.glBindBufferBase(GL3.GL_TRANSFORM_FEEDBACK_BUFFER, 0,
+            // // ReceiverID);
+            // // gl.glBeginTransformFeedback(GL3.GL_POINTS);
+            // // // disable rasterization
+            // // gl.glEnable(GL3.GL_RASTERIZER_DISCARD);
+            // // // begin query for geometry shader outed primitive
+            // // gl.glBeginQuery(GL3.GL_PRIMITIVES_GENERATED, QueryID);
+            // // ...
+            // // Rendering
+            // // ...
+            // // // read back query results
+            // // gl.glEndQuery( GL3.GL_PRIMITIVES_GENERATED);
+            // // gl.glGetQueryObjectuiv(QueryID, GL3.GL_QUERY_RESULT,
+            // // @PointOutNumber);
+            // // // enable rasterization
+            // // gl.glDisable(GL3.GL_RASTERIZER_DISCARD);
+            //
+            // } catch (InverseNotAvailableException e) {
+            // logger.debug("Inverse Matrix could not be calculated.");
+            // }
 
             shaderProgram_Sphere.setUniformMatrix("MVMatrix", mv.clone());
             shaderProgram_Sphere.setUniformMatrix("PMatrix", p);
@@ -467,9 +451,7 @@ public class ImauWindow implements GLEventListener {
             shaderProgram_Sphere.use(gl);
             sphereModel.draw(gl, shaderProgram_Sphere);
 
-            if (post_process) {
-                target.unBind(gl);
-            }
+            target.unBind(gl);
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
@@ -477,10 +459,8 @@ public class ImauWindow implements GLEventListener {
 
     private void drawAtmosphere(GL3 gl, MatF4 mv, FBO target) {
         try {
-            if (post_process) {
-                target.bind(gl);
-                gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
-            }
+            target.bind(gl);
+            gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
             final MatF4 p = MatrixFMath.perspective(fovy, aspect, zNear, zFar);
             shaderProgram_Atmosphere.setUniformMatrix("MVMatrix", mv.clone());
@@ -491,9 +471,7 @@ public class ImauWindow implements GLEventListener {
             shaderProgram_Atmosphere.use(gl);
             atmModel.draw(gl, shaderProgram_Atmosphere);
 
-            if (post_process) {
-                target.unBind(gl);
-            }
+            target.unBind(gl);
         } catch (UninitializedException e) {
             e.printStackTrace();
         }
@@ -503,10 +481,8 @@ public class ImauWindow implements GLEventListener {
             FBO hudLegendFBO, FBO sphereTextureFBO, FBO atmosphereFBO,
             FBO target) {
         try {
-            if (post_process) {
-                target.bind(gl);
-                gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
-            }
+            target.bind(gl);
+            gl.glClear(GL.GL_DEPTH_BUFFER_BIT | GL.GL_COLOR_BUFFER_BIT);
 
             shaderProgram_FlattenLayers.setUniform("textTex", hudTextFBO
                     .getTexture().getMultitexNumber());
@@ -528,9 +504,7 @@ public class ImauWindow implements GLEventListener {
             shaderProgram_FlattenLayers.use(gl);
             fsq.draw(gl, shaderProgram_FlattenLayers);
 
-            if (post_process) {
-                target.unBind(gl);
-            }
+            target.unBind(gl);
         } catch (final UninitializedException e) {
             e.printStackTrace();
         }
@@ -559,10 +533,8 @@ public class ImauWindow implements GLEventListener {
         shaderProgram_GaussianBlur.setUniform("Alpha", 1f);
 
         try {
-            if (post_process) {
-                target.bind(gl);
-                gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-            }
+            target.bind(gl);
+            gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 
             for (int i = 0; i < passes; i++) {
                 shaderProgram_GaussianBlur.setUniform("blurDirection", 0);
@@ -576,9 +548,7 @@ public class ImauWindow implements GLEventListener {
                 fullScreenQuad.draw(gl, shaderProgram_GaussianBlur);
             }
 
-            if (post_process) {
-                target.unBind(gl);
-            }
+            target.unBind(gl);
         } catch (final UninitializedException e) {
             e.printStackTrace();
         }
@@ -969,7 +939,7 @@ public class ImauWindow implements GLEventListener {
         return result;
     }
 
-    public ImauInputHandler getInputHandler() {
+    public InputHandler getInputHandler() {
         return inputHandler;
     }
 }

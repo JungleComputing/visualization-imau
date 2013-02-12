@@ -7,10 +7,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import nl.esciencecenter.visualization.esalsa.ImauSettings;
-import nl.esciencecenter.visualization.esalsa.data3d.Imau3dDataArray;
-import nl.esciencecenter.visualization.esalsa.data3d.SurfaceTexture3dDescription;
-import nl.esciencecenter.visualization.esalsa.netcdf.NetCDFNoSuchVariableException;
-import nl.esciencecenter.visualization.esalsa.netcdf.NetCDFUtil;
+import nl.esciencecenter.visualization.openglCommon.io.netcdf.NetCDFNoSuchVariableException;
+import nl.esciencecenter.visualization.openglCommon.io.netcdf.NetCDFUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -317,28 +315,6 @@ public class ImauDatasetManager {
                         file2, frameNumber));
                 IOJobExecute(new ImauDataArray(frameFile1, frameFile2, desc));
             }
-        } catch (IOException e) {
-            logger.error("buildImages : Requested frameNumber " + frameNumber
-                    + " resulted in IOException.");
-            e.printStackTrace();
-        }
-    }
-
-    public void buildImages(SurfaceTexture3dDescription desc) {
-        int frameNumber = desc.getFrameNumber();
-
-        if (frameNumber < 0
-                || frameNumber >= availableFrameSequenceNumbers
-                        .get(availableFrameSequenceNumbers.size() - 1)) {
-            logger.warn("buildImages : Requested frameNumber  " + frameNumber
-                    + " out of range.");
-        }
-
-        NetcdfFile frameFile1;
-        try {
-            frameFile1 = NetCDFUtil.open(NetCDFUtil.getSeqFile(file1,
-                    frameNumber));
-            IOJobExecute(new Imau3dDataArray(frameFile1, desc));
         } catch (IOException e) {
             logger.error("buildImages : Requested frameNumber " + frameNumber
                     + " resulted in IOException.");
