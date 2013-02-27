@@ -200,8 +200,8 @@ public class ImauPanel extends JPanel {
         ImageIcon nlescIcon = GoggleSwing.createResizedImageIcon(
                 "images/ESCIENCE_logo.png", "eScienceCenter Logo", 50, 28);
         JLabel nlesclogo = new JLabel(nlescIcon);
-        nlesclogo.setMinimumSize(new Dimension(300, 20));
-        nlesclogo.setMaximumSize(new Dimension(311, 28));
+        nlesclogo.setMinimumSize(new Dimension(50, 20));
+        nlesclogo.setMaximumSize(new Dimension(50, 28));
 
         ImageIcon saraIcon = GoggleSwing.createResizedImageIcon(
                 "images/logo_sara.png", "SARA Logo", 50, 28);
