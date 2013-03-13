@@ -45,47 +45,50 @@ void main() {
 	float y = gl_FragCoord.y/height;
 	
 	vec4 sphereColor;
-	if (divs_x == 2 && divs_y == 2) {
-		float conv_x = getDiv2(x);
-		float conv_y = getDiv2(y);
-		
-		vec2 tCoord = vec2(conv_x,conv_y);
-		
-		if (y < (1.0/2.0)) {
+	if (selection == 0) {
+		if (divs_x == 2 && divs_y == 2) {
+			float conv_x = getDiv2(x);
+			float conv_y = getDiv2(y);
+			
+			vec2 tCoord = vec2(conv_x,conv_y);
+			
+			if (y < (1.0/2.0)) {
+				if (x < (1.0/2.0)) {
+					sphereColor = vec4(texture(sphereTexture_0, tCoord).rgb, 1.0);	  			
+				} else {
+					sphereColor = vec4(texture(sphereTexture_1, tCoord).rgb, 1.0);
+				}
+			} else {
+				if (x < (1.0/2.0)) {
+					sphereColor = vec4(texture(sphereTexture_2, tCoord).rgb, 1.0);
+				} else {
+					sphereColor = vec4(texture(sphereTexture_3, tCoord).rgb, 1.0);
+				}
+			}
+		} else if (divs_x == 2 && divs_y == 1) {
+			float conv_x = getDiv2(x);
+			
+			vec2 tCoord = vec2(conv_x,y);		
+			
 			if (x < (1.0/2.0)) {
-				sphereColor = vec4(texture(sphereTexture_0, tCoord).rgb, 1.0);	  			
+				sphereColor = vec4(texture(sphereTexture_0, tCoord).rgb, 1.0);
 			} else {
 				sphereColor = vec4(texture(sphereTexture_1, tCoord).rgb, 1.0);
 			}
-		} else {
-			if (x < (1.0/2.0)) {
-				sphereColor = vec4(texture(sphereTexture_2, tCoord).rgb, 1.0);
+		} else if (divs_x == 1 && divs_y == 2) {
+			float conv_y = getDiv2(y);
+			
+			vec2 tCoord = vec2(x,conv_y);		
+			
+			if (y < (1.0/2.0)) {
+				sphereColor = vec4(texture(sphereTexture_1, tCoord).rgb, 1.0);
 			} else {
-				sphereColor = vec4(texture(sphereTexture_3, tCoord).rgb, 1.0);
+				sphereColor = vec4(texture(sphereTexture_0, tCoord).rgb, 1.0);
 			}
-		}
-	} else if (divs_x == 2 && divs_y == 1) {
-		float conv_x = getDiv2(x);
-		
-		vec2 tCoord = vec2(conv_x,y);		
-		
-		if (x < (1.0/2.0)) {
-			sphereColor = vec4(texture(sphereTexture_0, tCoord).rgb, 1.0);
-		} else {
-			sphereColor = vec4(texture(sphereTexture_1, tCoord).rgb, 1.0);
-		}
-	} else if (divs_x == 1 && divs_y == 2) {
-		float conv_y = getDiv2(y);
-		
-		vec2 tCoord = vec2(x,conv_y);		
-		
-		if (y < (1.0/2.0)) {
-			sphereColor = vec4(texture(sphereTexture_1, tCoord).rgb, 1.0);
-		} else {
-			sphereColor = vec4(texture(sphereTexture_0, tCoord).rgb, 1.0);
 		}
 	} else {
 		vec2 tCoord = vec2(x,y);
+		
 		if (selection == 1) {
 			sphereColor = vec4(texture(sphereTexture_0, tCoord).rgb, 1.0);
 		} else if (selection == 2) {

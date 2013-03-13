@@ -13,7 +13,13 @@ import nl.esciencecenter.visualization.openglCommon.math.VecF3;
 import nl.esciencecenter.visualization.openglCommon.math.VectorFMath;
 import nl.esciencecenter.visualization.openglCommon.swing.CustomJSlider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ImauTimedPlayer implements Runnable {
+    private final static Logger logger = LoggerFactory
+                                               .getLogger(ImauTimedPlayer.class);
+
     public static enum states {
         UNOPENED, UNINITIALIZED, INITIALIZED, STOPPED, REDRAWING, SNAPSHOTTING, MOVIEMAKING, CLEANUP, WAITINGONFRAME, PLAYING
     }
@@ -171,7 +177,7 @@ public class ImauTimedPlayer implements Runnable {
             int newFrameNumber = dsManager.getPreviousFrameNumber(frameNumber);
             updateFrame(newFrameNumber, false);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.debug("One back failed.");
         }
     }
 
@@ -182,7 +188,7 @@ public class ImauTimedPlayer implements Runnable {
             int newFrameNumber = dsManager.getNextFrameNumber(frameNumber);
             updateFrame(newFrameNumber, false);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.debug("One forward failed.");
         }
     }
 
@@ -277,8 +283,7 @@ public class ImauTimedPlayer implements Runnable {
                                     updateFrame(newFrameNumber, false);
                                 }
                             } catch (IOException e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
+                                logger.debug("Waiting on frame after " + frameNumber);
                             }
                         }
 

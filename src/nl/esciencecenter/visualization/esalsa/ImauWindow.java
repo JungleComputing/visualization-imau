@@ -611,23 +611,23 @@ public class ImauWindow implements GLEventListener {
             dataSets[i] = new MultiColorText(font);
         }
 
-        try {
-            if (shaderProgram_PostProcess != null) {
-                shaderProgram_PostProcess.delete(gl);
-                shaderProgram_PostProcess = loader.createProgram(gl,
-                        "postprocess", new File("shaders/vs_postprocess.vp"),
-                        new File("shaders/fs_postprocess.fp"));
-                // PostprocShaderCreator.generateShaderText(
-                // settings.getNumScreensRows(),
-                // settings.getNumScreensCols()));
-            }
-        } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (CompilationFailedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        // try {
+        // if (shaderProgram_PostProcess != null) {
+        // shaderProgram_PostProcess.delete(gl);
+        // shaderProgram_PostProcess = loader.createProgram(gl,
+        // "postprocess", new File("shaders/vs_postprocess.vp"),
+        // new File("shaders/fs_postprocess.fp"));
+        // // PostprocShaderCreator.generateShaderText(
+        // // settings.getNumScreensRows(),
+        // // settings.getNumScreensCols()));
+        // }
+        // } catch (FileNotFoundException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // } catch (CompilationFailedException e) {
+        // // TODO Auto-generated catch block
+        // e.printStackTrace();
+        // }
     }
 
     @Override

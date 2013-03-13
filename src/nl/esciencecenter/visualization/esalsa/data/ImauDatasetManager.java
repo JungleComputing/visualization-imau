@@ -293,7 +293,7 @@ public class ImauDatasetManager {
         if (frameNumber < 0
                 || frameNumber >= availableFrameSequenceNumbers
                         .get(availableFrameSequenceNumbers.size() - 1)) {
-            logger.warn("buildImages : Requested frameNumber  " + frameNumber
+            logger.debug("buildImages : Requested frameNumber  " + frameNumber
                     + " out of range.");
         }
 

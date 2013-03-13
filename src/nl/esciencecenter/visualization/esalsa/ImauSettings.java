@@ -572,10 +572,19 @@ public class ImauSettings {
     public synchronized void setDataMode(int screenNumber, boolean dynamic,
             boolean diff, boolean secondSet) {
         SurfaceTextureDescription state = screenDescriptions[screenNumber];
-        SurfaceTextureDescription result = new SurfaceTextureDescription(
+
+        SurfaceTextureDescription result;
+        // if (diff == false) {
+        result = new SurfaceTextureDescription(
                 state.getFrameNumber(), state.getDepth(), state.getVarName(),
                 state.getColorMap(), dynamic, diff, secondSet,
                 state.getLowerBound(), state.getUpperBound());
+        // } else {
+        // result = new SurfaceTextureDescription(
+        // state.getFrameNumber(), state.getDepth(), state.getVarName(),
+        // "inv_diff", dynamic, diff, secondSet,
+        // state.getLowerBound(), state.getUpperBound());
+        // }
         screenDescriptions[screenNumber] = result;
     }
 

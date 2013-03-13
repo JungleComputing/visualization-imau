@@ -387,6 +387,7 @@ public class ImauPanel extends CommonInterfacePanel {
             public void actionPerformed(ActionEvent e) {
                 timer.rewind();
                 playButton.setIcon(playIcon);
+                playButton.invalidate();
             }
         });
         bottomPanel1.add(rewindButton);
@@ -396,6 +397,7 @@ public class ImauPanel extends CommonInterfacePanel {
             public void actionPerformed(ActionEvent e) {
                 timer.oneBack();
                 playButton.setIcon(playIcon);
+                playButton.invalidate();
             }
         });
         bottomPanel1.add(oneBackButton);
@@ -406,9 +408,11 @@ public class ImauPanel extends CommonInterfacePanel {
                 if (timer.isPlaying()) {
                     timer.stop();
                     playButton.setIcon(playIcon);
+                    playButton.invalidate();
                 } else {
                     timer.start();
                     playButton.setIcon(stopIcon);
+                    playButton.invalidate();
                 }
             }
         });
@@ -419,6 +423,7 @@ public class ImauPanel extends CommonInterfacePanel {
             public void actionPerformed(ActionEvent e) {
                 timer.oneForward();
                 playButton.setIcon(playIcon);
+                playButton.invalidate();
             }
         });
         bottomPanel1.add(oneForwardButton);
@@ -442,6 +447,7 @@ public class ImauPanel extends CommonInterfacePanel {
                                     false);
                         }
                         playButton.setIcon(playIcon);
+                        playButton.invalidate();
                     }
                 }
             }
@@ -457,6 +463,7 @@ public class ImauPanel extends CommonInterfacePanel {
                     timer.setFrame(timeBar.getValue() - timeBar.getMinimum(),
                             false);
                     playButton.setIcon(playIcon);
+                    playButton.invalidate();
                 }
             }
         });
@@ -646,16 +653,16 @@ public class ImauPanel extends CommonInterfacePanel {
             selectionLegendSlider.setUpperValue(settings
                     .getRangeSliderUpperValue(currentScreen));
 
-            final RangeSliderUI frsLT = ((RangeSliderUI) selectionLegendSlider
-                    .getUI());
             colorMapsComboBox.addItemListener(new ItemListener() {
                 @Override
                 public void itemStateChanged(ItemEvent e) {
                     settings.setColorMap(currentScreen,
                             colorMaps[colorMapsComboBox.getSelectedIndex()]);
 
-                    frsLT.setRangeColorMap(colorMaps[colorMapsComboBox
+                    ((RangeSliderUI) selectionLegendSlider
+                            .getUI()).setRangeColorMap(colorMaps[colorMapsComboBox
                             .getSelectedIndex()]);
+                    selectionLegendSlider.invalidate();
                 }
             });
 
