@@ -11,7 +11,7 @@ import java.io.File;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
-import nl.esciencecenter.visualization.openglCommon.NewtWindow;
+import nl.esciencecenter.visualization.openglCommon.CommonNewtWindow;
 import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
 
 import org.slf4j.Logger;
@@ -64,7 +64,7 @@ public class ImauApp {
         // Create the GLEventListener
         imauWindow = new ImauWindow(InputHandler.getInstance());
 
-        NewtWindow window = new NewtWindow(true, imauWindow.getInputHandler(),
+        CommonNewtWindow window = new CommonNewtWindow(true, imauWindow.getInputHandler(),
                 imauWindow, settings.getDefaultScreenWidth(),
                 settings.getDefaultScreenHeight(), "eSalsa Visualization");
 

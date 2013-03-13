@@ -511,14 +511,13 @@ public class ImauPanel extends CommonInterfacePanel {
                 (int) (settings.getMovieRotationSpeedDef() * 4f),
                 rotationSetting));
 
-        movieConfig.add(GoggleSwing.buttonBox("",
-                new String[] { "Start Recording" },
-                new ActionListener[] { new ActionListener() {
+        movieConfig.add(GoggleSwing.buttonBox("", new GoggleSwing.ButtonBoxItem("Start Recording",
+                new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         timer.movieMode();
                     }
-                } }));
+                })));
     }
 
     private void createDataTweakPanel() {

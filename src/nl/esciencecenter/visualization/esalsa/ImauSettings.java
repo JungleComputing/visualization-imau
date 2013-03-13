@@ -41,8 +41,8 @@ public class ImauSettings {
     private int                          INTERFACE_HEIGHT                = 88;
     private int                          INTERFACE_WIDTH                 = 210;
 
-    private int                          SCREENSHOT_SCREEN_WIDTH         = 1280;
-    private int                          SCREENSHOT_SCREEN_HEIGHT        = 720;
+    private final int                    SCREENSHOT_SCREEN_WIDTH         = 1280;
+    private final int                    SCREENSHOT_SCREEN_HEIGHT        = 720;
 
     // Settings for the initial view
     private int                          INITIAL_SIMULATION_FRAME        = 0;
@@ -148,10 +148,10 @@ public class ImauSettings {
             INTERFACE_WIDTH = props.getIntProperty("INTERFACE_WIDTH");
             INTERFACE_HEIGHT = props.getIntProperty("INTERFACE_HEIGHT");
 
-            SCREENSHOT_SCREEN_WIDTH = props
-                    .getIntProperty("SCREENSHOT_SCREEN_WIDTH");
-            SCREENSHOT_SCREEN_HEIGHT = props
-                    .getIntProperty("SCREENSHOT_SCREEN_HEIGHT");
+            // SCREENSHOT_SCREEN_WIDTH = props
+            // .getIntProperty("SCREENSHOT_SCREEN_WIDTH");
+            // SCREENSHOT_SCREEN_HEIGHT = props
+            // .getIntProperty("SCREENSHOT_SCREEN_HEIGHT");
 
             // Settings for the initial view
             INITIAL_SIMULATION_FRAME = props

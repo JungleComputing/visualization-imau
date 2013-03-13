@@ -18,12 +18,9 @@ import nl.esciencecenter.visualization.esalsa.data.SurfaceTextureDescription;
 import nl.esciencecenter.visualization.esalsa.jni.SageInterface;
 import nl.esciencecenter.visualization.openglCommon.datastructures.FBO;
 import nl.esciencecenter.visualization.openglCommon.datastructures.IntPBO;
-import nl.esciencecenter.visualization.openglCommon.datastructures.Material;
 import nl.esciencecenter.visualization.openglCommon.exceptions.CompilationFailedException;
 import nl.esciencecenter.visualization.openglCommon.exceptions.UninitializedException;
-import nl.esciencecenter.visualization.openglCommon.input.ClickCoordinateCalculator;
 import nl.esciencecenter.visualization.openglCommon.input.InputHandler;
-import nl.esciencecenter.visualization.openglCommon.input.NoSelectionException;
 import nl.esciencecenter.visualization.openglCommon.math.Color4;
 import nl.esciencecenter.visualization.openglCommon.math.MatF4;
 import nl.esciencecenter.visualization.openglCommon.math.MatrixFMath;
@@ -34,11 +31,11 @@ import nl.esciencecenter.visualization.openglCommon.math.VecF4;
 import nl.esciencecenter.visualization.openglCommon.models.GeoSphere;
 import nl.esciencecenter.visualization.openglCommon.models.Model;
 import nl.esciencecenter.visualization.openglCommon.models.Quad;
-import nl.esciencecenter.visualization.openglCommon.shaders.Program;
-import nl.esciencecenter.visualization.openglCommon.shaders.ProgramLoader;
-import nl.esciencecenter.visualization.openglCommon.text.FontFactory;
+import nl.esciencecenter.visualization.openglCommon.shaders.ShaderProgram;
+import nl.esciencecenter.visualization.openglCommon.shaders.ShaderProgramLoader;
 import nl.esciencecenter.visualization.openglCommon.text.MultiColorText;
-import nl.esciencecenter.visualization.openglCommon.text.TypecastFont;
+import nl.esciencecenter.visualization.openglCommon.text.jogampExperimental.Font;
+import nl.esciencecenter.visualization.openglCommon.text.jogampExperimental.FontFactory;
 import nl.esciencecenter.visualization.openglCommon.textures.ByteBufferTexture;
 import nl.esciencecenter.visualization.openglCommon.textures.Texture2D;
 
@@ -53,18 +50,18 @@ public class ImauWindow implements GLEventListener {
 
     private Quad                        fsq;
 
-    protected final ProgramLoader       loader;
+    protected final ShaderProgramLoader loader;
     protected final InputHandler        inputHandler;
 
-    private Program                     shaderProgram_Sphere,
-            shaderProgram_Legend, shaderProgram_Atmosphere,
-            shaderProgram_GaussianBlur, shaderProgram_FlattenLayers,
-            shaderProgram_PostProcess, shaderProgram_Text;
+    private ShaderProgram               shaderProgram_Sphere,
+                                        shaderProgram_Legend, shaderProgram_Atmosphere,
+                                        shaderProgram_GaussianBlur, shaderProgram_FlattenLayers,
+                                        shaderProgram_PostProcess, shaderProgram_Text;
 
     private Model                       sphereModel, legendModel, atmModel;
 
     private FBO                         atmosphereFBO, hudTextFBO,
-            legendTextureFBO, sphereTextureFBO;
+                                        legendTextureFBO, sphereTextureFBO;
 
     private IntPBO                      finalPBO;
 
@@ -90,7 +87,7 @@ public class ImauWindow implements GLEventListener {
     private float                       aspect;
 
     protected int                       fontSet       = FontFactory.UBUNTU;
-    protected TypecastFont              font;
+    protected Font                      font;
     protected int                       canvasWidth, canvasHeight;
 
     protected final float               radius        = 1.0f;
@@ -102,9 +99,9 @@ public class ImauWindow implements GLEventListener {
     protected final float               zFar          = 3000.0f;
 
     public ImauWindow(InputHandler inputHandler) {
-        this.loader = new ProgramLoader();
+        this.loader = new ShaderProgramLoader();
         this.inputHandler = inputHandler;
-        this.font = (TypecastFont) FontFactory.get(fontSet).getDefault();
+        this.font = FontFactory.get(fontSet).getDefault();
 
         cachedScreens = settings.getNumScreensRows()
                 * settings.getNumScreensCols();
@@ -140,27 +137,27 @@ public class ImauWindow implements GLEventListener {
 
             VecF2 clickCoords = null;
 
-            try {
-                VecF2 selection = this.inputHandler.getSelection();
-                float x, y;
-                if (settings.getWindowSelection() == 0) {
-                    x = selection.get(0);
-                    y = selection.get(1);
-                } else {
-                    x = selection.get(0) / settings.getNumScreensCols();
-                    y = selection.get(1) / settings.getNumScreensRows();
-                }
-
-                clickCoords = ClickCoordinateCalculator.calc(
-                        settings.getNumScreensCols(),
-                        settings.getNumScreensRows(), canvasWidth,
-                        canvasHeight, x, y);
-
-                System.out.println("X/Y: " + clickCoords);
-
-            } catch (NoSelectionException e) {
-                // No problem
-            }
+            // try {
+            // VecF2 selection = this.inputHandler.getSelection();
+            // float x, y;
+            // if (settings.getWindowSelection() == 0) {
+            // x = selection.get(0);
+            // y = selection.get(1);
+            // } else {
+            // x = selection.get(0) / settings.getNumScreensCols();
+            // y = selection.get(1) / settings.getNumScreensRows();
+            // }
+            //
+            // clickCoords = ClickCoordinateCalculator.calc(
+            // settings.getNumScreensCols(),
+            // settings.getNumScreensRows(), canvasWidth,
+            // canvasHeight, x, y);
+            //
+            // System.out.println("X/Y: " + clickCoords);
+            //
+            // } catch (NoSelectionException e) {
+            // // No problem
+            // }
 
             int currentScreens = settings.getNumScreensRows()
                     * settings.getNumScreensCols();
@@ -596,9 +593,6 @@ public class ImauWindow implements GLEventListener {
         dates = new MultiColorText[cachedScreens];
         dataSets = new MultiColorText[cachedScreens];
 
-        Material textMaterial = new Material(Color4.white, Color4.white,
-                Color4.white);
-
         for (int i = 0; i < cachedScreens; i++) {
             cachedTextureDescriptions[i] = settings.getSurfaceDescription(i);
 
@@ -609,12 +603,12 @@ public class ImauWindow implements GLEventListener {
                     (GL.GL_TEXTURE6 + i));
             cachedFBOs[i].init(gl);
 
-            varNames[i] = new MultiColorText(textMaterial, font);
-            legendTextsMin[i] = new MultiColorText(textMaterial, font);
-            legendTextsMin[i] = new MultiColorText(textMaterial, font);
-            legendTextsMax[i] = new MultiColorText(textMaterial, font);
-            dates[i] = new MultiColorText(textMaterial, font);
-            dataSets[i] = new MultiColorText(textMaterial, font);
+            varNames[i] = new MultiColorText(font);
+            legendTextsMin[i] = new MultiColorText(font);
+            legendTextsMin[i] = new MultiColorText(font);
+            legendTextsMax[i] = new MultiColorText(font);
+            dates[i] = new MultiColorText(font);
+            dataSets[i] = new MultiColorText(font);
         }
 
         try {
@@ -700,7 +694,7 @@ public class ImauWindow implements GLEventListener {
             cachedFBOs[i].delete(gl);
         }
 
-        inputHandler.close();
+        // inputHandler.close();
     }
 
     @Override
@@ -765,24 +759,23 @@ public class ImauWindow implements GLEventListener {
         legendTextureFBO.init(gl);
         sphereTextureFBO.init(gl);
 
-        fsq = new Quad(Material.random(), 2, 2, new VecF3(0, 0, 0.1f));
+        fsq = new Quad(2, 2, new VecF3(0, 0, 0.1f));
         fsq.init(gl);
 
         // sphereModel = new GeoSphereCut(Material.random(), 120, 120, 50f,
         // false);
-        sphereModel = new GeoSphere(Material.random(), 60, 60, 50f, false);
+        sphereModel = new GeoSphere(60, 60, 50f, false);
         sphereModel.init(gl);
 
         // cutModel = new GeoSphereCutEdge(Material.random(), 120, 50f);
         // cutModel.init(gl);
 
-        legendModel = new Quad(Material.random(), 1.5f, .1f, new VecF3(1, 0,
+        legendModel = new Quad(1.5f, .1f, new VecF3(1, 0,
                 0.1f));
         legendModel.init(gl);
 
         Color4 atmosphereColor = new Color4(0.0f, 1.0f, 1.0f, 0.005f);
-        atmModel = new GeoSphere(new Material(atmosphereColor, atmosphereColor,
-                atmosphereColor), 60, 60, 53f, false);
+        atmModel = new GeoSphere(60, 60, 53f, false);
         atmModel.init(gl);
 
         // Material textMaterial = new Material(Color4.white, Color4.white,
