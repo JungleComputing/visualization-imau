@@ -19,12 +19,11 @@ import org.slf4j.LoggerFactory;
 
 public class ImauApp {
     private final static ImauSettings settings = ImauSettings.getInstance();
-    private final static Logger       log      = LoggerFactory
-                                                       .getLogger(ImauApp.class);
+    private final static Logger log = LoggerFactory.getLogger(ImauApp.class);
 
-    private static JFrame             frame;
-    private static ImauPanel          imauPanel;
-    private static ImauWindow         imauWindow;
+    private static JFrame frame;
+    private static ImauPanel imauPanel;
+    private static ImauWindow imauWindow;
 
     public static void main(String[] arguments) {
         String cmdlnfileName = null;
@@ -36,23 +35,17 @@ public class ImauApp {
                 i++;
                 cmdlnfileName = arguments[i];
                 final File cmdlnfile = new File(cmdlnfileName);
-                path = cmdlnfile.getPath().substring(
-                        0,
-                        cmdlnfile.getPath().length()
-                                - cmdlnfile.getName().length());
+                path = cmdlnfile.getPath().substring(0, cmdlnfile.getPath().length() - cmdlnfile.getName().length());
             } else if (arguments[i].equals("-o2")) {
                 i++;
                 cmdlnfileName2 = arguments[i];
             } else if (arguments[i].equals("-resume")) {
                 i++;
-                ImauApp.settings.setInitial_simulation_frame(Integer
-                        .parseInt(arguments[i]));
+                ImauApp.settings.setInitial_simulation_frame(Integer.parseInt(arguments[i]));
                 i++;
-                ImauApp.settings.setInitial_rotation_x(Float
-                        .parseFloat(arguments[i]));
+                ImauApp.settings.setInitial_rotation_x(Float.parseFloat(arguments[i]));
                 i++;
-                ImauApp.settings.setInitial_rotation_y(Float
-                        .parseFloat(arguments[i]));
+                ImauApp.settings.setInitial_rotation_y(Float.parseFloat(arguments[i]));
             } else {
                 cmdlnfileName = null;
                 path = System.getProperty("user.dir");
@@ -64,9 +57,8 @@ public class ImauApp {
         // Create the GLEventListener
         imauWindow = new ImauWindow(InputHandler.getInstance());
 
-        CommonNewtWindow window = new CommonNewtWindow(true, imauWindow.getInputHandler(),
-                imauWindow, settings.getDefaultScreenWidth(),
-                settings.getDefaultScreenHeight(), "eSalsa Visualization");
+        CommonNewtWindow window = new CommonNewtWindow(true, imauWindow.getInputHandler(), imauWindow,
+                settings.getDefaultScreenWidth(), settings.getDefaultScreenHeight(), "eSalsa Visualization");
 
         // Create the frame
         final JFrame frame = new JFrame("eSalsa Visualization");
@@ -77,8 +69,9 @@ public class ImauApp {
             }
         });
 
-        frame.setSize(ImauApp.settings.getInterfaceWidth(),
-                ImauApp.settings.getInterfaceHeight());
+        frame.setAlwaysOnTop(true);
+
+        frame.setSize(ImauApp.settings.getInterfaceWidth(), ImauApp.settings.getInterfaceHeight());
 
         frame.setResizable(false);
 
@@ -99,8 +92,7 @@ public class ImauApp {
 
     public static BufferedImage getFrameImage() {
         Component component = frame.getContentPane();
-        BufferedImage image = new BufferedImage(component.getWidth(),
-                component.getHeight(), BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(component.getWidth(), component.getHeight(), BufferedImage.TYPE_INT_RGB);
 
         // call the Component's paint method, using
         // the Graphics object of the image.
@@ -124,28 +116,17 @@ public class ImauApp {
         System.out.println("x " + x + " y " + y);
         System.out.println("p.x " + p.x + " p.y " + p.y);
 
-        if ((p.x > 0 && p.x < frame.getWidth())
-                && (p.y > 0 && p.y < frame.getHeight())) {
-            Component comp = SwingUtilities.getDeepestComponentAt(
-                    frame.getContentPane(), p.x, p.y);
+        if ((p.x > 0 && p.x < frame.getWidth()) && (p.y > 0 && p.y < frame.getHeight())) {
+            Component comp = SwingUtilities.getDeepestComponentAt(frame.getContentPane(), p.x, p.y);
 
             System.out.println(comp.toString());
 
-            Toolkit.getDefaultToolkit()
-                    .getSystemEventQueue()
-                    .postEvent(
-                            new MouseEvent(comp, MouseEvent.MOUSE_PRESSED, 0,
-                                    0, p.x, p.y, 1, false));
-            Toolkit.getDefaultToolkit()
-                    .getSystemEventQueue()
-                    .postEvent(
-                            new MouseEvent(comp, MouseEvent.MOUSE_RELEASED, 0,
-                                    0, p.x, p.y, 1, false));
-            Toolkit.getDefaultToolkit()
-                    .getSystemEventQueue()
-                    .postEvent(
-                            new MouseEvent(comp, MouseEvent.MOUSE_CLICKED, 0,
-                                    0, p.x, p.y, 1, false));
+            Toolkit.getDefaultToolkit().getSystemEventQueue()
+                    .postEvent(new MouseEvent(comp, MouseEvent.MOUSE_PRESSED, 0, 0, p.x, p.y, 1, false));
+            Toolkit.getDefaultToolkit().getSystemEventQueue()
+                    .postEvent(new MouseEvent(comp, MouseEvent.MOUSE_RELEASED, 0, 0, p.x, p.y, 1, false));
+            Toolkit.getDefaultToolkit().getSystemEventQueue()
+                    .postEvent(new MouseEvent(comp, MouseEvent.MOUSE_CLICKED, 0, 0, p.x, p.y, 1, false));
         }
     }
 }
